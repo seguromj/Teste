@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monte Seu Copão - Pedido Rápido</title>
+    <style>
+        /* ==================== */
+        /* === ESTILOS GERAIS === */
+        /* ==================== */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9; 
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        h1 {
+            text-align: center;
+            color: #5d4a8e;
+            margin-bottom: 25px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #333;
+            font-size: 0.95em;
+        }
+        .btn-modal-opener {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            cursor: pointer;
+            background-color: #f8f8f8;
+            text-align: left;
+            font-size: 1em;
+            color: #333;
+            transition: background-color 0.2s, border-color 0.2s;
+            position: relative;
+        }
+        .btn-modal-opener:hover {
+            background-color: #e9e9e9;
+            border-color: #a0a0a0;
+        }
+        .resumo-modal-text {
+            font-size: 0.85em;
+            font-weight: normal;
+            display: block;
+            color: #777;
+            margin-top: 3px;
+            font-style: italic;
+        }
+        
+        /* === ESTILO: VALOR TOTAL COM CUPOM === */
+        #valor-total-display {
+            margin-top: 30px;
+            padding: 18px;
+            background-color: #ffc107;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #5d4a8e;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Estilo para a mensagem de sucesso no campo de Cupom */
+        .cupom-status-message {
+            display: block;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #008000; /* Verde de sucesso */
+            margin-top: 5px;
+            margin-bottom: 10px;
+            padding: 8px 10px;
+            background-color: #e6ffe6;
+            border: 1px solid #008000;
+            border-radius: 4px;
+        }
+        .desconto-info {
+            display: block;
+            font-size: 0.75em;
+            font-weight: normal;
+            color: #008000;
+            margin-top: 5px;
+        }
+
+        
+        /* === Seção de Finalização e Contador === */
+        .finalizar-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px; 
+        }
+        #btn-finalizar {
+            flex-grow: 1; 
+            background-color: #5d4a8e;
+            color: white;
+            padding: 14px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.15em;
+            margin-right: 15px;
+            transition: background-color 0.2s;
+            font-weight: bold;
+        }
+        #btn-finalizar:hover {
+            background-color: #453569;
+        }
+        .contador-copao {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .btn-contador-copao {
+            background-color: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2em;
+            transition: background-color 0.1s;
+        }
+        .btn-contador-copao:hover {
+            background-color: #ddd;
+        }
+        #quantidade-copao {
+            padding: 12px 15px;
+            font-weight: bold;
+            font-size: 1.2em;
+            background-color: white;
+            text-align: center;
+            width: 25px;
+            user-select: none;
+        }
+
+        /* === ESTILOS CUPOM === */
+        .cupom-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px; 
+        }
+        #cupom-input {
+            flex-grow: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1em;
+            background: #f4f4f9; 
+            box-shadow: inset 4px 4px 8px #d7d7da, inset -4px -4px 8px #ffffff;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        #cupom-input:focus {
+            box-shadow: 0 0 0 2px #5d4a8e;
+            background: #ffffff;
+            outline: none;
+        }
+        #btn-aplicar-cupom {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            min-width: 100px;
+        }
+        #btn-aplicar-cupom:hover {
+            background-color: #0056b3;
+        }
+        
+        /* Estilo quando o cupom está aplicado */
+        #btn-aplicar-cupom.applied {
+            background-color: #28a745; /* Verde de sucesso */
+            color: white;
+            cursor: default;
+        }
+        #btn-aplicar-cupom.applied:hover {
+            background-color: #218838;
+        }
+
+
+        /* ================= */
+        /* === ESTILOS MODAL === */
+        /* ================= */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            padding-top: 30px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%; 
+            max-width: 450px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            text-align: center; 
+            transition: all 0.3s ease-out;
+        }
+        
+        /* MODAL DE CHECKOUT: MENOR E MAIS COMPACTO */
+        #checkoutModal .modal-content {
+            max-width: 380px; 
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #5d4a8e;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 {
+            color: #5d4a8e;
+            font-size: 1.3em;
+            margin: 0;
+        }
+        .close-btn {
+            color: #aaa;
+            font-size: 32px;
+            font-weight: 300;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .close-btn:hover {
+            color: #dc3545;
+        }
+        
+        /* === ESTILOS ITENS MODAL === */
+        .modal-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px dashed #eee; 
+            cursor: pointer; 
+            transition: background-color 0.1s;
+        }
+        .modal-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .item-info {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+        .item-info img {
+            width: 45px;
+            height: 45px;
+            margin-right: 15px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ffc107;
+        }
+        .item-nome {
+            font-size: 1em;
+            flex-grow: 1; 
+        }
+        .item-valor {
+            font-weight: 600;
+            color: #5d4a8e;
+            margin-left: 10px;
+            margin-right: 15px;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        /* ------------------------------------- */
+        /* --- ESTILO: SIMULA O RADIO BUTTON --- */
+        /* ------------------------------------- */
+        .radio-simulador {
+            height: 20px;
+            width: 20px;
+            background-color: #fff;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: 10px;
+            transition: all 0.2s;
+        }
+
+        /* Quando a div pai 'modal-item' tiver a classe 'selecionado' */
+        .modal-item.selecionado .radio-simulador {
+            border-color: #5d4a8e;
+            background-color: #5d4a8e;
+        }
+
+        .radio-simulador::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: white;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        /* Mostra o ponto central quando selecionado */
+        .modal-item.selecionado .radio-simulador::after {
+            opacity: 1; 
+        }
+
+        /* ------------------------------------- */
+        /* --- ESTILO: BOTÃO DE CONFIRMAÇÃO --- */
+        /* ------------------------------------- */
+        .modal-content button.btn-confirmar-selecao {
+            background-color: #5d4a8e; 
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            width: 100%;
+            margin-top: 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+
+        .modal-content button.btn-confirmar-selecao:hover {
+            background-color: #453569;
+        }
+        
+        /* === ESTILOS CHECKOUT (Campos de Dados) === */
+        .input-checkout {
+            width: 100%;
+            padding: 12px; 
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: none; 
+            border-radius: 8px; 
+            box-sizing: border-box;
+            font-size: 1em;
+            background: #f4f4f9; 
+            box-shadow: inset 4px 4px 8px #d7d7da, inset -4px -4px 8px #ffffff;
+            transition: all 0.3s ease;
+        }
+        .input-checkout:focus {
+            box-shadow: 0 0 0 2px #5d4a8e;
+            background: #ffffff;
+            outline: none;
+        }
+        
+        /* ESTILO PROFISSIONAL PARA O BOTÃO FINALIZAR PEDIDO */
+        #btn-finalizar-checkout {
+            background-color: #25D366 !important;
+            color: white;
+            padding: 15px 20px; 
+            border: none;
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 1.1em;
+            margin-top: 30px !important; 
+            width: 100% !important;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4); 
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+        #btn-finalizar-checkout:hover {
+            background-color: #1ea357 !important;
+            box-shadow: 0 6px 12px rgba(37, 211, 102, 0.5); 
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🥃 Monte o Seu Copão 🥃</h1>
+    
+    <form id="formCopao">
+        
+        <label>🍾 Escolha a Bebida Base (100ml):</label>
+        <button type="button" class="btn-modal-opener" data-modal="bebidaModal">
+            Selecionar Bebida
+            <span id="bebida-resumo" class="resumo-modal-text">Nenhuma Bebida Selecionada</span>
+        </button>
+        
+        <label>⚡ Escolha o Energético (Lata 350ml):</label>
+        <button type="button" class="btn-modal-opener" data-modal="energeticoModal">
+            Selecionar Energético
+            <span id="energetico-resumo" class="resumo-modal-text">Nenhum Energético Selecionado</span>
+        </button>
+
+        <label>🧊 Escolha o Gelo de Sabor:</label>
+        <button type="button" class="btn-modal-opener" data-modal="geloModal">
+            Selecionar Gelo
+            <span id="gelo-resumo" class="resumo-modal-text">Nenhum Gelo Selecionado</span>
+        </button>
+        
+        <div id="valor-total-display">
+            VALOR TOTAL DOS PRODUTOS: R$ 0,00
+            <span id="desconto-aplicado" class="desconto-info" style="display: none;"></span>
+        </div>
+        
+        <label>🏷️ Cupom de Desconto:</label>
+        <span id="cupom-status-display" class="cupom-status-message" style="display: none;"></span>
+        
+        <div class="cupom-container">
+            <input type="text" id="cupom-input" placeholder="Insira seu código" oninput="this.value = this.value.toUpperCase()">
+            <button type="button" id="btn-aplicar-cupom" onclick="aplicarCupom()">Aplicar</button>
+        </div>
+        
+        <div class="finalizar-container">
+            <button type="button" id="btn-finalizar" onclick="enviarPedidoWhatsApp()">
+                Finalizar Pedido
+            </button>
+            <div class="contador-copao">
+                <button type="button" class="btn-contador-copao" onclick="alterarContagemCopao(-1)">-</button>
+                <span id="quantidade-copao">1</span>
+                <button type="button" class="btn-contador-copao" onclick="alterarContagemCopao(1)">+</button>
+            </div>
+        </div>
+        
+    </form>
+</div>
+
+<div id="bebidaModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>🍾 Bebida Base (100ml)</h2>
+            <span class="close-btn" data-modal-id="bebidaModal">&times;</span>
+        </div>
+        <div id="lista-bebidas"></div>
+        <button type="button" class="btn-confirmar-selecao" onclick="confirmarSelecao('bebida', 'bebidaModal')">
+            Confirmar Pedido
+        </button>
+    </div>
+</div>
+
+<div id="energeticoModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>⚡ Energético (Lata 350ml)</h2>
+            <span class="close-btn" data-modal-id="energeticoModal">&times;</span>
+        </div>
+        <div id="lista-energeticos"></div>
+        <button type="button" class="btn-confirmar-selecao" onclick="confirmarSelecao('energetico', 'energeticoModal')">
+            Confirmar Pedido
+        </button>
+    </div>
+</div>
+
+<div id="geloModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>🧊 Gelo de Sabor (Única Escolha)</h2>
+            <span class="close-btn" data-modal-id="geloModal">&times;</span>
+        </div>
+        <div id="lista-gelos"></div>
+        <button type="button" class="btn-confirmar-selecao" onclick="confirmarSelecao('gelo', 'geloModal')">
+            Confirmar Pedido
+        </button>
+    </div>
+</div>
+
+<div id="checkoutModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>🛒 Finalizar Pedido</h2>
+            <span class="close-btn" data-modal-id="checkoutModal">&times;</span>
+        </div>
+        <form id="formCheckout">
+            <label for="nome-cliente">Nome Completo:</label>
+            <input type="text" id="nome-cliente" class="input-checkout" required placeholder="Seu nome">
+            
+            <label for="cep-cliente">CEP (apenas números):</label>
+            <input type="text" id="cep-cliente" class="input-checkout" required maxlength="8" placeholder="00000000" onblur="buscarEndereco()">
+            
+            <label for="endereco-rua">Endereço (Rua/Av):</label>
+            <input type="text" id="endereco-rua" class="input-checkout" required placeholder="Preenchimento automático">
+            
+            <label for="endereco-numero">Número ou Quadra e Lote:</label>
+            <input type="text" id="endereco-numero" class="input-checkout" required placeholder="Ex: Casa: 301 ou Quadra; ** e Lt; **">
+
+            <label for="endereco-bairro">Bairro:</label>
+            <input type="text" id="endereco-bairro" class="input-checkout" required placeholder="Preenchimento automático">
+
+            <label for="endereco-complemento">Complemento (Opcional):</label>
+            <input type="text" id="endereco-complemento" class="input-checkout" placeholder="Apto, Casa, Bloco">
+
+            <button type="button" id="btn-finalizar-checkout" onclick="validarEEnviarPedido()">
+                Finalizar Pedido e Enviar ao WhatsApp
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    // --- CONFIGURAÇÃO ---
+    // ⚠️ ALERTA: SUBSTITUA ESTE NÚMERO PELO SEU WHATSAPP REAL
+    const NUMERO_WHATSAPP = '5562995679219'; 
+    const VALOR_GELO_PADRAO = 4.00; 
+    
+    // --- CONSTANTES DE CUPOM ---
+    const CUPONS = {
+        // FRETEGRATIS: Apenas sinaliza Frete Grátis na mensagem, não altera o valor total dos produtos (tipo: 'frete').
+        'FRETEGRATIS': { tipo: 'frete', valor: 0.00, descricao: 'Frete Grátis' }, 
+        // DESCONTO5: Desconta R$ 5,00 do valor total dos produtos (tipo: 'valor').
+        'DESCONTO5': { tipo: 'valor', valor: 5.00, descricao: 'R$ 5,00 de Desconto' }, 
+    };
+    const VALOR_FRETE_SIMULADO = 5.00; // Valor que será cobrado se não usar FRETEGRATIS
+
+    // =================================================================
+    // 🚨 NOVO: OBJETO DE LINKS FIXOS DO MERCADO PAGO 🚨
+    // A chave é o VALOR FINAL a COBRAR do cliente (Produtos + Frete - Desconto).
+    // USE SEMPRE FORMATO "XX.XX"
+    // ⚠️ SUBSTITUA OS LINKS E VALORES PELOS SEUS REAIS!
+    // =================================================================
+    const linksDePagamentoFixos = {
+        // Exemplo: Pedido que deu R$ 13,00 FINAL (R$ 8,00 Pitu + R$ 5,00 Frete)
+        "13.00": "https://mpago.li/SEU_LINK_1300", 
+        // Exemplo: Pedido que deu R$ 23,00 FINAL (R$ 18,00 Produtos + R$ 5,00 Frete)
+        "23.00": "https://mpago.la/19vEZUV",
+        // Adicione seus links fixos aqui
+        "25.00": "https://mpago.la/LINK_FIXO_25",
+        "40.00": "https://mpago.la/LINK_FIXO_40",
+    };
+    // =================================================================
+
+
+    const proximoTipo = {
+        bebida: 'energetico',
+        energetico: 'gelo',
+        gelo: null
+    };
+
+    const itens = {
+        bebida: [
+            { id: 'pitu', nome: 'Pitu (Dose: 100ml)', valor: 4.00, img: 'https://redemix.vteximg.com.br/arquivos/ids/213055-1000-1000/7896607100174.jpg?v=638350621696500000' },
+            { id: '51', nome: '51 (Dose: 100ml)', valor: 4.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKKwXKFBrl9eRqUXkLpSirqtins6-1f-TePONBOhaXyx6ZhTIzkcLH0XZs&s=10' },
+            { id: 'rum_prata', nome: 'Rum Prata (Dose: 100ml)', valor: 4.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4AZ7_JSZPtAhZeDKfg341qErorsBPG5KeMU1QgL7XCVEp5jUY4Du8MSxV&s=10' },
+            { id: 'Vodka_Smirnoff_Red', nome: 'Vodka Red (Dose: 100ml)', valor: 4.00, img: 'https://io.convertiez.com.br/m/superpaguemenos/shop/products/images/15452/medium/vodka-smirnoff-red-998ml_122398.jpg' },
+            { id: 'Novo_Produto', nome: 'Novo Produto (Dose: 100ml)', valor: 4.00, img: 'https://www.loja.weberhaus.com.br/cdn/shop/files/Cachaca-5anos-weber.jpg?v=1755170852&width=480' },
+        ],
+        energetico: [
+            { id: 'Red_Bull', nome: 'Red Bull (350ml)', valor: 10.00, img: 'https://mercantilnovaera.vtexassets.com/arquivos/ids/189028/Energetico-RED-BULL-Energy-Drink-Lata-355ml.jpg?v=637699245132670000' },
+            { id: 'Baly', nome: 'Baly Melancia (350ml)', valor: 10.00, img: 'https://mercantilnovaera.vtexassets.com/arquivos/ids/210401-800-450?v=638303178840930000&width=800&height=450&aspect=true' },
+            { id: 'Monster', nome: 'Monster Energy (350ml)', valor: 10.00, img: 'https://product-data.raiadrogasil.io/images/3465993.webp' },
+            { id: 'Extra', nome: 'Extra Power', valor: 10.00, img: 'https://www.drogariaminasbrasil.com.br/media/catalog/product/cache/74c1057f7991b4edb2bc7bdaa94de933/image/6145599a8/energetico-extra-power-473ml.jpg' },
+        ],
+        gelo: [ 
+            { id: 'Morango', nome: 'Sabor Morango', valor: VALOR_GELO_PADRAO, img: 'https://nobredo.agilecdn.com.br/272440_1.jpg' },
+            { id: 'Coco', nome: 'Sabor Água de Coco', valor: VALOR_GELO_PADRAO, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9xQElbIv3AF6CL3iHr3sln0Izjbe_7lPg1LWFfOUWcOcFNB-2dofvssZJ&s=10' },
+            { id: 'Maçã', nome: 'Sabor Maçã Verde', valor: 4.00, img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT__BA6W9surZ7txlJMVfbRaGaPrQNDE8de4VGCC0DkVXv9OcV9dP15IGya&s=10' },
+            { id: 'Maracujá', nome: 'Sabor Maracujá', valor: 4.00, img: 'https://d3gdr9n5lqb5z7.cloudfront.net/fotos/944502-28-10-2024-11-58-04-13.jpg' },
+        ]
+    };
+
+    let selecoesAtivas = {
+        bebida: { id: 'pitu', nome: 'Pitu (Dose: 100ml)', valor: 4.00 },
+        energetico: { id: 'Red_Bull', nome: 'Red Bull (350ml)', valor: 10.00 },
+        gelo: { id: 'Morango', nome: 'Sabor Morango', valor: VALOR_GELO_PADRAO },
+    };
+    
+    let cupomAplicado = null; 
+    let quantidadeCopao = 1; 
+
+    // --- FUNÇÕES DE INICIALIZAÇÃO E MODAL ---
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        renderizarLista('bebida'); 
+        renderizarLista('energetico');
+        renderizarLista('gelo'); 
+
+        document.querySelectorAll('.btn-modal-opener').forEach(button => {
+            button.addEventListener('click', function() {
+                const tipo = this.getAttribute('data-modal').replace('Modal', '');
+                renderizarLista(tipo);
+                document.getElementById(this.getAttribute('data-modal')).style.display = 'block';
+            });
+        });
+        
+        document.querySelectorAll('.close-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                document.getElementById(this.getAttribute('data-modal-id')).style.display = 'none';
+            });
+        });
+
+        atualizarResumoDisplay('bebida');
+        atualizarResumoDisplay('energetico');
+        atualizarResumoDisplay('gelo');
+        atualizarValorTotalDisplay();
+    });
+
+    function renderizarLista(tipo) {
+        const lista = itens[tipo];
+        const idContainer = `lista-${tipo}s`;
+
+        const listaHtml = lista.map(item => {
+            const selecionado = selecoesAtivas[tipo].id === item.id;
+            const classe = selecionado ? 'selecionado' : '';
+            
+            const onclickFunction = `selecionarUnico('${tipo}', '${item.id}', '${item.nome}', ${item.valor})`;
+
+            const valorFormatado = item.valor > 0 ? `R$ ${item.valor.toFixed(2).replace('.', ',')}` : 'Grátis';
+
+            return `
+                <div class="modal-item ${classe}" data-id="${item.id}" onclick="${onclickFunction}">
+                    <div class="item-info">
+                        <img src="${item.img}" alt="Imagem do ${item.nome}">
+                        <span class="item-nome">${item.nome}</span>
+                    </div>
+                    <span class="item-valor">${valorFormatado}</span>
+                    <div class="radio-simulador"></div>
+                </div>
+            `;
+        }).join('');
+
+        document.getElementById(idContainer).innerHTML = listaHtml;
+    }
+
+    function selecionarUnico(tipo, idSelecionado, nomeSelecionado, valorSelecionado) {
+        
+        selecoesAtivas[tipo] = { id: idSelecionado, nome: nomeSelecionado, valor: valorSelecionado };
+
+        renderizarLista(tipo);
+        
+        atualizarValorTotalDisplay();
+    }
+    
+    function confirmarSelecao(tipo, modalId) {
+        
+        if (selecoesAtivas[tipo].id === '') {
+            return alert(`🚨 Por favor, selecione um item de ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}.`);
+        }
+        
+        atualizarResumoDisplay(tipo);
+        
+        const modalElement = document.getElementById(modalId);
+        if (modalElement) {
+            modalElement.style.display = 'none';
+        }
+
+        const proximo = proximoTipo[tipo];
+        if (proximo) {
+            const proximoModalId = `${proximo}Modal`;
+            const proximoModalElement = document.getElementById(proximoModalId);
+
+            if (proximoModalElement) {
+                renderizarLista(proximo); 
+                proximoModalElement.style.display = 'block';
+            }
+        } else if (tipo === 'gelo') {
+             alert('✅ Todos os itens do copão selecionados! Confirme a quantidade e finalize o pedido.');
+        }
+    }
+
+    function atualizarResumoDisplay(tipo) {
+        const item = selecoesAtivas[tipo];
+        let resumoTexto;
+        let nomeTipo = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+        if (nomeTipo === 'Gelo') nomeTipo = 'Gelo'; 
+
+        if (item.valor > 0) {
+            resumoTexto = `${item.nome} (R$ ${item.valor.toFixed(2).replace('.', ',')})`;
+        } else {
+            resumoTexto = `Nenhum ${nomeTipo} Selecionado`;
+        }
+        document.getElementById(`${tipo}-resumo`).textContent = resumoTexto;
+    }
+
+    // --- FUNÇÕES: CÁLCULO, CUPOM E CONTADOR ---
+    
+    /**
+     * Retorna o valor total dos produtos (SEM FRETE).
+     * Aplica SOMENTE o desconto de valor (DESCONTO5) sobre o total dos produtos.
+     */
+    function calcularValorTotal() {
+        let valorUnitario = 0;
+
+        // 1. Soma do valor base unitário (por copão)
+        valorUnitario += selecoesAtivas.bebida.valor;
+        valorUnitario += selecoesAtivas.energetico.valor;
+        valorUnitario += selecoesAtivas.gelo.valor; 
+
+        // 2. Cálculo do total dos produtos (sem desconto)
+        let valorTotalProdutos = valorUnitario * quantidadeCopao;
+        
+        // 3. Aplica o desconto se houver cupom (Apenas se for 'valor')
+        if (cupomAplicado) {
+            const cupomDetalhe = CUPONS[cupomAplicado];
+
+            if (cupomDetalhe && cupomDetalhe.tipo === 'valor') {
+                // Desconto Fixo (R$ 5,00)
+                valorTotalProdutos -= cupomDetalhe.valor;
+            } 
+        }
+        
+        // Garante que o total não seja negativo
+        return Math.max(0, valorTotalProdutos);
+    }
+    
+    function aplicarCupom() {
+        const input = document.getElementById('cupom-input');
+        const btnAplicar = document.getElementById('btn-aplicar-cupom');
+        const cupomStatusDisplay = document.getElementById('cupom-status-display');
+        const cupom = input.value.toUpperCase().trim();
+        
+        // 1. Reseta o estado
+        cupomAplicado = null;
+        cupomStatusDisplay.style.display = 'none';
+        btnAplicar.textContent = 'Aplicar';
+        btnAplicar.classList.remove('applied');
+        btnAplicar.disabled = false;
+        
+        // 2. Limpa estilos de erro
+        cupomStatusDisplay.style.color = '#008000';
+        cupomStatusDisplay.style.borderColor = '#008000';
+        cupomStatusDisplay.style.backgroundColor = '#e6ffe6';
+
+
+        const cupomDetalhe = CUPONS[cupom];
+
+        if (cupomDetalhe) {
+            // CUPOM VÁLIDO ENCONTRADO
+            cupomAplicado = cupom;
+            let mensagem = '';
+            
+            if (cupomDetalhe.tipo === 'valor') {
+                mensagem = `🥳 Sucesso! Você ganhou R$ ${cupomDetalhe.valor.toFixed(2).replace('.', ',')} de desconto nos produtos!`;
+            } else if (cupomDetalhe.tipo === 'frete') {
+                mensagem = `✅ Cupom ${cupom}: Frete Grátis aplicado!`;
+            } else {
+                 mensagem = `🥳 Sucesso! Cupom ${cupom} aplicado!`;
+            }
+
+            // Ações de sucesso
+            cupomStatusDisplay.textContent = mensagem;
+            cupomStatusDisplay.style.display = 'block';
+            btnAplicar.textContent = 'Aplicado';
+            btnAplicar.classList.add('applied');
+            btnAplicar.disabled = true; 
+
+        } else if (cupom.length > 0) {
+            // CUPOM INVÁLIDO
+            input.value = ''; 
+            cupomStatusDisplay.textContent = '🚫 Cupom inválido ou expirado. Tente novamente.';
+            cupomStatusDisplay.style.color = '#dc3545'; // Cor de erro
+            cupomStatusDisplay.style.borderColor = '#dc3545';
+            cupomStatusDisplay.style.backgroundColor = '#f8d7da';
+            cupomStatusDisplay.style.display = 'block';
+            btnAplicar.textContent = 'Aplicar';
+            btnAplicar.classList.remove('applied');
+            btnAplicar.disabled = false;
+        } else {
+             // CAMPO VAZIO
+             cupomStatusDisplay.style.display = 'none';
+        }
+
+        atualizarValorTotalDisplay();
+    }
+
+    function atualizarValorTotalDisplay() {
+        // Exibe o valor total dos produtos (com desconto de R$5 se aplicado)
+        const valorTotal = calcularValorTotal(); 
+        const valorFormatado = valorTotal.toFixed(2).replace('.', ',');
+        // ESTE DISPLAY NUNCA INCLUI O FRETE
+        document.getElementById('valor-total-display').textContent = `VALOR TOTAL DOS PRODUTOS: R$ ${valorFormatado}`;
+        
+        // Recria o estado visual do cupom se ele estiver aplicado
+        const cupomStatusDisplay = document.getElementById('cupom-status-display');
+        const btnAplicar = document.getElementById('btn-aplicar-cupom');
+
+        if (cupomAplicado) {
+            btnAplicar.textContent = 'Aplicado';
+            btnAplicar.classList.add('applied');
+            btnAplicar.disabled = true;
+            cupomStatusDisplay.style.display = 'block'; // Garante que a mensagem permaneça visível
+        } else {
+             cupomStatusDisplay.style.display = 'none';
+             btnAplicar.textContent = 'Aplicar';
+             btnAplicar.classList.remove('applied');
+             btnAplicar.disabled = false;
+        }
+    }
+
+    function alterarContagemCopao(delta) {
+        let novaQuantidade = quantidadeCopao + delta;
+        
+        if (novaQuantidade < 1) {
+            novaQuantidade = 1;
+        }
+
+        quantidadeCopao = novaQuantidade;
+        document.getElementById('quantidade-copao').textContent = quantidadeCopao;
+        
+        atualizarValorTotalDisplay();
+    }
+
+    // --- FUNÇÕES: CHECKOUT E WHATSAPP ---
+
+    function enviarPedidoWhatsApp() {
+        if (selecoesAtivas.bebida.id === '') {
+            return alert('🚨 Por favor, escolha a Bebida Base.');
+        }
+        if (selecoesAtivas.energetico.id === '') {
+            return alert('🚨 Por favor, escolha o Energético.');
+        }
+        if (selecoesAtivas.gelo.id === '') {
+            return alert('🚨 Por favor, escolha o Gelo de Sabor.');
+        }
+
+        document.getElementById('checkoutModal').style.display = 'block';
+    }
+
+    async function buscarEndereco() {
+        const cep = document.getElementById('cep-cliente').value.replace(/\D/g, '');
+
+        if (cep.length !== 8) return;
+
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json();
+
+            if (!data.erro) {
+                document.getElementById('endereco-rua').value = data.logradouro || '';
+                document.getElementById('endereco-bairro').value = data.bairro || '';
+                document.getElementById('endereco-numero').focus();
+            } else {
+                alert('CEP não encontrado. Preencha os campos manualmente.');
+            }
+        } catch (error) {
+            console.error('Erro ao buscar CEP:', error);
+            alert('Erro ao buscar CEP. Por favor, preencha os campos manualmente.');
+        }
+    }
+
+
+    function validarEEnviarPedido() {
+        const form = document.getElementById('formCheckout');
+        
+        if (!form.checkValidity()) {
+            form.reportValidity(); 
+            return;
+        }
+
+        // 1. Coleta dos Dados do Cliente
+        const nome = document.getElementById('nome-cliente').value;
+        const cep = document.getElementById('cep-cliente').value;
+        const rua = document.getElementById('endereco-rua').value;
+        const numero = document.getElementById('endereco-numero').value;
+        const bairro = document.getElementById('endereco-bairro').value;
+        const complemento = document.getElementById('endereco-complemento').value;
+        
+        // 2. Coleta dos Dados do Pedido
+        const bebida = selecoesAtivas.bebida.nome;
+        const energetico = selecoesAtivas.energetico.nome;
+        const gelo = selecoesAtivas.gelo.nome;
+        
+        const quantidade = quantidadeCopao;
+        
+        // Pega o valor total dos produtos (já com o desconto de valor, se houver)
+        const valorTotalProdutos = calcularValorTotal(); 
+        const valorProdutosFormatado = valorTotalProdutos.toFixed(2).replace('.', ',');
+        
+        // --- Lógica de Frete e Cupom Corrigida (Custo do frete só entra aqui) ---
+        let cupomInfoWapp = '';
+        let freteStatusWapp = ''; // Inicialmente vazio
+        let valorFreteAplicado = VALOR_FRETE_SIMULADO; // Assume que o frete será cobrado por padrão
+        
+        
+        if (cupomAplicado) {
+            const cupomDetalhe = CUPONS[cupomAplicado];
+            
+            if (cupomAplicado === 'FRETEGRATIS') {
+                // SE FRETEGRATIS:
+                // 1. O frete aplicado é zero
+                valorFreteAplicado = 0.00;
+                // 2. A mensagem de status do frete é "GRÁTIS"
+                freteStatusWapp = `* Frete:* GRÁTIS`;
+                // 3. A linha de cupom mostra o aplicado
+                cupomInfoWapp = `* Cupom Aplicado:* FRETEGRATIS\n`;
+                
+            } else if (cupomDetalhe.tipo === 'valor') {
+                // SE DESCONTO DE VALOR (R$ 5,00):
+                // 1. O frete padrão de R$ 5,00 é mantido (valorFreteAplicado = 5.00)
+                // 2. A mensagem de frete será discreta
+                cupomInfoWapp = `* Cupom Aplicado:* ${cupomAplicado} (R$ ${cupomDetalhe.valor.toFixed(2).replace('.', ',')} de desconto)\n`;
+            } else {
+                 cupomInfoWapp = `* Cupom Aplicado:* ${cupomAplicado}\n`;
+            }
+
+        } else {
+            // SE NENHUM CUPOM APLICADO:
+            // 1. O frete padrão de R$ 5,00 é mantido (valorFreteAplicado = 5.00)
+            cupomInfoWapp = `* Cupom Aplicado:* Nenhum\n`;
+        }
+        
+        // Se o frete foi cobrado (R$ 5,00), a mensagem deve ser discreta
+        if (valorFreteAplicado > 0) {
+            freteStatusWapp = `* Frete:* Custo de entrega incluído`;
+        }
+
+
+        // Cálculo do valor final APENAS AGORA
+        const valorFinalAPagar = valorTotalProdutos + valorFreteAplicado;
+        
+        // O valor final é o que será usado para procurar o link fixo
+        const valorFinalFormatado = valorFinalAPagar.toFixed(2).replace('.', ',');
+
+        // =================================================================
+        // LÓGICA DE LINK DE PAGAMENTO FIXO 
+        // =================================================================
+        let linkPagamentoFixo = '';
+        const valorChave = valorFinalAPagar.toFixed(2); 
+        
+        if (linksDePagamentoFixos.hasOwnProperty(valorChave)) {
+            // 1. LINK FIXO ENCONTRADO
+            linkPagamentoFixo = 
+                `\n\n*✅ LINK DE PAGAMENTO RÁPIDO (MERCADO PAGO):*\n` +
+                `${linksDePagamentoFixos[valorChave]}`;
+        } else {
+            // 2. LINK FIXO NÃO ENCONTRADO
+            linkPagamentoFixo = 
+                `\n\n*⚠️ Opção de pagamento:*\n` +
+                `Estamos gerando o link de pagamento. Aguarde!`; 
+        }
+        // =================================================================
+
+
+        // 3. Formatação da Mensagem
+        // Agora, 'valorTotalProdutos' NÃO inclui o frete.
+        // O frete só é representado em 'freteStatusWapp' e 'valorFinalAPagar'.
+        const mensagemBase = 
+            `*🚨 NOVO PEDIDO - PRONTO PARA ENTREGA 🚨*\n\n` +
+            `*CLIENTE:* ${nome}\n` +
+            `*ENDEREÇO DE ENTREGA:*\n` +
+            `  - *CEP:* ${cep}\n` +
+            `  - *Rua/Av:* ${rua}, Nº ${numero}\n` +
+            `  - *Bairro:* ${bairro}\n` +
+            `  - *Compl:* ${complemento || 'Nenhum'}\n\n` +
+            `*DETALHES DO PEDIDO:* \n` +
+            `* QUANTIDADE TOTAL:* ${quantidade} Copão(ões)\n` +
+            cupomInfoWapp + 
+            `* VALOR TOTAL DOS PRODUTOS:* R$ ${valorProdutosFormatado}\n` + 
+            freteStatusWapp + '\n\n' + // Mensagem de frete (GRÁTIS ou Custo incluído)
+            `* TOTAL A COBRAR DO CLIENTE:* R$ ${valorFinalFormatado}\n` +
+            linkPagamentoFixo + 
+            `\n\n* ITENS (Por Copão):*\n` +
+            `  - Base Alcoólica: ${bebida}\n` +
+            `  - Energético: ${energetico}\n` +
+            `  - Gelo de Sabor: ${gelo}\n`;
+
+        const mensagemCodificada = encodeURIComponent(mensagemBase);
+        
+        const urlWhatsApp = `https://wa.me/${NUMERO_WHATSAPP}?text=${mensagemCodificada}`;
+        
+        // 4. Envio e Feedback
+        window.open(urlWhatsApp, '_blank');
+        
+        alert(`Pedido de R$ ${valorFinalFormatado} enviado com sucesso!`);
+        document.getElementById('checkoutModal').style.display = 'none';
+    }
+</script>
+
+
+</body>
+</html>
