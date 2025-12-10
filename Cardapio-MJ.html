@@ -531,15 +531,15 @@
     
     // --- CONSTANTES DE CUPOM ---
     const CUPONS = {
-        // FRETEGRATIS: Apenas sinaliza Frete Grátis na mensagem, não altera o valor total dos produtos (tipo: 'frete').
+        // FRETEGRATIS: Tipo 'frete' - apenas sinaliza Frete Grátis na mensagem.
         'FRETEGRATIS': { tipo: 'frete', valor: 0.00, descricao: 'Frete Grátis' }, 
-        // DESCONTO5: Desconta R$ 5,00 do valor total dos produtos (tipo: 'valor').
+        // DESCONTO5: Tipo 'valor' - Desconta R$ 5,00 do valor total dos produtos.
         'DESCONTO5': { tipo: 'valor', valor: 5.00, descricao: 'R$ 5,00 de Desconto' }, 
     };
     const VALOR_FRETE_SIMULADO = 5.00; // Valor que será cobrado se não usar FRETEGRATIS
 
     // =================================================================
-    // 🚨 NOVO: OBJETO DE LINKS FIXOS DO MERCADO PAGO 🚨
+    // 🚨 LINKS FIXOS DO MERCADO PAGO 🚨
     // A chave é o VALOR FINAL a COBRAR do cliente (Produtos + Frete - Desconto).
     // USE SEMPRE FORMATO "XX.XX"
     // ⚠️ SUBSTITUA OS LINKS E VALORES PELOS SEUS REAIS!
@@ -725,6 +725,7 @@
         }
         
         // Garante que o total não seja negativo
+        // **IMPORTANTE**: Este valor nunca inclui o frete de R$ 5,00.
         return Math.max(0, valorTotalProdutos);
     }
     
@@ -757,6 +758,7 @@
             if (cupomDetalhe.tipo === 'valor') {
                 mensagem = `🥳 Sucesso! Você ganhou R$ ${cupomDetalhe.valor.toFixed(2).replace('.', ',')} de desconto nos produtos!`;
             } else if (cupomDetalhe.tipo === 'frete') {
+                // Mensagem específica para FRETE GRÁTIS
                 mensagem = `✅ Cupom ${cupom}: Frete Grátis aplicado!`;
             } else {
                  mensagem = `🥳 Sucesso! Cupom ${cupom} aplicado!`;
@@ -789,10 +791,9 @@
     }
 
     function atualizarValorTotalDisplay() {
-        // Exibe o valor total dos produtos (com desconto de R$5 se aplicado)
+        // Exibe o valor total dos produtos (sem o frete de R$ 5,00)
         const valorTotal = calcularValorTotal(); 
         const valorFormatado = valorTotal.toFixed(2).replace('.', ',');
-        // ESTE DISPLAY NUNCA INCLUI O FRETE
         document.getElementById('valor-total-display').textContent = `VALOR TOTAL DOS PRODUTOS: R$ ${valorFormatado}`;
         
         // Recria o estado visual do cupom se ele estiver aplicado
@@ -884,17 +885,16 @@
         const bebida = selecoesAtivas.bebida.nome;
         const energetico = selecoesAtivas.energetico.nome;
         const gelo = selecoesAtivas.gelo.nome;
-        
         const quantidade = quantidadeCopao;
         
-        // Pega o valor total dos produtos (já com o desconto de valor, se houver)
+        // **VALOR DOS PRODUTOS:** É o valor da tela (SEM frete, COM desconto de valor se houver)
         const valorTotalProdutos = calcularValorTotal(); 
         const valorProdutosFormatado = valorTotalProdutos.toFixed(2).replace('.', ',');
         
-        // --- Lógica de Frete e Cupom Corrigida (Custo do frete só entra aqui) ---
+        // --- Lógica de Frete e Cupom Corrigida ---
         let cupomInfoWapp = '';
-        let freteStatusWapp = ''; // Inicialmente vazio
-        let valorFreteAplicado = VALOR_FRETE_SIMULADO; // Assume que o frete será cobrado por padrão
+        let freteStatusWapp = '';
+        let valorFreteAplicado = VALOR_FRETE_SIMULADO; // Assume que o frete será R$ 5,00 por padrão
         
         
         if (cupomAplicado) {
@@ -904,33 +904,34 @@
                 // SE FRETEGRATIS:
                 // 1. O frete aplicado é zero
                 valorFreteAplicado = 0.00;
-                // 2. A mensagem de status do frete é "GRÁTIS"
+                // 2. A mensagem de status do frete é "GRÁTIS" (Exclusivo para o FRETEGRATIS)
                 freteStatusWapp = `* Frete:* GRÁTIS`;
                 // 3. A linha de cupom mostra o aplicado
                 cupomInfoWapp = `* Cupom Aplicado:* FRETEGRATIS\n`;
                 
             } else if (cupomDetalhe.tipo === 'valor') {
-                // SE DESCONTO DE VALOR (R$ 5,00):
-                // 1. O frete padrão de R$ 5,00 é mantido (valorFreteAplicado = 5.00)
-                // 2. A mensagem de frete será discreta
+                // SE DESCONTO DE VALOR (ex: DESCONTO5):
+                // 1. O frete padrão de R$ 5,00 é mantido
+                // 2. A mensagem de frete será discreta (definida abaixo)
                 cupomInfoWapp = `* Cupom Aplicado:* ${cupomAplicado} (R$ ${cupomDetalhe.valor.toFixed(2).replace('.', ',')} de desconto)\n`;
             } else {
+                 // Outros cupons de frete não implementados, mas mantendo a linha
                  cupomInfoWapp = `* Cupom Aplicado:* ${cupomAplicado}\n`;
             }
 
         } else {
             // SE NENHUM CUPOM APLICADO:
-            // 1. O frete padrão de R$ 5,00 é mantido (valorFreteAplicado = 5.00)
+            // 1. O frete padrão de R$ 5,00 é mantido
             cupomInfoWapp = `* Cupom Aplicado:* Nenhum\n`;
         }
         
-        // Se o frete foi cobrado (R$ 5,00), a mensagem deve ser discreta
-        if (valorFreteAplicado > 0) {
+        // Se o frete foi cobrado (R$ 5,00), e não é o cupom FRETEGRATIS (pois ele já setou a mensagem)
+        if (valorFreteAplicado > 0 && freteStatusWapp === '') {
             freteStatusWapp = `* Frete:* Custo de entrega incluído`;
         }
 
 
-        // Cálculo do valor final APENAS AGORA
+        // Cálculo do valor final APENAS AQUI (Valor dos Produtos + Frete Aplicado)
         const valorFinalAPagar = valorTotalProdutos + valorFreteAplicado;
         
         // O valor final é o que será usado para procurar o link fixo
@@ -957,8 +958,6 @@
 
 
         // 3. Formatação da Mensagem
-        // Agora, 'valorTotalProdutos' NÃO inclui o frete.
-        // O frete só é representado em 'freteStatusWapp' e 'valorFinalAPagar'.
         const mensagemBase = 
             `*🚨 NOVO PEDIDO - PRONTO PARA ENTREGA 🚨*\n\n` +
             `*CLIENTE:* ${nome}\n` +
@@ -994,3 +993,4 @@
 
 </body>
 </html>
+
