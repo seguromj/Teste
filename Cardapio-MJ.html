@@ -925,8 +925,8 @@
         if (linksDePagamentoFixos.hasOwnProperty(valorChave)) {
             // 1. LINK FIXO ENCONTRADO (Busca exata)
             linkPagamentoFixo = 
-                `\n\n*✅ LINK DE PAGAMENTO RÁPIDO (MERCADO PAGO) - R$ ${valorChave.replace('.', ',')}:*\n` +
-                `${linksDePagamentoFixos[valorChave]}`;
+                `\n\n*👇Faço seu Pagamento👇 - R$ ${valorChave.replace('.', ',')}:*\n` +
+                `🔗${linksDePagamentoFixos[valorChave]}🔗`;
         } else {
             // 2. LINK FIXO NÃO ENCONTRADO (Valor não mapeado)
             linkPagamentoFixo = 
@@ -955,7 +955,8 @@
             `  - Base Alcoólica: ${bebida}\n` +
             `  - Energético: ${energetico}\n` +
             `  - Gelo de Sabor: ${gelo}\n\n` +
-            linkPagamentoFixo ;
+            linkPagamentoFixo + 
+            `\n🤗 Não esqueça de Nos enviar o comprovante📃` ;
 
         const mensagemCodificada = encodeURIComponent(mensagemBase);
         
