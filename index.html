@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>10 Modelos de Botões HTML/CSS</title>
+    <title>10 Modelos de Botões com Links</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -24,19 +24,26 @@
             justify-content: center;
         }
 
-        /* ESTILO BASE PARA TODOS OS BOTÕES */
+        /* ESTILO BASE PARA BOTÕES E LINKS ESTILIZADOS */
         .btn {
             padding: 12px 24px;
             font-size: 16px;
             font-weight: bold;
-            text-decoration: none;
+            text-decoration: none; /* Remove o sublinhado padrão do link */
             cursor: pointer;
             border-radius: 6px;
             transition: all 0.3s ease;
             text-align: center;
+            display: inline-flex; /* Garante que o ícone funcione bem */
+            align-items: center;
+            justify-content: center;
         }
 
-        /* 1. Botão Sólido Padrão */
+        /* ---------------------------------------------------- */
+        /* ESTILOS ESPECÍFICOS - COPIADOS DO EXEMPLO ANTERIOR */
+        /* ---------------------------------------------------- */
+
+        /* 1. Botão Sólido Padrão (AGORA É UM LINK <a>) */
         .btn-solid {
             background-color: #007bff;
             color: white;
@@ -63,7 +70,7 @@
             background-color: #dc3545;
             color: white;
             border: none;
-            border-radius: 50px; /* Borda bem alta */
+            border-radius: 50px;
         }
         .btn-rounded:hover {
             background-color: #c82333;
@@ -86,10 +93,10 @@
             background-color: #6c757d;
             color: white;
             border: none;
-            border-bottom: 5px solid #5a6268; /* Borda inferior simula a profundidade */
+            border-bottom: 5px solid #5a6268;
         }
         .btn-3d:active {
-            transform: translateY(3px); /* Move para baixo ao clicar */
+            transform: translateY(3px);
             border-bottom: 2px solid #5a6268;
         }
 
@@ -105,12 +112,12 @@
         }
 
         /* 7. Botão Desabilitado */
-        .btn:disabled {
+        .btn-disabled {
             background-color: #ccc;
             color: #666;
             cursor: not-allowed;
             border: none;
-            box-shadow: none;
+            pointer-events: none; /* Desabilita o clique em links */
         }
 
         /* 8. Botão com Ícone */
@@ -118,21 +125,14 @@
             background-color: #17a2b8;
             color: white;
             border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-icon i {
-            margin-right: 8px;
-            /* Usando um pequeno hack para simular um ícone sem usar bibliotecas */
         }
         .icon-star:before {
-            content: "⭐"; /* Conteúdo para simular o ícone de estrela */
+            content: "⭐";
             margin-right: 8px;
             font-size: 14px;
         }
 
-        /* 9. Botão com Efeito Hover Invertido */
+        /* 9. Efeito Hover Invertido */
         .btn-hover-invert {
             background-color: #343a40;
             color: white;
@@ -143,7 +143,7 @@
             color: #343a40;
         }
 
-        /* 10. Botão de Link */
+        /* 10. Botão de Link Simples */
         .btn-link {
             background: none;
             border: none;
@@ -160,33 +160,37 @@
 </head>
 <body>
 
-    <h1>✨ 10 Modelos de Botões para Teste em HTML/CSS</h1>
+    <h1>🚀 10 Modelos de Botões Prontos para Receber seu Link</h1>
 
     <div class="button-container">
-
-        <button class="btn btn-solid">Teste 1</button>
-
-        <button class="btn btn-outline">Teste 2</button>
-
-        <button class="btn btn-rounded">Teste 3</button>
-
-        <button class="btn btn-shadow">Teste 4</button>
-
-        <button class="btn btn-3d">Teste 5</button>
-
-        <button class="btn btn-gradient">Teste 6</button>
-
-        <button class="btn" disabled>Teste 7</button>
-
-        <button class="btn btn-icon"><span class="icon-star"></span>Teste 8</button>
-
-        <button class="btn btn-hover-invert">Teste 9</button>
-
-        <button class="btn btn-link">Teste 10</button>
         
+        <a href="#" class="btn btn-solid">Teste 1</a> <a href="#" class="btn btn-outline">Teste 2</a> <a href="#" class="btn btn-rounded">Teste 3</a> <a href="#" class="btn btn-shadow">Teste 4</a> <a href="#" class="btn btn-3d">Teste 5</a> <a href="#" class="btn btn-gradient">Teste 6</a> <a href="#" class="btn btn-disabled">Teste 7</a>
+
+        <a href="#" class="btn btn-icon"><span class="icon-star"></span>Teste 8</a> <a href="#" class="btn btn-hover-invert">Teste 9</a> <button class="btn btn-link" onclick="redirecionarParaLink(10)">Teste 10</button>
+
     </div>
     
-    <p style="text-align: center; margin-top: 50px; color: #666;">* Passe o mouse sobre os botões para ver os efeitos hover.</p>
+    <p style="text-align: center; margin-top: 50px; color: #666;">
+        **Instrução:** Para os botões **1 ao 9**, substitua o `#` dentro de `href="#"` pelo seu link.
+    </p>
+
+    <script>
+        // Função para o Botão 10 (Mais flexível para ações JS antes do redirecionamento)
+        function redirecionarParaLink(numeroDoTeste) {
+            let link;
+            if (numeroDoTeste === 10) {
+                // SUBSTITUA 'SEU_LINK_AQUI' PELO ENDEREÇO COMPLETO (ex: 'https://www.google.com')
+                link = 'SEU_LINK_AQUI'; 
+            }
+
+            if (link && link !== 'SEU_LINK_AQUI') {
+                window.location.href = link;
+            } else {
+                alert("AVISO: Por favor, insira o link no código JavaScript do Teste 10.");
+            }
+        }
+    </script>
 
 </body>
 </html>
+
