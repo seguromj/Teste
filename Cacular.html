@@ -78,6 +78,8 @@
         .nivel-3 { background-color: #ffe8a1; }
         .nivel-4 { background-color: #f0c2c2; }
 
+
+        
         /* Estilo para a seção de simulação */
         #simulacao {
             margin-top: 40px;
@@ -109,9 +111,14 @@
             <li>**🔴 Linhas em VERMELHO (Status: NOVO)**: Indica que o valor do link **NÃO EXISTIA** e deve ser criado para cobrir esta soma.</li>
             <li>**🟡 Linhas em AMARELO (Status: REPETIDO)**: Indica que o valor do link **JÁ EXISTIA** (foi coberto por uma combinação anterior mais simples ou diferente). Você **NÃO** precisa criar este link.</li>
             <li>**Observação:** Para cada valor único, a tabela mostra apenas a primeira combinação que o gerou, garantindo que você não crie links repetidos.</li>
-        </ul>
+       </ul>
     </div>
-
+    <div>
+        <span class="Nivel-1">​Nível 1: Valor Base (1 Produto)</div>
+        <span class="Nivel-2">​Nível 2: Valor Duplo (2 Produtos)</span>
+        <span class="Nivel-3">​Nível 3: Valor Triplo (3 Produtos)</span>
+        <span class="Nivel-4">​​Nível 4: Valor Quádruplo (4 Produtos)</span>
+    </div>
     <h3>1. Produtos Atuais</h3>
     <p>Insira os **valores únicos** dos seus produtos atuais (separados por vírgula):</p>
     <input type="text" id="valoresInput" value="6, 8, 10, 15, 18, 20" style="width: 350px;">
