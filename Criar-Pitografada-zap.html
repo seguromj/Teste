@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Link WhatsApp</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h1 {
+            color: #25d366;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="tel"],
+        textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            background-color: #075e54;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1em;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #128c7e;
+        }
+
+        .result-box {
+            margin-top: 25px;
+            padding: 15px;
+            border: 2px solid #25d366;
+            border-radius: 8px;
+            background-color: #e6ffec;
+        }
+
+        .result-box h3 {
+            margin-top: 0;
+            color: #075e54;
+            font-size: 1.1em;
+        }
+
+        #link-output {
+            word-wrap: break-word; /* Garante que links longos não ultrapassem a borda */
+            background-color: #ffffff;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 0.9em;
+            color: #444;
+            cursor: pointer; /* Indica que é clicável/copiável */
+            display: block; /* Para ocupar todo o espaço */
+        }
+
+        /* Estilizando o link clicável (opcional) */
+        #link-output a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        #link-output a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🔗 Gerador de Link WhatsApp com Mensagem</h1>
+
+        <div>
+            <label for="whatsapp-number">Número do WhatsApp (apenas números, com código do país e DDD):</label>
+            <input type="tel" id="whatsapp-number" placeholder="Ex: 5511987654321" required>
+        </div>
+
+        <div>
+            <label for="message-text">Mensagem para Criptografar (Frase):</label>
+            <textarea id="message-text" placeholder="Digite a frase que será enviada. Ela será codificada no link." required></textarea>
+        </div>
+
+        <button onclick="generateLink()">Gerar Link de WhatsApp</button>
+
+        <div class="result-box" id="result-container" style="display: none;">
+            <h3>Seu Link Gerado:</h3>
+            <p id="link-output" title="Clique para copiar"></p>
+        </div>
+
+    </div>
+
+    <script>
+        function generateLink() {
+            const numberInput = document.getElementById('whatsapp-number').value.trim();
+            const messageInput = document.getElementById('message-text').value.trim();
+            const resultContainer = document.getElementById('result-container');
+            const linkOutput = document.getElementById('link-output');
+
+            // 1. Limpa e valida o número (remove caracteres não numéricos)
+            const cleanedNumber = numberInput.replace(/\D/g, '');
+
+            if (!cleanedNumber || !messageInput) {
+                alert("Por favor, preencha o número do WhatsApp e a mensagem.");
+                resultContainer.style.display = 'none';
+                return;
+            }
+
+            // 2. Codifica a mensagem para o formato URL (Pitografia)
+            // A função encodeURIComponent é a forma correta de fazer a "pitografia" (URL encoding)
+            const encodedMessage = encodeURIComponent(messageInput);
+
+            // 3. Monta o link final
+            // Formato oficial: https://wa.me/<numero>?text=<mensagem_codificada>
+            const whatsappLink = `https://wa.me/${cleanedNumber}?text=${encodedMessage}`;
+
+            // 4. Exibe o resultado
+            
+            // Exibe o link como texto e também como um link clicável dentro do elemento <p>
+            linkOutput.innerHTML = `<a href="${whatsappLink}" target="_blank">${whatsappLink}</a>`;
+            
+            // Adiciona a funcionalidade de copiar ao clicar
+            linkOutput.onclick = () => {
+                navigator.clipboard.writeText(whatsappLink).then(() => {
+                    alert('Link copiado para a área de transferência!');
+                }).catch(err => {
+                    console.error('Erro ao copiar: ', err);
+                });
+            };
+
+            resultContainer.style.display = 'block';
+        }
+    </script>
+
+</body>
+</html>
