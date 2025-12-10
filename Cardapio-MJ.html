@@ -926,7 +926,7 @@
             // 1. LINK FIXO ENCONTRADO (Busca exata)
             linkPagamentoFixo = 
                 `\n\n*👇Faço seu Pagamento👇  R$ ${valorChave.replace('.', ',')}:*\n` +
-                `🔗 ${linksDePagamentoFixos[valorChave]} 🔗`;
+                `🔗 ${linksDePagamentoFixos[valorChave]} `;
         } else {
             // 2. LINK FIXO NÃO ENCONTRADO (Valor não mapeado)
             linkPagamentoFixo = 
@@ -955,8 +955,8 @@
             `  - Base Alcoólica: ${bebida}\n` +
             `  - Energético: ${energetico}\n` +
             `  - Gelo de Sabor: ${gelo}\n\n` +
-            linkPagamentoFixo + 
-            `\n\n🤗 Não esqueça de Nos enviar o comprovante📃` ;
+            linkPagamentoFixo \n + 
+            `🤗 Não esqueça de Nos enviar o comprovante📃` ;
 
         const mensagemCodificada = encodeURIComponent(mensagemBase);
         
