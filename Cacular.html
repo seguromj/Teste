@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Links de Pagamento por Nível - Simulação Completa</title>
+    <title>Calculadora de Links de Pagamento - Análise de Cobertura</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -52,7 +52,7 @@
             background-color: #e9ecef;
             border-left: 5px solid #007bff;
         }
-        /* DESTAQUE PARA LINKS ÚNICOS (QUE DEVEM SER CRIADOS) */
+        /* DESTAQUE PARA LINKS ÚNICOS (VERMELHO) */
         .unique-row {
             background-color: #f8d7da; /* Fundo vermelho claro */
             font-weight: bold;
@@ -62,7 +62,7 @@
             font-weight: bold;
             font-size: 1.1em;
         }
-        /* DESTAQUE PARA LINKS REPETIDOS (QUE NÃO PRECISAM SER CRIADOS NOVAMENTE) */
+        /* DESTAQUE PARA LINKS REPETIDOS (AMARELO) */
         .duplicate-row {
             background-color: #fff3cd; /* Fundo amarelo claro */
             color: #856404;
@@ -85,12 +85,33 @@
             border: 2px dashed #007bff;
             border-radius: 8px;
         }
+        /* Bloco de instruções */
+        .instrucoes {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 5px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        .instrucoes h4 {
+            margin-top: 0;
+            color: #007bff;
+        }
     </style>
 </head>
 <body>
 
-    <h2>🔗 Calculadora de Links de Pagamento por Nível - Simulação Completa</h2>
+    <h2>🔗 Calculadora de Links de Pagamento - Análise de Cobertura</h2>
     
+    <div class="instrucoes">
+        <h4>Regras de Combinação e Links Únicos</h4>
+        <p>A calculadora gera todas as combinações de valores dos seus produtos, de 1 item até **4 itens (Nível 4)**.</p>
+        <ul>
+            <li>**🔴 Linhas em VERMELHO (Status: NOVO)**: Indica que o valor do link **NÃO EXISTIA** e deve ser criado para cobrir esta soma.</li>
+            <li>**🟡 Linhas em AMARELO (Status: REPETIDO)**: Indica que o valor do link **JÁ EXISTIA** (foi coberto por uma combinação anterior mais simples ou diferente). Você **NÃO** precisa criar este link.</li>
+            <li>**Observação:** Para cada valor único, a tabela mostra apenas a primeira combinação que o gerou, garantindo que você não crie links repetidos.</li>
+        </ul>
+    </div>
+
     <h3>1. Produtos Atuais</h3>
     <p>Insira os **valores únicos** dos seus produtos atuais (separados por vírgula):</p>
     <input type="text" id="valoresInput" value="6, 8, 10, 15, 18, 20" style="width: 350px;">
@@ -98,10 +119,6 @@
 
     <div id="resultado-container">
         <div id="totalLinksUnicos"></div>
-        <ul>
-            <li>🔴 Linhas em **VERMELHO** indicam valores de links **ÚNICOS** que você **DEVE CRIAR**.</li>
-            <li>🟡 Linhas em **AMARELO** indicam valores **REPETIDOS**.</li>
-        </ul>
         <div id="tabelaResultado"></div>
     </div>
     
@@ -115,15 +132,15 @@
         
         <p id="totalNovosLinksCriados" style="margin-top: 15px; font-weight: bold;"></p>
         
-        <p>Tabela de Combinações do NOVO Catálogo (Base + Novo Produto):</p>
+        <p>Tabela de Combinações do **NOVO Catálogo** (Base + Novo Produto):</p>
         <div id="tabelaNovosLinks"></div>
     </div>
 
     <script>
-        // Variáveis globais para armazenar o estado da base calculada
+        // Variáveis globais
         let valoresBaseSet = new Set();
         let valoresBase = [];
-        const MAX_ITENS = 4; // Máximo de produtos na combinação (Nível 4)
+        const MAX_ITENS = 4;
 
         // Função utilitária para gerar todas as combinações (Recursiva)
         function gerarCombinacoes(valores, maxItens) {
@@ -157,72 +174,68 @@
         }
 
         /**
-         * Aplica a lógica de unicidade e formatação (VERMELHO/AMARELO) aos resultados.
+         * Processa as somas para definir unicidade (VERMELHO/AMARELO) e filtra para exibir apenas uma fórmula por valor.
          * @param {Array} somasGeradas - Todas as somas calculadas.
-         * @param {Set} valoresBaseSet - O conjunto de valores já existentes (pode ser o Set base ou um Set da simulação).
-         * @returns {Object} Contendo {resultadosFinais, totalUnico}.
+         * @param {Set} valoresJaVistos - Os valores que JÁ são cobertos (Set Base). 
+         * @returns {Object} Contendo {resultadosFinais, totalNovos, setTotal}.
          */
-        function processarSomas(somasGeradas, setDeComparacao) {
+        function processarSomas(somasGeradas, valoresJaVistos) {
             const todasAsSomas = [];
-            const novoSetUnico = new Set();
+            const setTotal = new Set(valoresJaVistos); 
+            const linksUnicosDestaRodada = new Set();
+            const valoresExibidos = new Set(); 
 
             somasGeradas.forEach(soma => {
-                let isUnique = !setDeComparacao.has(soma.valor);
-                if (isUnique) {
-                    setDeComparacao.add(soma.valor); // Adiciona ao Set para evitar repetir o mesmo valor logo em seguida
-                }
+                const isUnique = !valoresJaVistos.has(soma.valor);
                 
-                // Usamos o novoSetUnico para contar o total de links únicos na lista FINAL (após o cálculo)
-                if (isUnique) {
-                    novoSetUnico.add(soma.valor);
+                // 1. Contagem e Atualização do SetTotal
+                if (isUnique && !setTotal.has(soma.valor)) {
+                    setTotal.add(soma.valor);
+                    linksUnicosDestaRodada.add(soma.valor);
                 }
 
                 todasAsSomas.push({...soma, isUnique: isUnique});
             });
 
-            // Ordena e filtra por fórmula para exibição limpa
-            const resultadosFinais = todasAsSomas
-                .sort((a, b) => a.valor - b.valor) 
-                .filter((item, index, self) => 
-                    index === self.findIndex((t) => (
-                        t.valor === item.valor && t.formula === item.formula 
-                    ))
-                );
+            // 2. Ordena e Filtra para Exibição: Garante apenas uma linha (combinação) por VALOR ÚNICO/REPETIDO.
+            const resultadosOrdenados = todasAsSomas.sort((a, b) => a.valor - b.valor);
+
+            const resultadosFinais = resultadosOrdenados.filter(item => {
+                if (valoresExibidos.has(item.valor)) {
+                    return false;
+                }
+                
+                valoresExibidos.add(item.valor);
+                return true;
+            });
             
-            return { resultadosFinais, totalUnico: novoSetUnico.size };
+            return { 
+                resultadosFinais, 
+                totalNovos: linksUnicosDestaRodada.size, 
+                setTotal: setTotal 
+            };
         }
 
         /**
-         * Constrói a tabela HTML com base nos resultados processados.
-         * @param {Array} resultadosFinais - Array de objetos de soma processados.
-         * @param {string} titulo - Título do cabeçalho da tabela.
-         * @param {string} divId - ID da div onde a tabela será inserida.
-         * @param {number} totalUnico - Total de links únicos para o cabeçalho.
-         * @param {boolean} isSimulationTable - Se for a tabela de simulação, omitimos a coluna Status (pois o foco é o novo set).
+         * Constrói a tabela HTML.
          */
-        function construirTabela(resultadosFinais, titulo, divId, totalUnico, isSimulationTable = false) {
+        function construirTabela(resultadosFinais, titulo, divId) {
             let html = '<table>';
-            let colSpan = isSimulationTable ? 4 : 5; // Nível + Valor + Fórmula + Status (se não for simulação)
+            const colSpan = 4; // Nível + Valor + Fórmula + Status
 
             html += `<thead><tr><th colspan="${colSpan}" class="header-total">${titulo}</th></tr>`;
-            html += '<tr><th>Nível</th><th>Valor do Link (R$)</th><th>Fórmula da Combinação</th>';
-            if (!isSimulationTable) {
-                 html += '<th>Status</th>';
-            }
-            html += '</tr></thead><tbody>';
+            html += '<tr><th>Nível</th><th>Valor do Link (R$)</th><th>Fórmula da Combinação</th><th>Status</th></tr></thead>';
+            html += '<tbody>';
 
             resultadosFinais.forEach(item => {
-                const className = item.isUnique ? 'unique-row' : 'duplicate-row';
-                const statusText = item.isUnique ? '⚠️ NOVO - CRIAR LINK' : '✅ VALOR REPETIDO';
+                const className = item.isUnique ? 'unique-row' : 'duplicate-row'; 
+                const statusText = item.isUnique ? '⚠️ NOVO - CRIAR LINK' : '✅ VALOR REPETIDO'; 
                 
                 html += `<tr class="${className}">`;
                 html += `<td class="nivel-${item.nivel}" style="text-align:center;">${item.nivel}</td>`;
                 html += `<td><span class="valor">R$ ${item.valor.toFixed(2).replace('.', ',')}</span></td>`;
-                html += `<td>${item.formula}</td>`;
-                
-                if (!isSimulationTable) {
-                    html += `<td>${statusText}</td>`;
-                }
+                html += `<td>${item.formula}</td>`; 
+                html += `<td>${statusText}</td>`;
                 html += '</tr>';
             });
 
@@ -231,7 +244,7 @@
         }
 
         // ----------------------------------------------------------------------
-        // CÁLCULO BASE (Função principal - gera a primeira tabela)
+        // CÁLCULO BASE
         // ----------------------------------------------------------------------
         function calcularLinks() {
             const input = document.getElementById('valoresInput').value;
@@ -247,21 +260,22 @@
                 return;
             }
 
-            // 1. Gera todas as somas
             const somasGeradas = gerarCombinacoes(valoresBase, MAX_ITENS);
             
-            // 2. Processa as somas para definir unicidade (Base Set é o set de comparação E o set que armazena os únicos)
-            const { resultadosFinais, totalUnico } = processarSomas(somasGeradas, valoresBaseSet);
+            // Set de valores já vistos é VAZIO para o cálculo base
+            const { resultadosFinais, setTotal } = processarSomas(somasGeradas, new Set());
+            valoresBaseSet = setTotal; 
 
-            // 3. Atualiza o total de links
-            document.getElementById('totalLinksUnicos').innerHTML = `Total de Links Únicos para Criar: **${totalUnico}**`;
-
-            // 4. Constrói a Tabela HTML
-            construirTabela(resultadosFinais, `DETALHE DAS ${totalUnico} COMBINAÇÕES BASE`, 'tabelaResultado', totalUnico);
+            document.getElementById('totalLinksUnicos').innerHTML = `Total de Links Únicos a Criar: **${valoresBaseSet.size}**`;
+            construirTabela(resultadosFinais, `DETALHE DAS ${valoresBaseSet.size} COMBINAÇÕES BASE`, 'tabelaResultado');
+            
+            // Limpa a simulação ao recalcular a base
+            document.getElementById('totalNovosLinksCriados').innerHTML = '';
+            document.getElementById('tabelaNovosLinks').innerHTML = '';
         }
 
         // ----------------------------------------------------------------------
-        // SIMULAÇÃO (Função para calcular os novos links)
+        // SIMULAÇÃO
         // ----------------------------------------------------------------------
         function calcularNovoValor() {
             const novoValorStr = document.getElementById('novoValorInput').value;
@@ -276,26 +290,16 @@
                 return;
             }
             
-            // 1. Cria a nova lista de valores e gera TODAS as combinações
             const novaListaValores = [...valoresBase, novoValor].sort((a, b) => a - b);
             const novasSomasGeradas = gerarCombinacoes(novaListaValores, MAX_ITENS);
             
-            // 2. Cria um novo Set que contém APENAS os valores únicos da lista BASE
-            const novoSetDeComparacao = new Set(valoresBaseSet); 
-            
-            // 3. Processa as novas somas, verificando a unicidade contra o Set Base
-            // Se for único, ele é adicionado ao novoSetDeComparacao (agora ele é coberto).
-            const { resultadosFinais: resultadosSimulacao, totalUnico: totalNovoCatologo } = processarSomas(novasSomasGeradas, novoSetDeComparacao);
+            // O Set de comparação é o Set Base ORIGINAL.
+            const { resultadosFinais: resultadosSimulacao, totalNovos, setTotal } = processarSomas(novasSomasGeradas, valoresBaseSet);
 
-            // 4. Filtra apenas os links que nasceram como ÚNICOS na simulação (VERMELHOS)
-            const linksRealmenteNovos = resultadosSimulacao.filter(item => item.isUnique);
-
-            // 5. Constrói a Tabela HTML para Simulação (agora com Status)
-            construirTabela(resultadosSimulacao, `TODAS AS COMBINAÇÕES DO NOVO CATÁLOGO (${totalNovoCatologo} LINKS ÚNICOS)`, 'tabelaNovosLinks', totalNovoCatologo, false);
-
+            construirTabela(resultadosSimulacao, `TODAS AS COMBINAÇÕES DO NOVO CATÁLOGO (${setTotal.size} LINKS ÚNICOS)`, 'tabelaNovosLinks');
 
             document.getElementById('totalNovosLinksCriados').innerHTML = 
-                `O novo produto criaria **${linksRealmenteNovos.length}** links de pagamento únicos adicionais, elevando o total de links para **${totalNovoCatologo}**.`
+                `O novo produto criaria **${totalNovos}** links de pagamento únicos adicionais, elevando o total de links para **${setTotal.size}**.`
                 
         }
 
@@ -305,3 +309,4 @@
 
 </body>
 </html>
+
