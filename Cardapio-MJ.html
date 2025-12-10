@@ -950,12 +950,12 @@
             cupomInfoWapp + 
             `* VALOR TOTAL DOS PRODUTOS:* R$ ${valorProdutosFormatado}\n` + 
             freteStatusWapp + '\n\n' + 
-            `* TOTAL A COBRAR DO CLIENTE:* R$ ${valorFinalFormatado}\n` +
-            linkPagamentoFixo + 
+            `* TOTAL A COBRAR DO CLIENTE:* R$ ${valorFinalFormatado}\n` + 
             `\n\n* ITENS (Por Copão):*\n` +
             `  - Base Alcoólica: ${bebida}\n` +
             `  - Energético: ${energetico}\n` +
-            `  - Gelo de Sabor: ${gelo}\n`;
+            `  - Gelo de Sabor: ${gelo}\n\n` +
+            linkPagamentoFixo ;
 
         const mensagemCodificada = encodeURIComponent(mensagemBase);
         
