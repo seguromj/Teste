@@ -874,11 +874,17 @@
     padding: 15px 20px; 
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     z-index: 1000;
-    display: none; 
+    /* 🚨 CORREÇÃO APLICADA: Use visibility/opacity para transição suave no JS 🚨 */
+    visibility: hidden; /* Começa escondido, mas não bloqueia o layout */
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out; 
+    
     font-family: 'Segoe UI', Arial, sans-serif;
     max-width: 300px;
     width: 90%;
     box-sizing: border-box;
+    display: flex; /* Garante que o conteúdo use flexbox */
+    flex-direction: column;
 }
 
 /* Estilo do Cabeçalho "Atenção!" - USA FLEXBOX AGORA */
@@ -899,6 +905,7 @@
     display: flex; 
     align-items: center; 
     justify-content: center;
+    /* 🚨 Corrigido o círculo SVG que não deveria ser um checkmark aqui 🚨 */
 }
 
 .atencao-checkmark svg {
@@ -914,7 +921,8 @@
 
 /* Estilo do Conteúdo da Mensagem */
 .atencao-body {
-    font-size: 9px;
+    /* 🚨 Corrigido: Tamanho muito pequeno */
+    font-size: 10px; 
     color: #333;
     line-height: 1.4;
     margin-top: 5px;
@@ -1521,10 +1529,7 @@
 <div id="atencao-box">
     <div class="atencao-header">
         <div class="atencao-checkmark">
-            <svg viewBox="0 0 52 52">
-                <circle cx="26" cy="26" r="25" fill="#4CAF50"/>
-                <path stroke="#fff" stroke-width="5" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-            </svg>
+            <i class="fas fa-exclamation-triangle" style="font-size: 20px; color: #eb5757;"></i>
         </div>
         <span class="atencao-icon">⚠️ Atenção!</span>
     </div>
@@ -2543,32 +2548,39 @@ const conteudoElement = document.getElementById('mensagem-conteudo');
 // Configurações de tempo
 const tempoExibicao = 9000; // Tempo que a mensagem fica VISÍVEL (9 segundos)
 const tempoIntervalo = 20000; // Tempo TOTAL do ciclo (20 segundos)
-const tempoEspera = tempoIntervalo - tempoExibicao; // Tempo que fica invisível (21 segundos)
+const tempoEspera = tempoIntervalo - tempoExibicao; // Tempo que fica invisível (11 segundos)
 
 function showNextMessage() {
     // Pega a mensagem atual
-    // O array 'mensagensParaExibir' está agora com a ordem definida (ou embaralhada)
     let message = mensagensParaExibir[currentIndex];
 
     // Insere o conteúdo, convertendo **texto** para <strong>texto</strong> (negrito)
     conteudoElement.innerHTML = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-    // 1. Exibe a caixa (Display ON)
-    boxElement.style.display = 'flex';
+    // 1. Exibe a caixa (torna-a visível e opaca)
+    boxElement.style.visibility = 'visible';
+    boxElement.style.opacity = '1';
 
     // 2. Agenda para esconder a caixa após o tempo de exibição
     setTimeout(() => {
-        boxElement.style.display = 'none';
+        // Esconde a caixa (torna-a transparente, mantendo a visibilidade para a transição)
+        boxElement.style.opacity = '0';
 
-        // 3. Agenda a próxima exibição após o tempo de espera (21 segundos)
-        setTimeout(showNextMessage, tempoEspera);
+        // Agenda para re-esconder o elemento após a transição (0.5s) e esperar o intervalo completo
+        setTimeout(() => {
+             boxElement.style.visibility = 'hidden'; // Esconde de vez para não receber cliques
+             
+             // Agenda a próxima exibição após o tempo de espera
+             setTimeout(showNextMessage, tempoEspera);
+        }, 500); // 500ms é o tempo da transição CSS
+        
     }, tempoExibicao);
 
     // Atualiza o índice para a próxima mensagem (circular)
     currentIndex = (currentIndex + 1) % mensagensParaExibir.length;
 }
 
-// Inicia o ciclo de mensagens após um atraso de 2 segundos (2000 ms)
+// Inicia o ciclo de mensagens após um atraso de 2 segundos (1800 ms)
 setTimeout(showNextMessage, 1800);    
     </script>
 </body>
