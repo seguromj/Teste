@@ -1,9 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🍹 CARDÁPIO NUANCE 🍹</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* ==================== */
         /* === CSS (Estilos) === */
@@ -14,20 +16,64 @@
             padding: 0;
             background-color: #f4f4f9;
             color: #333;
+            /* 🚨 AJUSTE DE PADDING: Deixa espaço para a barra FIXA */
+            padding-top: 70px; 
         }
 
-        /* Cabeçalho */
-        header {
+        /* ----------------------------------------------------- */
+        /* 🚨 NOVO: BARRA DE PESQUISA/CARRINHO (PARTE FIXA) 🚨 */
+        /* ----------------------------------------------------- */
+        .fixed-top-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 999; 
+            background-color: #175727; 
+            padding: 10px 20px; 
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            display: flex; 
+            align-items: center;
+            justify-content: space-between; 
+            height: 50px; 
+        }
+
+        /* Campo de Pesquisa DENTRO do Fixed Container (MENOR) */
+        .search-container {
+            flex-grow: 1; 
+            margin-right: 15px; 
+            max-width: 65%; 
+        }
+
+        #search-input {
+            width: 100%; 
+            padding: 9px 10px 12px 50px;
+            border: 2px solid #2B758C;
+            border-radius: 25px;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            outline: none;
+            transition: border-color 0.3s;
+            /* Ícone de pesquisa: usando um ícone do Font Awesome, mas mantive o SVG base por compatibilidade */
+            background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="%23ff6b6b" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>') no-repeat 10px center;
+            background-size: 30px;
+        }
+
+        /* ----------------------------------------------------- */
+        /* 🚨 Branding do Cardápio (PARTE NÃO FIXA) 🚨 */
+        /* ----------------------------------------------------- */
+        .top-bar-branding {
             /* MANTIDO SEU GRADIENTE */
-            background: linear-gradient(90deg, #203D1C); 
+            /* A cor de fundo original #203D1C foi removida para ver o fundo do body */
             color: white;
             padding: 20px 0;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Sutil */
             margin-bottom: 20px;
+            background-color: #f4f4f9; /* Mesma cor do body para não ter barra visível */
         }
 
-        header h1 {
+        .top-bar-branding h1 {
             margin: 0;
             font-size: 2.5em;
             letter-spacing: 2px;
@@ -37,37 +83,112 @@
             background-clip: text;
         }
 
-        header p {
+        .top-bar-branding p {
             margin-top: 5px;
             font-size: 1.1em;
+            color: #333; /* Cor escura para aparecer no fundo claro */
         }
         
-        /* Campo de Pesquisa */
-        .search-container {
-            width: 90%;
-            max-width: 800px;
-            margin: 20px auto;
-            text-align: center;
+        /* O cabeçalho original é agora apenas o container para o Branding */
+        header {
+            margin-bottom: 20px; /* Adiciona espaço abaixo do Branding */
+            /* Certifica-se de que o header não é fixo */
+            position: relative;
+        }
+        
+        /* ---------------------------------------------------------------------------------- */
+        /* 🚨 ALTERADO: BOTÃO DO CARRINHO (MANTIDO) 🚨 */
+        /* ---------------------------------------------------------------------------------- */
+        #carrinho-flutuante {
+            position: relative; 
+            background-color: white; /*Cor de fundo carrinho*/
+            color: #4CAF50; 
+            padding: 8px; 
+            border: none;
+            border-radius: 8px; 
+            font-size: 0; 
+            font-weight: bold;
+            cursor: pointer; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); 
+            display: flex;
+            align-items: center;
+            
+            width: 70px; 
+            height: 45px;
+            transition: box-shadow 0.3s, transform 0.3s;
+            flex-shrink: 0; 
+        }
+
+         #carrinho-flutuante .carrinho-icon {
+            margin: 0; 
+            width: 25px; 
+            height: 25px;
+            fill: currentColor; 
+         }
+
+        #carrinho-flutuante:hover { 
+            background-color: #eee; 
+            transform: scale(1.05); 
+        }
+        
+        /* ---------------------------------------------------------------------------------- */
+        /* 🚨 Contador do carrinho🚨 */
+        /* ---------------------------------------------------------------------------------- */
+        #carrinho-badge {
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+            
+            background-color: #ff6b6b; 
+            color: white;
+            border-radius: 50%; 
             padding: 1px;
+            font-size: 10px;
+            font-weight: bold;
+            min-width: 20px; 
+            height: 20px;
+            line-height: 10px; 
+            /* CORREÇÃO DO ALINHAMENTO */
+            display: none; 
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+            border: 2px solid #175727; 
+            z-index: 1000;
+            
+            /* 🚨 CORREÇÃO APLICADA: Centraliza o número perfeitamente */
+            display: flex; 
+            align-items: center; /* Alinha verticalmente */
+            justify-content: center; /* Alinha horizontalmente */
         }
-
-        #search-input {
-            width: 70%;
-            padding: 9px 10px 12px 50px;
-            border: 2px solid #2B758C;
-            border-radius: 25px;
-            font-size: 16px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            outline: none;
-            transition: border-color 0.3s;
-            background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="%23ff6b6b" d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>') no-repeat 10px center;
-            background-size: 30px;
+        
+        /* ⚠️ NOVO CSS: ANIMAÇÃO DE PISCAR APENAS PARA O ÍCONE ⚠️ */
+        @keyframes flash-icon {
+            0% { 
+                fill: #FFC107; 
+                transform: scale(1);
+            }
+            50% { 
+                fill: red; 
+                transform: scale(1.1);
+            }
+            /* 🚨 AJUSTE FEITO: Cor final para se adequar ao fundo da barra fixa 🚨 */
+            100% {
+                fill: #336B38; 
+                transform: scale(1);
+            }
         }
-
-        #search-input:focus {
-            border-color: #ee5253;
+        
+        .carrinho-icon {
+            display: inline-block;
+            vertical-align: middle;
+            fill: currentColor; 
+            animation: flash-icon 1.5s infinite; 
         }
-
+        
+         #carrinho-flutuante:hover .carrinho-icon {
+            animation: none; 
+            fill: #4CAF50;
+        }
+        
         /* Conteúdo Principal */
         .container {
             width: 100%;
@@ -108,13 +229,12 @@
              scroll-snap-type: x mandatory; 
              padding: 10px 20px 25px 20px; 
              margin-bottom: 30px; 
-             white-space: nowrap; /* Impede a quebra de linha */
+             white-space: nowrap; 
         }
         
         .product-grid {
             display: flex; 
             overflow-x: auto; 
-            overflow-y: hidden; /* Esconder a barra vertical */
             scroll-snap-type: x mandatory; 
             padding: 10px 20px 25px 20px; 
             gap: 20px; 
@@ -154,7 +274,7 @@
         #search-results-carousel-container .card {
             min-width: 180px; 
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); 
-            display: inline-block; /* Alinhamento lado a lado */
+            display: inline-block; 
             margin-right: 20px;
         }
         
@@ -303,69 +423,6 @@
         /* FIM ESTILOS DROPDOWN */
 
 
-        /* === BOTÃO FLUTUANTE DO CARRINHO (FIXO NO TOPO) === */
-        #carrinho-flutuante {
-            position: fixed;
-            top: 20px; 
-            right: 10px;
-            
-            background-color: #4CAF50; /* Cor de fundo fixa (botão) */
-            color: white;
-            padding: 15px 25px;
-            border: none;
-            border-radius: 50px;
-            font-size: 19px;
-            font-weight: bold;
-            cursor: pointer; 
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
-            display: none; 
-            z-index: 1000; 
-            transition: box-shadow 0.3s, transform 0.3s;
-            
-            /* REMOVIDO: animation: pulse-carrinho 1.5s infinite alternate; */
-        }
-
-        /* ⚠️ NOVO CSS: ANIMAÇÃO DE PISCAR APENAS PARA O ÍCONE ⚠️ */
-        /* Define a animação de piscar (cor do ícone) */
-        @keyframes flash-icon {
-            0% { 
-                fill: red; /* Cor do Ícone (Visível) */
-                transform: scale(1);
-            }
-            50% { 
-                fill: #FFC107; /* Cor do Ícone (Amarelo Vibrante) */
-                transform: scale(1.1);
-            }
-            100% {
-                fill: white;
-                transform: scale(1);
-            }
-        }
-
-        /* Estilo do Ícone (Substituindo o Emoji) */
-        .carrinho-icon {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            vertical-align: middle;
-            margin-right: 8px; 
-            fill: currentColor; /* Faz o ícone herdar a cor do texto (white) */
-            
-            /* APLICAÇÃO DA ANIMAÇÃO APENAS NO ÍCONE */
-            animation: flash-icon 1.5s infinite; 
-        }
-        
-         #carrinho-flutuante:hover { 
-            background-color: #45a049; /* Cor de hover mais escura */
-            transform: scale(1.0);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        #carrinho-flutuante:hover .carrinho-icon {
-            animation: none; /* Pausa a animação do ícone no hover */
-            fill: white;
-        }
-        
         /* Estilos do Modal */
         .modal { 
             display: none; 
@@ -379,7 +436,7 @@
             background-color: rgba(0,0,0,0.4);
         }
         .modal-content {   
-            background-color: #f4f4f9; /* Alterei para combinar com o fundo principal */
+            background-color: #f4f4f9; 
             margin: 10% auto; 
             padding: 30px;
             border: 1px solid #ddd;
@@ -413,25 +470,85 @@
             padding: 0; 
         }
     
+        /* 🚨 NOVO: Estilo Base do Card de Item no Carrinho 🚨 */
         #lista-carrinho li { 
-            padding: 10px 0; 
-            border-bottom: 1px dashed #ccc; 
+            padding: 10px; 
+            margin-bottom: 10px; 
+            border: 1px solid #eee; 
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
             display: flex; 
-            justify-content: space-between; 
             align-items: center;
+            gap: 15px; 
+            transition: box-shadow 0.2s;
         }
-    
-        #lista-carrinho li:last-child { 
-            border-bottom: none; 
+
+        #lista-carrinho li:hover { 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         
+        /* Imagem do Produto no Carrinho */
+        .item-image {
+            width: 60px;
+            height: 60px;
+            min-width: 60px; /* Garante que não encolha */
+            background-size: cover;
+            background-position: center;
+            border-radius: 6px;
+            border: 1px solid #f0f0f0;
+            /* Estilo se a imagem não carregar */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 0.8em;
+        }
+
+        .item-details-container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* Permite que ocupe o espaço restante */
+        }
+        
+        /* Detalhes do Item e Preço/Remover */
         .item-details {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             width: 100%; 
         }
         
+        .item-name-qty {
+            flex-grow: 1;
+        }
+
+        .item-name-qty strong {
+            display: block;
+            font-size: 1.1em;
+            color: #333;
+            line-height: 1.2;
+        }
+        
+        .item-name-qty span {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .item-price-remove {
+            display: flex;
+            align-items: center;
+            white-space: nowrap; /* Impede que o preço quebre */
+        }
+        
+        .item-price-remove .item-subtotal {
+            font-weight: bold;
+            color: #4CAF50;
+            font-size: 1.1em;
+            margin-right: 10px;
+        }
+
+
         /* Estilo do Botão de Excluir */
         .btn-remover {
             background: none;
@@ -441,7 +558,7 @@
             font-size: 1.1em;
             cursor: pointer;
             padding: 5px;
-            margin-left: 10px;
+            margin-left: 5px;
             transition: color 0.2s;
         }
 
@@ -454,9 +571,9 @@
         .coupon-container {
             padding: 10px;
             background-color: #fff;
+            border: 1px solid #eee;
             border-radius: 5px;
             margin: 15px 0 5px 0;
-            border: 1px solid #eee;
         }
         
         .coupon-input-group {
@@ -503,7 +620,7 @@
             border-radius: 3px;
             cursor: pointer;
             transition: background-color 0.2s;
-            display: none; /* Inicialmente escondido */
+            display: none; 
             white-space: nowrap; 
         }
         #remove-coupon-btn:hover {
@@ -557,8 +674,8 @@
         .endereco-fields .form-group {
             margin-bottom: 0; 
         }
-        .endereco-fields .form-group:nth-child(1) { flex: 1; /* CEP */ }
-        .endereco-fields .form-group:nth-child(2) { flex: 2; /* Número */ }
+        .endereco-fields .form-group:nth-child(1) { flex: 1; }
+        .endereco-fields .form-group:nth-child(2) { flex: 2; }
         
         .error-message {
             color: #ff6b6b;
@@ -631,19 +748,18 @@
 .carousel-container {
     position: relative; 
     margin: 0 auto;
-    padding: 0 40px; /* Espaço nas laterais para os botões */
+    padding: 0 40px; 
 }
 
 /* 2. O Conteúdo do Carrossel (A sua grid de produtos) */
 .carousel-content {
-    /* Habilita o scroll horizontal e esconde a barra de rolagem */
     overflow-x: auto;
     overflow-y: hidden;
-    white-space: nowrap; /* Impede que os cards quebrem para a linha de baixo */
-    scroll-behavior: smooth; /* Adiciona animação suave ao deslizar */
-    -ms-overflow-style: none; /* Esconde a barra no IE e Edge */
-    scrollbar-width: none; /* Esconde a barra no Firefox */
-    padding-bottom: 10px; /* Garante que a sombra dos cards não seja cortada */
+    white-space: nowrap; 
+    scroll-behavior: smooth; 
+    -ms-overflow-style: none; 
+    scrollbar-width: none; 
+    padding-bottom: 10px; 
 }
 
 /* Esconde a barra de rolagem no Chrome, Safari e Opera */
@@ -653,25 +769,21 @@
 
 /* 3. Estilo dos Cards (Itens do Carrossel) */
 .carousel-content .card {
-    display: inline-block; /* Faz os cards ficarem lado a lado */
-    margin-right: 15px; /* Espaço entre os cards */
+    display: inline-block; 
+    margin-right: 15px; 
 }
 
 /* 4. Estilo e Posicionamento dos Botões */
 .nav-button {
-    position: absolute; /* Posiciona o botão em relação ao .carousel-container */
-    
-    /* CHAVE PARA CENTRALIZAÇÃO VERTICAL: */
+    position: absolute; 
     top: 50%; 
-    transform: translateY(-50%); /* Ajusta o botão para cima pela metade de sua altura, centralizando-o */
-    
-    /* Estilos Visuais */
+    transform: translateY(-50%); 
     background-color: rgba(0, 0, 0, 0.5);
     color: white;
     border: none;
     padding: 10px;
     cursor: pointer;
-    z-index: 10; /* Garante que o botão fique em cima dos produtos */
+    z-index: 10; 
     font-size: 24px;
     line-height: 1;
     border-radius: 50%;
@@ -703,8 +815,8 @@
 
         /* CONTAINER PARA CENTRALIZAR O BOTÃO ABAIXO DO H3 */
 .button-container {
-    text-align: center; /* Centraliza o botão horizontalmente dentro deste container */
-    margin-top: 20px; /* Adiciona um pequeno espaço acima do botão, se precisar */
+    text-align: center; 
+    margin-top: 20px; 
 }
 
 /* ESTILOS DO BOTÃO */
@@ -721,8 +833,6 @@
     transition: background-color 0.3s, transform 0.1s;
     overflow: hidden; 
     width: fit-content; 
-    /* IMPORTANTE: Coloque 'display: inline-block;' se o 'text-align: center;' não funcionar */
-    /* display: inline-block; */ 
 }
 
 .typing-button:hover {
@@ -761,10 +871,10 @@
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 8px;
-    padding: 15px 20px; /* Mais espaço interno */
+    padding: 15px 20px; 
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     z-index: 1000;
-    display: none; /* Começa escondido, será 'flex' quando exibido pelo JS */
+    display: none; 
     font-family: 'Segoe UI', Arial, sans-serif;
     max-width: 300px;
     width: 90%;
@@ -773,21 +883,19 @@
 
 /* Estilo do Cabeçalho "Atenção!" - USA FLEXBOX AGORA */
 .atencao-header {
-    /* Usa Flexbox para colocar ícone e texto lado a lado */
     display: flex;
-    align-items: center; /* Centraliza verticalmente o ícone e o texto */
+    align-items: center; 
     font-size: 1em;
     font-weight: bold;
-    color: #eb5757; /* Cor do texto de Atenção */
+    color: #eb5757; 
     margin-bottom: 5px;
 }
 
 /* Estilo para o Checkmark Verde - REMOVIDO POSITION: ABSOLUTE */
 .atencao-checkmark {
-    width: 20px; /* Tamanho do círculo (reduzido para alinhar melhor) */
+    width: 20px; 
     height: 20px;
-    margin-right: 5px; /* Espaço entre o ícone e o texto "Atenção!" */
-    /* Garante que o SVG preencha a div */
+    margin-right: 5px; 
     display: flex; 
     align-items: center; 
     justify-content: center;
@@ -801,7 +909,7 @@
 
 /* Estilo do Texto "Atenção!" */
 .atencao-icon {
-    color: #eb5757; /* Cor de alerta */
+    color: #eb5757; 
 }
 
 /* Estilo do Conteúdo da Mensagem */
@@ -809,9 +917,8 @@
     font-size: 9px;
     color: #333;
     line-height: 1.4;
-    /* Ajusta o alinhamento do conteúdo principal */
     margin-top: 5px;
-    padding-left: 25px; /* Alinha o conteúdo principal com o texto "Atenção!" */
+    padding-left: 25px; 
 }
 
 .atencao-body strong {
@@ -830,14 +937,27 @@
 </head>
 <body>
 
-    <header>
-        <h1>🍸 NUANCE 🍸</h1>
-        <p>CARDÁPIO</p>
-    </header>
-
-    <div class="search-container">
-        <input type="text" id="search-input" placeholder="Pesquisar Drink, Copões..." onkeyup="filtrarProdutos()">
+    <div class="fixed-top-container">
+        
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Pesquisar Drink, Copões..." onkeyup="filtrarProdutos()">
+        </div>
+        
+        <button id="carrinho-flutuante" onclick="abrirModal()">
+            <svg class="carrinho-icon" viewBox="0 0 24 24">
+                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zm-9.83-3.25l.03-.12.51-2.17.76 1.94c.15.42.54.7.97.7h6.63c.4 0 .76-.25.9-.62l3.4-8.15c.13-.33.04-.71-.24-.95-.28-.24-.67-.35-1.04-.25L9.9 6.27l-.62-2.52C9.17 3.39 8.7 3 8.1 3H4c-.55 0-1 .45-1 1s.45 1 1 1h3.1L8.85 13H4.85c-.48 0-.9-.36-.98-.83L3 7c-.17-.7-.9-1.2-1.68-1.2h-.01c-.69 0-1.21.66-1 1.34L3.6 15.63c.27 1.25 1.35 2.15 2.65 2.15h11.7c.39 0 .75-.24.91-.62.16-.38.07-.81-.23-1.09l-3.23-3.08-5.32 1.27z"/>
+            </svg>
+             <span id="carrinho-badge">0</span> 
+        </button>
+       
     </div>
+    
+    <header>
+        <div class="top-bar-branding">
+            <h1>🍸 NUANCE 🍸</h1>
+            <p>CARDÁPIO</p>
+        </div>
+    </header>
     
     <p id="no-results">Nenhum produto encontrado com o termo digitado.</p>
     
@@ -871,10 +991,10 @@
                             Selecione o Sabor
                         </button>
                         <div id="saboresCaipiFrutas" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Limão 🍋‍🟩', 10.00, this)">Limão 🍋‍🟩</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Morango 🍓', 10.00, this)">Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Maracujá 🥂', 10.00, this)">Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Manga 🥭', 10.00, this)">🥭 Manga 🥭</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Caipfruta de Limão 🍋‍🟩', 10.00)">Limão 🍋‍🟩</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Caipfruta de Morango 🍓', 10.00)">Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Caipfruta de Maracujá 🥂', 10.00)">Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Caipfruta de Manga 🥭', 10.00)">🥭 Manga 🥭</button>
                         </div>
                     </div>
                 </div>
@@ -896,9 +1016,9 @@
                 Selecione o Sabor
             </button>
             <div id="saboresGin" class="sabores-menu"> 
-                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Tropical ', 20.00, this)">Gin Tropical</button>
-                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Tônica ', 20.00, this)">Gin Tônica</button>
-                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Red-Fruts ', 20.00, this)">Gin Red-Fruts</button>
+                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Gin Tropical ', 20.00)">Gin Tropical</button>
+                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Gin Tônica ', 20.00)">Gin Tônica</button>
+                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Gin Red-Fruts ', 20.00)">Gin Red-Fruts</button>
             </div>
         </div>
     </div>
@@ -920,10 +1040,10 @@
                             Selecione o Sabor
                         </button>
                         <div id="saboresMogito" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Limão 🍋‍🟩', 15.00, this)">🍋‍🟩 Limão 🍋‍🟩</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Morango 🍓', 15.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Maracujá 🥂', 15.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Manga 🥭', 15.00, this)">🥭 Manga 🥭</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Mojito Limão 🍋‍🟩', 15.00)">🍋‍🟩 Limão 🍋‍🟩</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Mojito Morango 🍓', 15.00)">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Mojito Maracujá 🥂', 15.00)">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Mojito Manga 🥭', 15.00)">🥭 Manga 🥭</button>
                         </div>
                     </div>
                 </div>
@@ -941,7 +1061,7 @@
                             <span class="volume">(350ml)</span> 
                         </div>
                     </div>
-                    <button class="btn-add" onclick="adicionarAoCarrinho('Moscow Mule', 20.00, this)">Adicionar ao Carrinho</button>
+                    <button class="btn-add" onclick="adicionarAoCarrinho(this, 'Moscow Mule', 20.00)">Adicionar ao Carrinho</button>
                 </div>
             </div>
 
@@ -956,7 +1076,7 @@
                             <span class="volume">(350ml)</span> 
                         </div>
                     </div>
-                    <button class="btn-add" onclick="adicionarAoCarrinho('Jack Limoned', 25.00, this)">Adicionar ao Carrinho</button>
+                    <button class="btn-add" onclick="adicionarAoCarrinho(this, 'Jack Limoned', 25.00)">Adicionar ao Carrinho</button>
                 </div>
             </div>
             
@@ -971,7 +1091,7 @@
                             <span class="volume">(350ml)</span> 
                         </div>
                     </div>
-                    <button class="btn-add" onclick="adicionarAoCarrinho('Joge Amado', 18.00, this)">Adicionar ao Carrinho</button>
+                    <button class="btn-add" onclick="adicionarAoCarrinho(this, 'Joge Amado', 18.00)">Adicionar ao Carrinho</button>
                 </div>
             </div>
 
@@ -986,7 +1106,7 @@
                             <span class="volume">(350ml)</span> 
                         </div>
                     </div>
-                    <button class="btn-add" onclick="adicionarAoCarrinho('Pina Colada', 20.00, this)">Adicionar ao Carrinho</button>
+                    <button class="btn-add" onclick="adicionarAoCarrinho(this, 'Pina Colada', 20.00)">Adicionar ao Carrinho</button>
                 </div>
             </div>
 
@@ -1020,17 +1140,17 @@
                         Selecione o Sabor
                     </button>
                     <div id="saboresSoda" class="sabores-menu">
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Limão Siciliano 🍋‍🟩', 8.00, this)">🍋‍🟩 Limão Siciliano 🍋‍🟩</button>
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Red Frits', 8.00, this)">🍎🍓 Red Frits 🍓🍎</button>
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Maracujá 🥂', 8.00, this)">🥂 Maracujá 🥂</button>
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Maçã Verde 🍏', 8.00, this)">🍏 Maçan Vrede 🍏</button>
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Abacaxi 🍍', 8.00, this)">🍍 Abacaxi 🍍</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Soda Italiana sabir Limão Siciliano 🍋‍🟩', 8.00)">🍋‍🟩 Limão Siciliano 🍋‍🟩</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Soda Italiana sabir Red Frits', 8.00)">🍎🍓 Red Frits 🍓🍎</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Soda Italiana sabir Maracujá 🥂', 8.00)">🥂 Maracujá 🥂</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Soda Italiana sabir Maçã Verde 🍏', 8.00)">🍏 Maçan Vrede 🍏</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Soda Italiana sabir Abacaxi 🍍', 8.00)">🍍 Abacaxi 🍍</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card" data-name="Mojito Virgem" data-price="6.00" data-section="Drinks Sem Álcool">
+        <div class="card" data-name="Abacixi Hortelã" data-price="6.00" data-section="Drinks Sem Álcool">
             <div class="product-image" style="background-image: url('img-produtos/Drinks-s-alcool/Abacixi-Hortelã.jpeg');"></div>
             <div class="card-content">
                 <h3>Abacixi Hortelã</h3>
@@ -1041,7 +1161,7 @@
                         <span class="volume">(350ml)</span> 
                     </div>
                 </div>
-                <button class="btn-add" onclick="adicionarAoCarrinho('Abacaxi Hortelã', 6.00, this)">Adicionar ao Carrinho</button>
+                <button class="btn-add" onclick="adicionarAoCarrinho(this, 'Abacaxi Hortelã', 6.00)">Adicionar ao Carrinho</button>
             </div>
         </div>
         
@@ -1056,7 +1176,7 @@
                         <span class="volume">(350ml)</span> 
                     </div>
                 </div>
-                <button class="btn-add" onclick="adicionarAoCarrinho('Chá Tropical', 10.00, this)">Adicionar ao Carrinho</button>
+                <button class="btn-add" onclick="adicionarAoCarrinho(this, 'Chá Tropical', 10.00)">Adicionar ao Carrinho</button>
             </div>
         </div>
         
@@ -1071,7 +1191,7 @@
                         <span class="volume">(350ml)</span> 
                     </div>
                 </div>
-                <button class="btn-add" onclick="adicionarAoCarrinho('Grape Fresh', 6.00, this)">Adicionar ao Carrinho</button>
+                <button class="btn-add" onclick="adicionarAoCarrinho(this, 'Grape Fresh', 6.00)">Adicionar ao Carrinho</button>
             </div>
         </div>
         
@@ -1086,7 +1206,7 @@
                         <span class="volume">(350ml)</span> 
                     </div>
                 </div>
-                <button class="btn-add" onclick="adicionarAoCarrinho('Hibisco Spritz', 10.00, this)">Adicionar ao Carrinho</button>
+                <button class="btn-add" onclick="adicionarAoCarrinho(this, 'Hibisco Spritz', 10.00)">Adicionar ao Carrinho</button>
             </div>
         </div>
         
@@ -1101,7 +1221,7 @@
                         <span class="volume">(350ml)</span> 
                     </div>
                 </div>
-                <button class="btn-add" onclick="adicionarAoCarrinho('Mocktail', 18.00, this)">Adicionar ao Carrinho</button>
+                <button class="btn-add" onclick="adicionarAoCarrinho(this, 'Mocktail', 18.00)">Adicionar ao Carrinho</button>
             </div>
         </div>
         
@@ -1116,7 +1236,7 @@
                         <span class="volume">(350ml)</span> 
                     </div>
                 </div>
-                <button class="btn-add" onclick="adicionarAoCarrinho('Mongorango', 8.00, this)">Adicionar ao Carrinho</button>
+                <button class="btn-add" onclick="adicionarAoCarrinho(this, 'Mongorango', 8.00)">Adicionar ao Carrinho</button>
             </div>
         </div>
 
@@ -1159,10 +1279,10 @@
                             Selecione Sabor do Gelo 
                         </button>
                         <div id="saboresCopaoPitu" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Água de Coco 🥥', 27.00, this)">🥥 Água de Coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Copão Pitu - Água de Coco 🥥', 27.00)">🥥 Água de Coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Copão Pitu - Morango 🍓', 27.00)">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Copão Pitu - Maracujá 🥂', 27.00)">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Copão Pitu - Abacaxi 🍍', 27.00)">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
@@ -1181,10 +1301,10 @@
                             Selecione Sabor do Gelo 
                         </button>
                         <div id="saboresCopaoRum" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Água de Coco 🥥', 27.00, this)">🥥 Água de Coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Copão Rum Prata - Água de Coco 🥥', 27.00)">🥥 Água de Coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Copão Rum Prata - Morango 🍓', 27.00)">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Copão Rum Prata - Maracujá 🥂', 27.00)">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Copão Rum Prata - Abacaxi 🍍', 27.00)">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
@@ -1203,10 +1323,10 @@
                             Selecione Sabor do Gelo 
                         </button>
                         <div id="saboresCopao51" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Água de Coco 🥥', 27.00, this)">🥥 Água de Coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Copão 51 - Água de Coco 🥥', 27.00)">🥥 Água de Coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Copão 51 - Morango 🍓', 27.00)">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Copão 51 - Maracujá 🥂', 27.00)">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Copão 51 - Abacaxi 🍍', 27.00)">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
@@ -1229,6 +1349,10 @@
     </button>
     <div class="product-grid section-original-grid carousel-content" id="grid-4">
 
+
+        
+
+
           <div class="card" data-name="Combo Copão 51" data-price="27.00" data-section="Combos">
                 <div class="product-image" style="background-image: url('img-produtos/Drinks-c-alcool/Mojitos.jpg');"></div>
                 <div class="card-content">
@@ -1242,10 +1366,10 @@
                             Selecione Sabor Gelo 
                         </button>
                         <div id="saboresCombo51" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Coco 🥥', 27.00, this)">🥥 coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Combo 51 - Coco 🥥', 27.00)">🥥 coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Combo 51 - Morango 🍓', 27.00)">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Combo 51 - Maracujá 🥂', 27.00)">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Combo 51 - Abacaxi 🍍', 27.00)">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
@@ -1264,14 +1388,17 @@
                             Selecione Sabor Gelo 
                         </button>
                         <div id="saboresComboRum" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Coco 🥥', 27.00, this)">🥥 coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Combo Rum - Coco 🥥', 27.00)">🥥 coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Combo Rum - Morango 🍓', 27.00)">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Combo Rum - Maracujá 🥂', 27.00)">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor(this, 'Combo Rum - Abacaxi 🍍', 27.00)">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
             </div>
+
+        
+        
         
     </div>
     <button class="nav-button next" onclick="scrollCarousel('grid-4', 'next')">
@@ -1283,13 +1410,6 @@
 
 </div> </div> 
             
-    <button id="carrinho-flutuante" onclick="abrirModal()">
-        <svg class="carrinho-icon" viewBox="0 0 24 24">
-            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zm-9.83-3.25l.03-.12.51-2.17.76 1.94c.15.42.54.7.97.7h6.63c.4 0 .76-.25.9-.62l3.4-8.15c.13-.33.04-.71-.24-.95-.28-.24-.67-.35-1.04-.25L9.9 6.27l-.62-2.52C9.17 3.39 8.7 3 8.1 3H4c-.55 0-1 .45-1 1s.45 1 1 1h3.1L8.85 13H4.85c-.48 0-.9-.36-.98-.83L3 7c-.17-.7-.9-1.2-1.68-1.2h-.01c-.69 0-1.21.66-1 1.34L3.6 15.63c.27 1.25 1.35 2.15 2.65 2.15h11.7c.39 0 .75-.24.91-.62.16-.38.07-.81-.23-1.09l-3.23-3.08-5.32 1.27z"/>
-        </svg>
-        Carrinho (0) - R$ 0,00
-    </button>
-
     <div id="myModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="fecharModal()">&times;</span>
@@ -1390,6 +1510,14 @@
         </div>
     </div>
 
+
+
+
+
+
+
+
+
 <div id="atencao-box">
     <div class="atencao-header">
         <div class="atencao-checkmark">
@@ -1462,6 +1590,76 @@
             "NUANCE10": { type: "percent", value: 0.10, minPurchase: 50.00, message: "10% OFF em pedidos acima de R$50!" },          // --- NUANCE10 ---
             "MEGA20": { type: "flat", value: 20.00, minPurchase: 100.00, message: "R$20,00 de desconto!" }                          // --- MEGA20 ---
         }; 
+        
+        // =================================================================
+        // 💾 FUNÇÕES DE LOCAL STORAGE - NOVO CÓDIGO 💾
+        // =================================================================
+
+        /**
+         * Salva o estado atual do carrinho no localStorage.
+         */
+        function salvarCarrinho() {
+            try {
+                // Converte o array de objetos para uma string JSON e armazena
+                localStorage.setItem('carrinhoNuance', JSON.stringify(carrinho));
+                
+                // Salva também o cupom (para que ele continue aplicado após o F5)
+                if (cupomAplicado) {
+                    localStorage.setItem('cupomNuance', JSON.stringify(cupomAplicado));
+                } else {
+                    localStorage.removeItem('cupomNuance');
+                }
+            } catch (e) {
+                console.error("Erro ao salvar o carrinho no localStorage:", e);
+            }
+        }
+
+        /**
+         * Carrega o carrinho e o cupom do localStorage ao iniciar a página.
+         */
+        function carregarCarrinho() {
+            try {
+                const carrinhoSalvo = localStorage.getItem('carrinhoNuance');
+                const cupomSalvo = localStorage.getItem('cupomNuance');
+
+                if (carrinhoSalvo) {
+                    // Converte a string JSON de volta para um array de objetos
+                    carrinho = JSON.parse(carrinhoSalvo);
+                } else {
+                    carrinho = [];
+                }
+                
+                if (cupomSalvo) {
+                    cupomAplicado = JSON.parse(cupomSalvo);
+                    // Garante que o input mostre o código do cupom
+                    document.getElementById('coupon-input').value = cupomAplicado.codigo;
+                } else {
+                    cupomAplicado = null;
+                }
+                
+            } catch (e) {
+                console.error("Erro ao carregar o carrinho do localStorage:", e);
+                carrinho = []; // Garante que a aplicação não quebre se o storage estiver corrompido
+                cupomAplicado = null;
+            }
+        }
+
+        // --- FUNÇÕES DE AJUDA ---
+        
+        /**
+         * Extrai a URL da imagem do estilo inline 'background-image'.
+         * @param {HTMLElement} cardElement - O elemento pai do produto (.card).
+         * @returns {string} A URL da imagem ou uma string vazia.
+         */
+        function getImageUrlFromCard(cardElement) {
+            const productImageDiv = cardElement.querySelector('.product-image');
+            if (productImageDiv) {
+                const style = productImageDiv.style.backgroundImage;
+                const match = style.match(/url\(['"]?(.*?)['"]?\)/);
+                return match ? match[1] : '';
+            }
+            return '';
+        }
 
         // --- FUNÇÕES DE FORMATAÇÃO E VALIDAÇÃO ---
         function formatarTelefone(input) {
@@ -1525,6 +1723,7 @@
                 document.getElementById('numero').setAttribute('required', 'required');
             }
         });
+
 
         // ===================================
         // === CONTROLE DE ETAPAS DO MODAL ===
@@ -1593,38 +1792,46 @@
             return totalValor - totalDescontoParaBotao;
         }
 
+        // 🚨 FUNÇÃO MODIFICADA 🚨
         function atualizarCarrinhoFlutuante() {
             const totalItens = carrinho.reduce((sum, item) => sum + item.quantidade, 0);
-            
-            const totalFinal = calcularTotalDoCarrinho();
-            
-            const totalFormatado = totalFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            
             const carrinhoFlutuante = document.getElementById('carrinho-flutuante');
-            // Alterado para incluir o SVG, mas o texto continua formatado
-            carrinhoFlutuante.innerHTML = `
-                <svg class="carrinho-icon" viewBox="0 0 24 24">
-                    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zm-9.83-3.25l.03-.12.51-2.17.76 1.94c.15.42.54.7.97.7h6.63c.4 0 .76-.25.9-.62l3.4-8.15c.13-.33.04-.71-.24-.95-.28-.24-.67-.35-1.04-.25L9.9 6.27l-.62-2.52C9.17 3.39 8.7 3 8.1 3H4c-.55 0-1 .45-1 1s.45 1 1 1h3.1L8.85 13H4.85c-.48 0-.9-.36-.98-.83L3 7c-.17-.7-.9-1.2-1.68-1.2h-.01c-.69 0-1.21.66-1 1.34L3.6 15.63c.27 1.25 1.35 2.15 2.65 2.15h11.7c.39 0 .75-.24.91-.62.16-.38.07-.81-.23-1.09l-3.23-3.08-5.32 1.27z"/>
-                </svg>
-                Carrinho (${totalItens}) - ${totalFormatado}
-            `;
+            const badge = document.getElementById('carrinho-badge');
             
-            // Garante que o botão flutuante seja exibido
-            carrinhoFlutuante.style.display = totalItens > 0 ? 'block' : 'none';
+            if (totalItens > 0) {
+                carrinhoFlutuante.style.display = 'flex'; // Mostra o ícone
+                badge.style.display = 'flex'; // Mostra o badge (alterado para flex para alinhar o número)
+                badge.textContent = totalItens;
+            } else {
+                carrinhoFlutuante.style.display = 'flex'; // Mantém o ícone visível na barra fixa, mas sem flash
+                badge.style.display = 'none'; // Esconde o badge
+                badge.textContent = '0';
+            }
+            
+            // Não precisa atualizar o total ou texto do botão aqui, apenas o badge
         }
-
-        function adicionarAoCarrinho(nome, preco, buttonElement) {
-            // Certifique-se de que o preço seja um número. 
-            // Seu HTML usa "24,99" para Jack Limoned. O JS espera 24.99.
-            // Para segurança, vamos garantir que seja um float:
+        
+        /**
+         * Adiciona um item simples ao carrinho.
+         * @param {HTMLElement} buttonElement - O botão clicado.
+         * @param {string} nome - O nome do produto.
+         * @param {number} preco - O preço do produto.
+         */
+        function adicionarAoCarrinho(buttonElement, nome, preco) {
+            const card = buttonElement.closest('.card');
+            const imageUrl = getImageUrlFromCard(card); // Pega a URL da imagem
             const precoFloat = parseFloat(String(preco).replace(',', '.'));
 
             const itemExistente = carrinho.find(item => item.nome === nome);
             if (itemExistente) {
                 itemExistente.quantidade++;
             } else {
-                carrinho.push({ nome, preco: precoFloat, quantidade: 1 });
+                // 🚨 ADICIONA A URL DA IMAGEM AQUI 🚨
+                carrinho.push({ nome, preco: precoFloat, quantidade: 1, imagem: imageUrl });
             }
+            
+            // 💾 Salva no localStorage 
+            salvarCarrinho();
             
             // Feedback visual
             if (buttonElement) {
@@ -1644,7 +1851,15 @@
             aplicarCupom(true); // Tenta reaplicar o cupom (silencioso)
         }
 
-        function adicionarCaipifrutaSabor(nomeCompleto, preco, buttonElement) {
+        /**
+         * Adiciona um sabor de Caipifruta/Gin etc. ao carrinho.
+         * @param {HTMLElement} buttonElement - O botão de sabor clicado.
+         * @param {string} nomeCompleto - O nome completo (Ex: 'Caipfruta de Limão 🍋‍🟩').
+         * @param {number} preco - O preço do produto.
+         */
+        function adicionarCaipifrutaSabor(buttonElement, nomeCompleto, preco) {
+            const card = buttonElement.closest('.card');
+            const imageUrl = getImageUrlFromCard(card); // Pega a URL da imagem
             const precoFloat = parseFloat(String(preco).replace(',', '.'));
             
             
@@ -1653,8 +1868,12 @@
             if (itemExistente) {
                 itemExistente.quantidade++;
             } else {
-                carrinho.push({ nome: nomeCompleto, preco: precoFloat, quantidade: 1 });
+                // 🚨 ADICIONA A URL DA IMAGEM AQUI 🚨
+                carrinho.push({ nome: nomeCompleto, preco: precoFloat, quantidade: 1, imagem: imageUrl });
             }
+            
+            // 💾 Salva no localStorage
+            salvarCarrinho();
             
             // Feedback visual e fechar dropdown
             if (buttonElement) {
@@ -1668,12 +1887,17 @@
             aplicarCupom(true); // Tenta reaplicar o cupom (silencioso)
 
             // Adicional: alertar que adicionou (para produtos com dropdown)
-            alert(`✅ ${nomeCompleto} adicionado ao carrinho!`);
+            // Se o dropdown for fechado imediatamente, o alert pode não ser necessário ou pode ser substituído por uma notificação mais sutil
+            // alert(`✅ ${nomeCompleto} adicionado ao carrinho!`);
         }
 
 
         function removerItemCarrinho(index) {
             carrinho.splice(index, 1); 
+            
+            // 💾 Salva no localStorage
+            salvarCarrinho();
+            
             atualizarCarrinhoFlutuante();
             aplicarCupom(true); // Tenta reaplicar o cupom (silencioso)
             atualizarListaCarrinhoModal(); 
@@ -1691,6 +1915,9 @@
             document.getElementById('coupon-message').style.color = 'gray';
             document.getElementById('remove-coupon-btn').style.display = 'none';
 
+            // 💾 Salva no localStorage
+            salvarCarrinho();
+
             atualizarListaCarrinhoModal();
             atualizarCarrinhoFlutuante();
         }
@@ -1704,7 +1931,7 @@
             // Se for silencioso e não houver cupom no input, usa o que já está aplicado
             const cupomParaTestar = codigoCupom.length > 0 ? codigoCupom : (cupomAplicado ? cupomAplicado.codigo : null);
 
-            cupomAplicado = null;
+            let novoCupomAplicado = null;
             descontoValor = 0;
             
             if (!isSilent || codigoCupom.length > 0) {
@@ -1725,7 +1952,7 @@
                 const cupom = cuponsValidos[cupomParaTestar];
 
                 if (totalItens >= cupom.minPurchase) {
-                    cupomAplicado = { ...cupom, codigo: cupomParaTestar }; // Armazena o código também
+                    novoCupomAplicado = { ...cupom, codigo: cupomParaTestar }; // Armazena o código também
                     
                     if (!isSilent) {
                         messageDisplay.textContent = `✅ ${cupom.message}`;
@@ -1742,14 +1969,22 @@
                             messageDisplay.textContent = `🚫 Pedido mínimo de R$${cupom.minPurchase.toFixed(2).replace('.', ',')} necessário.`;
                         }
                     }
-                    // Se a chamada foi silenciosa, apenas deixa cupomAplicado como null
+                    // Se a chamada foi silenciosa, apenas deixa novoCupomAplicado como null
                 }
             } else if (codigoCupom.length > 0 && !isSilent) {
                 messageDisplay.textContent = '🚫 Cupom inválido ou expirado.';
             }
 
+            // Atualiza o cupom principal e salva.
+            cupomAplicado = novoCupomAplicado;
+            salvarCarrinho();
+
             atualizarListaCarrinhoModal(); 
         }
+
+        // =====================================================================
+        // 🚨 FUNÇÃO ATUALIZADA PARA RENDERIZAR O CARRINHO EM FORMATO DE CARD 🚨
+        // =====================================================================
         function atualizarListaCarrinhoModal() {
             const lista = document.getElementById('lista-carrinho');
             const totalDisplay = document.getElementById('carrinho-total');
@@ -1772,9 +2007,10 @@
                  messageDisplay.textContent = ''; 
                  removeBtn.style.display = 'none';
                  input.value = ''; 
+                 salvarCarrinho(); // 💾 Salva o carrinho vazio
             }
 
-            // 1. Calcular o subtotal dos itens
+            // 1. Calcular o subtotal dos itens e renderizar os CARDS
             carrinho.forEach((item, index) => {
                 const li = document.createElement('li');
                 const subtotal = item.preco * item.quantidade;
@@ -1783,12 +2019,22 @@
                 const precoFormatado = item.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 const subtotalFormatado = subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+                // 🚨 NOVO LAYOUT DO CARD DE ITEM DO CARRINHO 🚨
                 li.innerHTML = `
-                    <div class="item-details">
-                        <span style="max-width: 80%;">${item.nome} <br> (${item.quantidade}x ${precoFormatado})</span>
-                        <span style="text-align: right;">${subtotalFormatado}
-                            <button class="btn-remover" onclick="removerItemCarrinho(${index})">❌</button>
-                        </span>
+                    <div class="item-image" style="background-image: url('${item.imagem}');">
+                         ${item.imagem ? '' : 'Sem Img'} 
+                    </div>
+                    <div class="item-details-container">
+                        <div class="item-details">
+                            <div class="item-name-qty">
+                                <strong>${item.nome}</strong>
+                                <span>${item.quantidade}x ${precoFormatado}</span>
+                            </div>
+                            <div class="item-price-remove">
+                                <span class="item-subtotal">${subtotalFormatado}</span>
+                                <button class="btn-remover" onclick="removerItemCarrinho(${index})">❌</button>
+                            </div>
+                        </div>
                     </div>
                 `;
                 lista.appendChild(li);
@@ -1840,7 +2086,11 @@
             } else {
                 discountDisplay.style.display = 'none';
                 removeBtn.style.display = 'none'; // Esconde se não houver cupom ativo
-                messageDisplay.textContent = ''; // Limpa se não houver cupom ativo
+                
+                // Se o input tem valor mas não há cupom aplicado (Ex: não atingiu o mínimo), não limpa a mensagem de erro
+                if (input.value === '') { 
+                    messageDisplay.textContent = ''; 
+                }
             }
 
             // 4. Calcular e exibir o Total Final
@@ -2016,7 +2266,7 @@
                 return; 
             }
 
-            // OBTÉM A MENSAGEM E O LINK (se existir)
+            // OBTÉM MENSAGEM E O LINK (se existir)
             const { mensagem } = gerarMensagemPedido();
 
 
@@ -2035,6 +2285,10 @@
             cupomAplicado = null; // Limpa o cupom após o envio
             document.getElementById('coupon-input').value = '';
             document.getElementById('coupon-message').textContent = '';
+            
+            // 💾 Salva o carrinho vazio após o envio
+            salvarCarrinho();
+            
             atualizarCarrinhoFlutuante();
         }
 
@@ -2089,10 +2343,8 @@
                     
                     const clone = card.cloneNode(true);
                     
-                    // Ajusta o estilo do clone para que os dropdowns funcionem corretamente
-                    // (Remove listeners e IDs duplicados ou ajusta conforme a necessidade. 
-                    // Neste caso, a função adicionarCaipifrutaSabor já usa o `closest('.card')` 
-                    // então clonar é seguro).
+                    // Os event listeners em botões dentro do clone precisam ser recriados ou a função de click precisa ser genérica o suficiente.
+                    // Como suas funções usam `this` (o elemento clicado) ou `buttonElement`, elas devem funcionar.
                     
                     searchResultsContainer.appendChild(clone);
                     resultsFound++;
@@ -2146,10 +2398,27 @@
         
         // Inicializa o carrinho ao carregar
         document.addEventListener('DOMContentLoaded', () => {
+             // 🚨 NOVO: Carrega o carrinho e o cupom do localStorage
+             carregarCarrinho();
+             
              // Garante que o input do cupom esteja vazio ao carregar
-             document.getElementById('coupon-input').value = '';
+             // (Já está definido na carregarCarrinho se houver cupom)
+             if (!cupomAplicado) {
+                 document.getElementById('coupon-input').value = '';
+             }
+
+             // Atualiza a visualização com os dados carregados
              atualizarCarrinhoFlutuante();
+             // (Não precisa do aplicarCupom(true) aqui, pois ele será chamado ao abrir o modal, 
+             // mas é bom para recalcular o desconto se as regras de minPurchase mudaram)
+             aplicarCupom(true);
         });
+
+
+
+
+
+
 /**
  * Rola o carrossel (product-grid) na direção especificada.
  * @param {string} elementId - O ID da div que contém os produtos (ex: 'grid-1').
@@ -2199,6 +2468,7 @@ function typeWriter() {
         button.classList.add('typing-complete');
     }
 }
+
 function startTypingEffect() {
     button.textContent = ''; 
     charIndex = 0;
@@ -2209,12 +2479,23 @@ function startTypingEffect() {
     
     typeWriter();
 }
+
 // Inicia o efeito imediatamente
 startTypingEffect();
 
 // Repete o efeito a cada 6 segundos
 setInterval(startTypingEffect, repeatInterval);
 
+
+
+
+
+
+
+
+
+
+        
      //-----------------------------------------
 //---__Mensagens de Atenção__--------------
 
@@ -2234,7 +2515,7 @@ const mensagensAlternadas = [
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        [array[i], array[j]] = array[j], array[i];
     }
     return array;
 }
