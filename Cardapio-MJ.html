@@ -602,7 +602,15 @@
             border-radius: 5px;
             box-sizing: border-box; 
             font-size: 16px;
+            transition: border-color 0.3s;
         }
+        
+        /* 🚨 NOVO ESTILO: Borda vermelha para erro na validação */
+        .input-error {
+            border: 2px solid #ff6b6b !important;
+            box-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
+        }
+
 
         /* Campos de Endereço em linha */
         .endereco-fields {
@@ -1472,8 +1480,9 @@
                     </div>
 
                     <div class="form-group" id="campo-mesa" style="display: none;">
-                        <label for="mesa">Número da Mesa:</label>
+                        <label for="mesa">Número da Mesa:*</label>
                         <input type="text" id="mesa" name="mesa" placeholder="Ex: Mesa 5">
+                        <span class="error-message" id="error-mesa">Por favor, digite o número da mesa.</span>
                     </div>
 
                     <div id="campos-endereco" style="display: none;">
@@ -1482,16 +1491,19 @@
                             <div class="form-group">
                                 <label for="cep">CEP:*</label>
                                 <input type="text" id="cep" name="cep" placeholder="99999-999" oninput="formatarCEP(this)">
+                                <span class="error-message" id="error-cep">CEP inválido. Ex: 99999-999.</span>
                             </div>
                             <div class="form-group">
                                 <label for="numero">Número:*</label>
                                 <input type="text" id="numero" name="numero" placeholder="Nº">
+                                <span class="error-message" id="error-numero">Por favor, digite o número.</span>
                             </div>
                         </div>
                         
                         <div class="form-group">
                             <label for="rua">Rua/Avenida:*</label>
                             <input type="text" id="rua" name="rua" placeholder="Nome da Rua/Avenida">
+                            <span class="error-message" id="error-rua">Por favor, digite a rua/avenida.</span>
                         </div>
                         
                         <div class="form-group">
@@ -1750,12 +1762,20 @@
             campoMesa.style.display = 'none';
             camposEndereco.style.display = 'none';
             
+            // Remove a necessidade de preenchimento (A validação real acontece em validarFormulario())
             document.getElementById('mesa').removeAttribute('required');
             document.getElementById('cep').removeAttribute('required');
             document.getElementById('rua').removeAttribute('required');
             document.getElementById('numero').removeAttribute('required');
 
-            // Limpa os valores ao mudar de opção (boa prática)
+            // Limpa os valores e estilos de erro ao mudar de opção
+            const inputs = document.querySelectorAll('#card-dados-cliente input, #card-dados-cliente select');
+            inputs.forEach(input => {
+                input.classList.remove('input-error');
+                const errorSpan = document.getElementById(`error-${input.id}`);
+                if (errorSpan) errorSpan.style.display = 'none';
+            });
+            
             document.getElementById('mesa').value = '';
             document.getElementById('cep').value = '';
             document.getElementById('rua').value = '';
@@ -1764,9 +1784,11 @@
 
             if (local === 'Mesa') {
                 campoMesa.style.display = 'block';
+                // Adiciona o atributo required (para validação HTML nativa, embora o JS faça a validação principal)
                 document.getElementById('mesa').setAttribute('required', 'required');
             } else if (local === 'Entrega') {
                 camposEndereco.style.display = 'block';
+                // Adiciona o atributo required (para validação HTML nativa)
                 document.getElementById('cep').setAttribute('required', 'required');
                 document.getElementById('rua').setAttribute('required', 'required');
                 document.getElementById('numero').setAttribute('required', 'required');
@@ -2145,42 +2167,60 @@
             const numero = document.getElementById('numero');
             const complemento = document.getElementById('complemento');
 
-            // Limpa mensagens de erro
+            // 1. Limpa mensagens de erro e estilos de todos os campos
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('#form-cliente input, #form-cliente select').forEach(el => el.classList.remove('input-error'));
             
-            if (nome.value.trim() === '') {
-                document.getElementById('error-nome').style.display = 'block';
+            // Funções auxiliares para marcar erro
+            const markError = (element, errorId) => {
+                element.classList.add('input-error');
+                document.getElementById(errorId).style.display = 'block';
                 isValid = false;
+            };
+
+            // 2. Validação NOME
+            if (nome.value.trim() === '') {
+                markError(nome, 'error-nome');
             }
 
+            // 3. Validação TELEFONE
+            // Regex para: (99) 99999-9999 ou (99) 9999-9999
             const telefoneRegex = /^\(\d{2}\) \d{4,5}-\d{4}$/; 
             if (!telefoneRegex.test(telefone.value.trim())) {
-                document.getElementById('error-telefone').style.display = 'block';
-                isValid = false;
+                markError(telefone, 'error-telefone');
             }
 
+            // 4. Validação LOCAL
             if (local.value === '') {
-                document.getElementById('error-local').style.display = 'block';
-                isValid = false;
-            }
-
-            if (local.value === 'Mesa' && mesa.value.trim() === '') {
-                isValid = false;
+                markError(local, 'error-local');
             }
             
+            // 5. Validação MESA (Se Local for 'Mesa')
+            if (local.value === 'Mesa') {
+                if (mesa.value.trim() === '') {
+                    markError(mesa, 'error-mesa');
+                }
+            }
+            
+            // 6. Validação ENDEREÇO (Se Local for 'Entrega')
             if (local.value === 'Entrega') {
+                 // Regex para: 99999-999
                  const cepRegex = /^\d{5}-\d{3}$/;
+                 
                  if (!cepRegex.test(cep.value.trim())) {
-                    isValid = false; 
-                    // Se o CEP é inválido, marca como false
+                    markError(cep, 'error-cep');
                  }
 
-                 if (rua.value.trim() === '' || numero.value.trim() === '') {
-                     isValid = false;
+                 if (rua.value.trim() === '') {
+                     markError(rua, 'error-rua');
+                 }
+                 
+                 if (numero.value.trim() === '') {
+                     markError(numero, 'error-numero');
                  }
             }
 
-            // Armazena os dados se for válido
+            // 7. Armazena os dados se for válido
             if (isValid) {
                 form.nome = nome.value.trim();
                 form.telefone = telefone.value.trim();
@@ -2285,7 +2325,9 @@
             }
 
             if (!validarFormulario()) {
-                alert('Por favor, preencha todos os campos obrigatórios de contato e local corretamente.');
+                // Se a validação falhar, o markError já adicionou os estilos e mensagens
+                // E a função retorna `false`, então apenas exibe um alerta genérico
+                alert('Por favor, preencha todos os campos obrigatórios e válidos antes de continuar.');
                 return; 
             }
 
