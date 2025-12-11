@@ -872,6 +872,71 @@
             font-size: 7px;
             color: #6B6665;
         }
+        
+/*=====================================================================*/  
+/*==== 🚨 NOVO: ESTILO PARA RECUPERAÇÃO DE CARRINHO ABANDONADO 🚨 ====*/
+/*=====================================================================*/  
+#abandono-box {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #fce8a9; /* Amarelo Suave */
+    border: 2px solid #ffc107; /* Borda Amarela Forte */
+    border-radius: 10px;
+    padding: 15px; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: none; 
+    font-family: 'Segoe UI', Arial, sans-serif;
+    max-width: 280px;
+    cursor: pointer; /* Indica que é clicável */
+    transition: transform 0.3s;
+}
+
+#abandono-box:hover {
+    transform: scale(1.03);
+}
+
+.abandono-header {
+    display: flex;
+    align-items: center; 
+    font-size: 1em;
+    font-weight: bold;
+    color: #333; 
+    margin-bottom: 5px;
+}
+
+.abandono-icon {
+    width: 20px; 
+    height: 20px;
+    margin-right: 5px; 
+    color: #ff6b6b; /* Coração/Alerta */
+}
+
+.abandono-body {
+    font-size: 0.9em;
+    color: #333;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.btn-abandono-cta {
+    background-color: #25D366; 
+    color: white; 
+    border: none; 
+    padding: 8px 15px;
+    font-size: 0.9em; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: background-color 0.3s;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+}
+.btn-abandono-cta:hover {
+    background-color: #128C7E;
+}
+
     </style>
 </head>
 <body>
@@ -1470,6 +1535,20 @@
     <div id="mensagem-conteudo" class="atencao-body">
         </div>
   </div>
+  
+  
+<div id="abandono-box" onclick="abrirModal()">
+    <div class="abandono-header">
+        <i class="fas fa-shopping-basket abandono-icon"></i>
+        <span>Pedido Incompleto?</span>
+    </div>
+    <div class="abandono-body">
+        Olá! Vimos que você deixou itens incríveis no carrinho. Vamos finalizar seu pedido agora?
+    </div>
+    <button class="btn-abandono-cta">
+        Revisar Meu Carrinho 🚀
+    </button>
+</div>
          
 <script>
   
@@ -1531,25 +1610,29 @@
         }; 
         
         // =================================================================
-        // 💾 FUNÇÕES DE LOCAL STORAGE - NOVO CÓDIGO 💾
+        // 💾 FUNÇÕES DE LOCAL STORAGE & MONITORAMENTO - CÓDIGO ATUALIZADO 💾
         // =================================================================
 
         /**
-         * Salva o estado atual do carrinho no localStorage.
+         * Salva o estado atual do carrinho e o tempo da última atividade no localStorage.
          */
         function salvarCarrinho() {
             try {
-                // Converte o array de objetos para uma string JSON e armazena
+                // Salva o carrinho
                 localStorage.setItem('carrinhoNuance', JSON.stringify(carrinho));
                 
-                // Salva também o cupom (para que ele continue aplicado após o F5)
+                // Salva o cupom
                 if (cupomAplicado) {
                     localStorage.setItem('cupomNuance', JSON.stringify(cupomAplicado));
                 } else {
                     localStorage.removeItem('cupomNuance');
                 }
+                
+                // 🚨 NOVO: Salva o tempo da última atividade (timestamp em milissegundos)
+                localStorage.setItem('lastActivityTime', Date.now());
+
             } catch (e) {
-                console.error("Erro ao salvar o carrinho no localStorage:", e);
+                console.error("Erro ao salvar no localStorage:", e);
             }
         }
 
@@ -1562,7 +1645,6 @@
                 const cupomSalvo = localStorage.getItem('cupomNuance');
 
                 if (carrinhoSalvo) {
-                    // Converte a string JSON de volta para um array de objetos
                     carrinho = JSON.parse(carrinhoSalvo);
                 } else {
                     carrinho = [];
@@ -1570,7 +1652,6 @@
                 
                 if (cupomSalvo) {
                     cupomAplicado = JSON.parse(cupomSalvo);
-                    // Garante que o input mostre o código do cupom
                     document.getElementById('coupon-input').value = cupomAplicado.codigo;
                 } else {
                     cupomAplicado = null;
@@ -1578,10 +1659,56 @@
                 
             } catch (e) {
                 console.error("Erro ao carregar o carrinho do localStorage:", e);
-                carrinho = []; // Garante que a aplicação não quebre se o storage estiver corrompido
+                carrinho = []; 
                 cupomAplicado = null;
             }
         }
+        
+        // =================================================================
+        // 🚨 NOVO: LÓGICA DE RECUPERAÇÃO DE CARRINHO ABANDONADO 🚨
+        // =================================================================
+
+        const MINUTOS_ABANDONO_PARA_AVISO = 20; // O tempo desejado
+        
+        function verificarCarrinhoAbandonado() {
+            const lastActivityTime = localStorage.getItem('lastActivityTime');
+            const abandonoBox = document.getElementById('abandono-box');
+            
+            // 1. Verifica se há itens no carrinho
+            if (carrinho.length === 0) {
+                 // Se o carrinho estiver vazio, garante que não mostra a caixa.
+                 abandonoBox.style.display = 'none';
+                 return;
+            }
+            
+            // 2. Verifica se a notificação já foi mostrada nesta sessão (para não ser irritante)
+            if (sessionStorage.getItem('abandonoNotificado') === 'true') {
+                 return;
+            }
+
+            // 3. Verifica o tempo de abandono
+            if (lastActivityTime) {
+                const tempoAtual = Date.now();
+                const diffTime = tempoAtual - parseInt(lastActivityTime);
+                
+                // Converte milissegundos para minutos
+                const diffMinutes = Math.floor(diffTime / (1000 * 60)); 
+                
+                if (diffMinutes >= MINUTOS_ABANDONO_PARA_AVISO) {
+                    // O cliente abandonou o carrinho há mais de 20 minutos!
+                    abandonoBox.style.display = 'block';
+                    // Marca que a notificação foi mostrada
+                    sessionStorage.setItem('abandonoNotificado', 'true');
+                    
+                    // Agenda para esconder a caixa depois de um tempo (ex: 15 segundos)
+                    setTimeout(() => {
+                        abandonoBox.style.display = 'none';
+                    }, 15000); 
+                    
+                }
+            }
+        }
+
 
         // --- FUNÇÕES DE FORMATAÇÃO E VALIDAÇÃO ---
         function formatarTelefone(input) {
@@ -1669,6 +1796,8 @@
                 return;
             }
             document.getElementById('myModal').style.display = 'block';
+            // 🚨 NOVO: Esconde a notificação de abandono se o modal for aberto
+            document.getElementById('abandono-box').style.display = 'none';
             showEtapa(1); 
         }
 
@@ -2308,9 +2437,16 @@
              // (Não precisa do aplicarCupom(true) aqui, pois ele será chamado ao abrir o modal, 
              // mas é bom para recalcular o desconto se as regras de minPurchase mudaram)
              aplicarCupom(true);
+             
+             // 🚨 NOVO: Verifica se deve mostrar a notificação de abandono 
+             verificarCarrinhoAbandonado();
         });
 
 
+// Adiciona um listener a todo o documento para atualizar a última atividade em qualquer clique
+document.addEventListener('click', salvarCarrinho);
+// Adiciona um listener a todo o documento para atualizar a última atividade quando uma tecla é pressionada
+document.addEventListener('keypress', salvarCarrinho);
 
 
 
