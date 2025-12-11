@@ -160,28 +160,30 @@
             justify-content: center; /* Alinha horizontalmente */
         }
         
-        /* ⚠️ NOVO CSS: ANIMAÇÃO DE PISCAR APENAS PARA O ÍCONE ⚠️ */
-        @keyframes flash-icon {
+        /* ⚠️ NOVO CSS: ANIMAÇÃO DE PISCAR APENAS PARA o contador no BADGE ⚠️ */
+        @keyframes flash-badge {
             0% { 
-                fill: #FFC107; 
+                background-color: #ff6b6b; 
                 transform: scale(1);
             }
             50% { 
-                fill: red; 
-                transform: scale(1.1);
+                background-color: red; 
+                transform: scale(1.2);
             }
-            /* 🚨 AJUSTE FEITO: Cor final para se adequar ao fundo da barra fixa 🚨 */
             100% {
-                fill: #336B38; 
+                background-color: #ff6b6b; 
                 transform: scale(1);
             }
+        }
+        
+        .flash-animation {
+            animation: flash-badge 0.7s infinite; 
         }
         
         .carrinho-icon {
             display: inline-block;
             vertical-align: middle;
-            fill: currentColor; 
-            animation: flash-icon 1.5s infinite; 
+            fill: #336B38; /* Cor estática para o ícone */
         }
         
          #carrinho-flutuante:hover .carrinho-icon {
@@ -279,8 +281,23 @@
             overflow: visible; 
             position: relative; 
             padding-bottom: 10px; 
+            opacity: 1; /* Padrão: Visível */
+            transform: scale(1);
+            transition: opacity 0.3s, transform 0.3s;
         }
         
+        /* ESTILO PARA CARDS OCULTOS DURANTE A BUSCA */
+        .card.hidden-by-search {
+            display: none !important; 
+        }
+        
+        /* ESTILO PARA CARDS DESTACADOS DURANTE A BUSCA */
+        .card.highlight {
+            border: 3px solid #ffc107; 
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.8);
+            transform: scale(1.03);
+        }
+
         /* Cards menores na Busca/Resultados */
         #search-results-carousel-container .card,
         #suggestion-section-content .card { /* 🚨 NOVO: Estilo para sugestões */
@@ -293,8 +310,8 @@
         .product-image {
             width: 150px;
             height: 150px;
-            margin-left: 50px; 
-            margin-right: auto;
+            /* 🚨 CORREÇÃO: Removido margin-left: 50px; */
+            margin: 0 auto;
             
             background-color: #eee;
             background-size: cover;
@@ -1019,7 +1036,7 @@
             <svg class="carrinho-icon" viewBox="0 0 24 24">
                 <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zm-9.83-3.25l.03-.12.51-2.17.76 1.94c.15.42.54.7.97.7h6.63c.4 0 .76-.25.9-.62l3.4-8.15c.13-.33.04-.71-.24-.95-.28-.24-.67-.35-1.04-.25L9.9 6.27l-.62-2.52C9.17 3.39 8.7 3 8.1 3H4c-.55 0-1 .45-1 1s.45 1 1 1h3.1L8.85 13H4.85c-.48 0-.9-.36-.98-.83L3 7c-.17-.7-.9-1.2-1.68-1.2h-.01c-.69 0-1.21.66-1 1.34L3.6 15.63c.27 1.25 1.35 2.15 2.65 2.15h11.7c.39 0 .75-.24.91-.62.16-.38.07-.81-.23-1.09l-3.23-3.08-5.32 1.27z"/>
             </svg>
-             <span id="carrinho-badge">0</span> 
+             <span id="carrinho-badge" class="flash-animation">0</span> 
         </button>
        
     </div>
@@ -1068,10 +1085,10 @@
                             Selecione o Sabor
                         </button>
                         <div id="saboresCaipiFrutas" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Limão 🍋‍🟩', 10.00, this, 'limao')" data-sabor="limao">Limão 🍋‍🟩</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Morango 🍓', 10.00, this, 'morango')" data-sabor="morango">Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Maracujá 🥂', 10.00, this, 'maracuja')" data-sabor="maracuja">Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Manga 🥭', 10.00, this, 'manga')" data-sabor="manga">🥭 Manga 🥭</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Limão 🍋‍🟩', 10.00, this, 'limao')" data-sabor="limao" data-id="caipifrutas-limao">Limão 🍋‍🟩</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Morango 🍓', 10.00, this, 'morango')" data-sabor="morango" data-id="caipifrutas-morango">Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Maracujá 🥂', 10.00, this, 'maracuja')" data-sabor="maracuja" data-id="caipifrutas-maracuja">Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Manga 🥭', 10.00, this, 'manga')" data-sabor="manga" data-id="caipifrutas-manga">🥭 Manga 🥭</button>
                         </div>
                     </div>
                 </div>
@@ -1093,9 +1110,9 @@
                 Selecione o Sabor
             </button>
             <div id="saboresGin" class="sabores-menu"> 
-                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Tropical ', 20.00, this)">Gin Tropical</button>
-                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Tônica ', 20.00, this)">Gin Tônica</button>
-                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Red-Fruts ', 20.00, this)" data-id="gin-red-fruts">Gin Red-Fruts</button>
+                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Tropical ', 20.00, this, 'gin-tropical')" data-id="gin-tropical">Gin Tropical</button>
+                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Tônica ', 20.00, this, 'gin-tonica')" data-id="gin-tonica">Gin Tônica</button>
+                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Red-Fruts ', 20.00, this, 'gin-red-fruts')" data-id="gin-red-fruts">Gin Red-Fruts</button>
             </div>
         </div>
     </div>
@@ -1117,10 +1134,10 @@
                             Selecione o Sabor
                         </button>
                         <div id="saboresMogito" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Limão 🍋‍🟩', 15.00, this)">🍋‍🟩 Limão 🍋‍🟩</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Morango 🍓', 15.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Maracujá 🥂', 15.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Manga 🥭', 15.00, this)">🥭 Manga 🥭</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Limão 🍋‍🟩', 15.00, this, 'mojito-limao')" data-id="mojito-limao">🍋‍🟩 Limão 🍋‍🟩</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Morango 🍓', 15.00, this, 'mojito-morango')" data-id="mojito-morango">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Maracujá 🥂', 15.00, this, 'mojito-maracuja')" data-id="mojito-maracuja">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Manga 🥭', 15.00, this, 'mojito-manga')" data-id="mojito-manga">🥭 Manga 🥭</button>
                         </div>
                     </div>
                 </div>
@@ -1217,11 +1234,11 @@
                         Selecione o Sabor
                     </button>
                     <div id="saboresSoda" class="sabores-menu">
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Limão Siciliano 🍋‍🟩', 8.00, this)">🍋‍🟩 Limão Siciliano 🍋‍🟩</button>
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Red Frits', 8.00, this)" data-id="soda-red-frits">🍎🍓 Red Frits 🍓🍎</button>
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Maracujá 🥂', 8.00, this)">🥂 Maracujá 🥂</button>
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Maçã Verde 🍏', 8.00, this)">🍏 Maçan Vrede 🍏</button>
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Abacaxi 🍍', 8.00, this)">🍍 Abacaxi 🍍</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Limão Siciliano 🍋‍🟩', 8.00, this, 'soda-limao')" data-id="soda-limao">🍋‍🟩 Limão Siciliano 🍋‍🟩</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Red Frits', 8.00, this, 'soda-red-frits')" data-id="soda-red-frits">🍎🍓 Red Frits 🍓🍎</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Maracujá 🥂', 8.00, this, 'soda-maracuja')" data-id="soda-maracuja">🥂 Maracujá 🥂</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Maçã Verde 🍏', 8.00, this, 'soda-maca')" data-id="soda-maca">🍏 Maçan Vrede 🍏</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Abacaxi 🍍', 8.00, this, 'soda-abacaxi')" data-id="soda-abacaxi">🍍 Abacaxi 🍍</button>
                     </div>
                 </div>
             </div>
@@ -1343,7 +1360,7 @@
     <div class="product-grid section-original-grid carousel-content" id="grid-3">
 
         
-         <div class="card" data-name="Copão Pitu" data-price="27.00" data-section="Copão" data-id="copao-pitu">
+         <div class="card" data-name="Copão Pitu" data-price="27.00" data-section="Copão" data-id="copao-pitu-base">
                 <div class="product-image" style="background-image: url('img-produtos/img-Copoes/Img-Copoes.jpeg');"></div>
                 <div class="card-content">
                     <h3>Pitu<strong class="Copao-ml">(Dose 100ml)</strong><br>+<br>Red Bull<strong class="Copao-ml">(350ml)</strong><br>+<br>Gelo Com Sabor</h3> <div class="caipifrutas-details">
@@ -1356,16 +1373,16 @@
                             Selecione Sabor do Gelo 
                         </button>
                         <div id="saboresCopaoPitu" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Água de Coco 🥥', 27.00, this)">🥥 Água de Coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Água de Coco 🥥', 27.00, this, 'copao-pitu-coco')" data-id="copao-pitu-coco">🥥 Água de Coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Morango 🍓', 27.00, this, 'copao-pitu-morango')" data-id="copao-pitu-morango">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Maracujá 🥂', 27.00, this, 'copao-pitu-maracuja')" data-id="copao-pitu-maracuja">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Abacaxi 🍍', 27.00, this, 'copao-pitu-abacaxi')" data-id="copao-pitu-abacaxi">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-         <div class="card" data-name="Copão Rum Prata" data-price="27.00" data-section="Copão" data-id="copao-rum">
+         <div class="card" data-name="Copão Rum Prata" data-price="27.00" data-section="Copão" data-id="copao-rum-base">
                 <div class="product-image" style="background-image: url('img-produtos/img-Copoes/Img-Copoes.jpeg');"></div>
                 <div class="card-content">
                     <h3>Rum Prata<strong class="Copao-ml">(Dose 100ml)</strong><br>+<br>Red Bull<strong class="Copao-ml">(100ml)</strong><br>+<br>Gelo Com Sabor</h3> <div class="caipifrutas-details">
@@ -1378,16 +1395,16 @@
                             Selecione Sabor do Gelo 
                         </button>
                         <div id="saboresCopaoRum" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Água de Coco 🥥', 27.00, this)">🥥 Água de Coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Água de Coco 🥥', 27.00, this, 'copao-rum-coco')" data-id="copao-rum-coco">🥥 Água de Coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Morango 🍓', 27.00, this, 'copao-rum-morango')" data-id="copao-rum-morango">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Maracujá 🥂', 27.00, this, 'copao-rum-maracuja')" data-id="copao-rum-maracuja">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Abacaxi 🍍', 27.00, this, 'copao-rum-abacaxi')" data-id="copao-rum-abacaxi">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-        <div class="card" data-name="Copão 51" data-price="27.00" data-section="Copão" data-id="copao-51">
+        <div class="card" data-name="Copão 51" data-price="27.00" data-section="Copão" data-id="copao-51-base">
                 <div class="product-image" style="background-image: url('img-produtos/img-Copoes/Img-Copoes.jpeg');"></div>
                 <div class="card-content">
                     <h3>51<strong class="Copao-ml">(Dose 100ml)</strong><br>+<br>Red Bull<strong class="Copao-ml">(100ml)</strong><br>+<br>Gelo Com Sabor</h3> <div class="caipifrutas-details">
@@ -1400,10 +1417,10 @@
                             Selecione Sabor do Gelo 
                         </button>
                         <div id="saboresCopao51" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Água de Coco 🥥', 27.00, this)">🥥 Água de Coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Água de Coco 🥥', 27.00, this, 'copao-51-coco')" data-id="copao-51-coco">🥥 Água de Coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Morango 🍓', 27.00, this, 'copao-51-morango')" data-id="copao-51-morango">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Maracujá 🥂', 27.00, this, 'copao-51-maracuja')" data-id="copao-51-maracuja">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Abacaxi 🍍', 27.00, this, 'copao-51-abacaxi')" data-id="copao-51-abacaxi">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
@@ -1430,7 +1447,7 @@
         
 
 
-          <div class="card" data-name="Combo Copão 51" data-price="27.00" data-section="Combos" data-id="combo-51">
+          <div class="card" data-name="Combo Copão 51" data-price="27.00" data-section="Combos" data-id="combo-51-base">
                 <div class="product-image" style="background-image: url('img-produtos/Drinks-c-alcool/Mojitos.jpg');"></div>
                 <div class="card-content">
                     <h3>Copão| Dose 51 + Red Bull </h3> <div class="caipifrutas-details">
@@ -1443,16 +1460,16 @@
                             Selecione Sabor Gelo 
                         </button>
                         <div id="saboresCombo51" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Coco 🥥', 27.00, this)">🥥 coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Coco 🥥', 27.00, this, 'combo-51-coco')" data-id="combo-51-coco">🥥 coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Morango 🍓', 27.00, this, 'combo-51-morango')" data-id="combo-51-morango">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Maracujá 🥂', 27.00, this, 'combo-51-maracuja')" data-id="combo-51-maracuja">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Abacaxi 🍍', 27.00, this, 'combo-51-abacaxi')" data-id="combo-51-abacaxi">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-         <div class="card" data-name="Combo Rum Prata" data-price="27.00" data-section="Combos" data-id="combo-rum">
+         <div class="card" data-name="Combo Rum Prata" data-price="27.00" data-section="Combos" data-id="combo-rum-base">
                 <div class="product-image" style="background-image: url('img-produtos/Drinks-c-alcool/Mojitos.jpg');"></div>
                 <div class="card-content">
                     <h3>Copao| Dose Rum Prata+Red Bull+Gelo Com Sabor</h3> <div class="caipifrutas-details">
@@ -1465,10 +1482,10 @@
                             Selecione Sabor Gelo 
                         </button>
                         <div id="saboresComboRum" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Coco 🥥', 27.00, this)">🥥 coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Coco 🥥', 27.00, this, 'combo-rum-coco')" data-id="combo-rum-coco">🥥 coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Morango 🍓', 27.00, this, 'combo-rum-morango')" data-id="combo-rum-morango">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Maracujá 🥂', 27.00, this, 'combo-rum-maracuja')" data-id="combo-rum-maracuja">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Abacaxi 🍍', 27.00, this, 'combo-rum-abacaxi')" data-id="combo-rum-abacaxi">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
@@ -1535,7 +1552,7 @@
 
                     <div class="form-group">
                         <label for="local">Local de Entrega:*</label>
-                        <select id="local" name="local" required>
+                        <select id="local" name="local" required onchange="toggleCamposEndereco()">
                             <option value="" disabled selected>Selecione o Local</option>
                             <option value="Mesa">Mesa (Local)</option>
                             <option value="Retirada">Retirada (Balcão)</option>
@@ -1547,6 +1564,7 @@
                     <div class="form-group" id="campo-mesa" style="display: none;">
                         <label for="mesa">Número da Mesa:</label>
                         <input type="text" id="mesa" name="mesa" placeholder="Ex: Mesa 5">
+                        <span class="error-message" id="error-mesa">Por favor, informe o número da mesa.</span>
                     </div>
 
                     <div id="campos-endereco" style="display: none;">
@@ -1555,16 +1573,19 @@
                             <div class="form-group">
                                 <label for="cep">CEP:*</label>
                                 <input type="text" id="cep" name="cep" placeholder="99999-999" oninput="formatarCEP(this)">
+                                <span class="error-message" id="error-cep">CEP inválido. Ex: 99999-999.</span>
                             </div>
                             <div class="form-group">
                                 <label for="numero">Número:*</label>
                                 <input type="text" id="numero" name="numero" placeholder="Nº">
+                                <span class="error-message" id="error-numero">Por favor, informe o número.</span>
                             </div>
                         </div>
                         
                         <div class="form-group">
                             <label for="rua">Rua/Avenida:*</label>
                             <input type="text" id="rua" name="rua" placeholder="Nome da Rua/Avenida">
+                            <span class="error-message" id="error-rua">Por favor, informe a rua/avenida.</span>
                         </div>
                         
                         <div class="form-group">
@@ -1608,1281 +1629,842 @@
     <div id="mensagem-conteudo" class="atencao-body">
         </div>
   </div>
-         
-<script>
-  
-        // =======================
-        // === JAVASCRIPT (Lógica) ===
-        // =======================
+
+    <script>
         
-        // 🚨 NOVO: Item do carrinho agora pode ter uma 'observacao'
-        let carrinho = []; // Ex: [{ nome: 'Moscow Mule', preco: 20.00, quantidade: 1, observacao: '' }]
-        let etapaAtual = 1; 
-        let cupomAplicado = null; 
-        let descontoValor = 0;    
-        let obsItemIndex = -1; // Índice do item que está sendo editado no modal de observação
-        
-        // Dados do Cliente
-        const form = {
-            nome: '',
-            telefone: '',
-            local: '',
-            mesa: '',
-            cep: '',
-            rua: '',
-            numero: '',
-            complemento: ''
-        };
-        
-        // =================================================================
-        // 🚨__Adicionar os links de pagamento aqui__🚨
-        // =================================================================
-        const linksDePagamentoFixos = {
-            // A chave é o valor total formatado como string "XX.XX"
-            "8.00": "https://mpago.li/2fbY9KG", 
-            "16.00": "https://mpago.la/1N84Gia",
-            "9.99": "https://mpago.la/1wfhtfi",
-            "10.00": "https://mpago.li/31rBFxx",
+        // ======================================
+        // === VARIÁVEIS GLOBAIS ===
+        // ======================================
+        let carrinho = [];
+        let totalCarrinho = 0;
+        let cupomAplicado = null;
+        let itemAtualParaObs = null; // Armazena a referência do item do carrinho para observação
+
+        // Simulação do Array de Produtos
+        const produtos = [
+            // Drinks com Álcool
+            { id: 'caipifrutas-base', name: 'CaipiFrutas', section: 'Drinks com Álcool', price: 10.00, img: 'img-produtos/Drinks-c-alcool/caipifrutas.jpg' },
+            { id: 'caipifrutas-limao', name: 'CaipiFrutas de Limão', section: 'Drinks com Álcool', price: 10.00, img: 'img-produtos/Drinks-c-alcool/caipifrutas.jpg' },
+            { id: 'caipifrutas-morango', name: 'CaipiFrutas de Morango', section: 'Drinks com Álcool', price: 10.00, img: 'img-produtos/Drinks-c-alcool/caipifrutas.jpg' },
+            { id: 'caipifrutas-maracuja', name: 'CaipiFrutas de Maracujá', section: 'Drinks com Álcool', price: 10.00, img: 'img-produtos/Drinks-c-alcool/caipifrutas.jpg' },
+            { id: 'caipifrutas-manga', name: 'CaipiFrutas de Manga', section: 'Drinks com Álcool', price: 10.00, img: 'img-produtos/Drinks-c-alcool/caipifrutas.jpg' },
             
-            // Adicione os seus outros links fixos aqui
+            { id: 'gins-base', name: "Gin's", section: 'Drinks com Álcool', price: 20.00, img: 'img-produtos/Drinks-c-alcool/Caipigins.jpg' },
+            { id: 'gin-tropical', name: "Gin Tropical", section: 'Drinks com Álcool', price: 20.00, img: 'img-produtos/Drinks-c-alcool/Caipigins.jpg' },
+            { id: 'gin-tonica', name: "Gin Tônica", section: 'Drinks com Álcool', price: 20.00, img: 'img-produtos/Drinks-c-alcool/Caipigins.jpg' },
+            { id: 'gin-red-fruts', name: "Gin Red-Fruts", section: 'Drinks com Álcool', price: 20.00, img: 'img-produtos/Drinks-c-alcool/Caipigins.jpg' },
+            
+            { id: 'mojito-base', name: 'Mojito', section: 'Drinks com Álcool', price: 15.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            { id: 'mojito-limao', name: 'Mojito Limão', section: 'Drinks com Álcool', price: 15.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            { id: 'mojito-morango', name: 'Mojito Morango', section: 'Drinks com Álcool', price: 15.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            { id: 'mojito-maracuja', name: 'Mojito Maracujá', section: 'Drinks com Álcool', price: 15.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            { id: 'mojito-manga', name: 'Mojito Manga', section: 'Drinks com Álcool', price: 15.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            
+            { id: 'moscow-mule', name: 'Moscow Mule', section: 'Drinks com Álcool', price: 20.00, img: 'img-produtos/Drinks-c-alcool/Moscow-mule.jpg' },
+            { id: 'jack-limoned', name: 'Jack Limoned', section: 'Drinks com Álcool', price: 25.00, img: 'img-produtos/Drinks-c-alcool/Jack-limoned.jpg' },
+            { id: 'joge-amado', name: 'Joge Amado', section: 'Drinks com Álcool', price: 18.00, img: 'img-produtos/Drinks-c-alcool/Joge-amado.jpeg' },
+            { id: 'pina-colada', name: 'Pina Colada', section: 'Drinks com Álcool', price: 20.00, img: 'img-produtos/Drinks-c-alcool/Pina-colada.jpg' },
+            
+            // Drinks Sem Álcool
+            { id: 'soda-italiana-base', name: 'Soda Italiana', section: 'Drinks Sem Álcool', price: 8.00, img: 'img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg' },
+            { id: 'soda-limao', name: 'Soda Italiana de Limão Siciliano', section: 'Drinks Sem Álcool', price: 8.00, img: 'img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg' },
+            { id: 'soda-red-frits', name: 'Soda Italiana de Red Frits', section: 'Drinks Sem Álcool', price: 8.00, img: 'img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg' },
+            { id: 'soda-maracuja', name: 'Soda Italiana de Maracujá', section: 'Drinks Sem Álcool', price: 8.00, img: 'img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg' },
+            { id: 'soda-maca', name: 'Soda Italiana de Maçã Verde', section: 'Drinks Sem Álcool', price: 8.00, img: 'img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg' },
+            { id: 'soda-abacaxi', name: 'Soda Italiana de Abacaxi', section: 'Drinks Sem Álcool', price: 8.00, img: 'img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg' },
+            
+            { id: 'abacaxi-hortela', name: 'Abacaxi Hortelã', section: 'Drinks Sem Álcool', price: 6.00, img: 'img-produtos/Drinks-s-alcool/Abacixi-Hortelã.jpeg' },
+            { id: 'cha-tropical', name: 'Chá Tropical', section: 'Drinks Sem Álcool', price: 10.00, img: 'img-produtos/Drinks-s-alcool/Cha-tropical.jpeg' },
+            { id: 'grape-fresh', name: 'Grape Fresh', section: 'Drinks Sem Álcool', price: 6.00, img: 'img-produtos/Drinks-s-alcool/Grape-Fresh.jpeg' },
+            { id: 'hibisco-spritz', name: 'Hibisco Spritz', section: 'Drinks Sem Álcool', price: 10.00, img: 'img-produtos/Drinks-s-alcool/Hibisco-Spritz.jpeg' },
+            { id: 'mocktail', name: 'Mocktail', section: 'Drinks Sem Álcool', price: 18.00, img: 'img-produtos/Drinks-s-alcool/Mocktail.jpeg' },
+            { id: 'mongorango', name: 'Mongorango', section: 'Drinks Sem Álcool', price: 8.00, img: 'img-produtos/Drinks-s-alcool/Mongorango.jpeg' },
+            
+            // Copão
+            { id: 'copao-pitu-base', name: 'Copão Pitu', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+            { id: 'copao-pitu-coco', name: 'Copão Pitu - Água de Coco', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+            { id: 'copao-pitu-morango', name: 'Copão Pitu - Morango', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+            { id: 'copao-pitu-maracuja', name: 'Copão Pitu - Maracujá', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+            { id: 'copao-pitu-abacaxi', name: 'Copão Pitu - Abacaxi', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+            
+            { id: 'copao-rum-base', name: 'Copão Rum Prata', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+            { id: 'copao-rum-coco', name: 'Copão Rum Prata - Água de Coco', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+            { id: 'copao-rum-morango', name: 'Copão Rum Prata - Morango', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+            { id: 'copao-rum-maracuja', name: 'Copão Rum Prata - Maracujá', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+            { id: 'copao-rum-abacaxi', name: 'Copão Rum Prata - Abacaxi', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+
+            { id: 'copao-51-base', name: 'Copão 51', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+            { id: 'copao-51-coco', name: 'Copão 51 - Água de Coco', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+            { id: 'copao-51-morango', name: 'Copão 51 - Morango', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+            { id: 'copao-51-maracuja', name: 'Copão 51 - Maracujá', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+            { id: 'copao-51-abacaxi', name: 'Copão 51 - Abacaxi', section: 'Copão', price: 27.00, img: 'img-produtos/img-Copoes/Img-Copoes.jpeg' },
+
+            // Combos
+            { id: 'combo-51-base', name: 'Combo Copão 51', section: 'Combos', price: 27.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            { id: 'combo-51-coco', name: 'Combo 51 - Coco', section: 'Combos', price: 27.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            { id: 'combo-51-morango', name: 'Combo 51 - Morango', section: 'Combos', price: 27.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            { id: 'combo-51-maracuja', name: 'Combo 51 - Maracujá', section: 'Combos', price: 27.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            { id: 'combo-51-abacaxi', name: 'Combo 51 - Abacaxi', section: 'Combos', price: 27.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            
+            { id: 'combo-rum-base', name: 'Combo Rum Prata', section: 'Combos', price: 27.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            { id: 'combo-rum-coco', name: 'Combo Rum - Coco', section: 'Combos', price: 27.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            { id: 'combo-rum-morango', name: 'Combo Rum - Morango', section: 'Combos', price: 27.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            { id: 'combo-rum-maracuja', name: 'Combo Rum - Maracujá', section: 'Combos', price: 27.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+            { id: 'combo-rum-abacaxi', name: 'Combo Rum - Abacaxi', section: 'Combos', price: 27.00, img: 'img-produtos/Drinks-c-alcool/Mojitos.jpg' },
+        ];
+        
+        // Simulação de cupons
+        const cupons = {
+            'NUANCE10': { tipo: 'percentual', valor: 0.10, mensagem: '10% de desconto aplicado!' }, // 10%
+            'FRETEZERO': { tipo: 'fixo', valor: 10.00, mensagem: 'R$ 10,00 de desconto aplicado!' } // R$ 10,00
         };
 
-        // =================================================================
-        // 🚨 OBJETO DE CUPOM🚨
-        // =================================================================
-   
-        // Catálogo de cupons válidos
-        const cuponsValidos = {
-            "CINCO": { type: "flat", value: 5.00, minPurchase: 0.00, message: "R$5,00 de desconto aplicado!" },                   
-            "FRETEGRATIS": {                                                                                                       
-                type: "note",  
-                value: 0, 
-                minPurchase: 10.00, 
-                message: "Frete Grátis a ser aplicado na finalização da entrega/balcão." 
-            },
-            
-            "NUANCE10": { type: "percent", value: 0.10, minPurchase: 50.00, message: "10% OFF em pedidos acima de R$50!" },          
-            "MEGA20": { type: "flat", value: 20.00, minPurchase: 100.00, message: "R$20,00 de desconto!" }                          
-        }; 
-        
-        // =================================================================
-        // 💾 FUNÇÕES DE LOCAL STORAGE - MANTIDO
-        // =================================================================
+        // ======================================
+        // === FUNÇÕES DE UTILIDADE E FORMATO ===
+        // ======================================
 
-        function salvarCarrinho() {
-            try {
-                // Incluindo a observação no JSON salvo
-                localStorage.setItem('carrinhoNuance', JSON.stringify(carrinho));
-                
-                if (cupomAplicado) {
-                    localStorage.setItem('cupomNuance', JSON.stringify(cupomAplicado));
-                } else {
-                    localStorage.removeItem('cupomNuance');
-                }
-            } catch (e) {
-                console.error("Erro ao salvar o carrinho no localStorage:", e);
-            }
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
-        function carregarCarrinho() {
-            try {
-                const carrinhoSalvo = localStorage.getItem('carrinhoNuance');
-                const cupomSalvo = localStorage.getItem('cupomNuance');
-
-                if (carrinhoSalvo) {
-                    carrinho = JSON.parse(carrinhoSalvo);
-                    // Garante que todos os itens tenham a propriedade 'observacao' para evitar erros
-                    carrinho.forEach(item => {
-                        if (typeof item.observacao === 'undefined') {
-                            item.observacao = '';
-                        }
-                    });
-                } else {
-                    carrinho = [];
-                }
-                
-                if (cupomSalvo) {
-                    cupomAplicado = JSON.parse(cupomSalvo);
-                    // O valor do input será preenchido após o carregarCarrinho ser chamado no DOMContentLoaded
-                } else {
-                    cupomAplicado = null;
-                }
-                
-            } catch (e) {
-                console.error("Erro ao carregar o carrinho do localStorage:", e);
-                carrinho = []; 
-                cupomAplicado = null;
-            }
-        }
-
-        // --- FUNÇÕES DE FORMATAÇÃO E VALIDAÇÃO ---
         function formatarTelefone(input) {
-            let value = input.value.replace(/\D/g, ''); 
-            let formatted = '';
+            let value = input.value.replace(/\D/g, ""); // Remove tudo que não é número
+            let formattedValue = '';
 
             if (value.length > 0) {
-                formatted = '(' + value.substring(0, 2);
+                formattedValue = '(' + value.substring(0, 2);
             }
             if (value.length > 2) {
-                formatted += ') ' + value.substring(2, 7);
+                formattedValue += ') ' + value.substring(2, 7);
             }
             if (value.length > 7) {
-                formatted += '-' + value.substring(7, 11);
+                formattedValue += '-' + value.substring(7, 11);
             }
-            input.value = formatted;
+            input.value = formattedValue;
         }
 
         function formatarCEP(input) {
-            let value = input.value.replace(/\D/g, ''); 
-            let formatted = '';
+            let value = input.value.replace(/\D/g, ""); // Remove tudo que não é número
+            let formattedValue = '';
 
             if (value.length > 0) {
-                formatted = value.substring(0, 5);
+                formattedValue = value.substring(0, 5);
             }
             if (value.length > 5) {
-                formatted += '-' + value.substring(5, 8);
+                formattedValue += '-' + value.substring(5, 8);
             }
-            input.value = formatted;
+            input.value = formattedValue;
+        }
+        
+        function mostrarMensagem(mensagem, tipo = 'sucesso') {
+            const box = document.getElementById('atencao-box');
+            const mensagemConteudo = document.getElementById('mensagem-conteudo');
+            const atencaoHeader = box.querySelector('.atencao-header');
+            const atencaoIcon = box.querySelector('.atencao-icon');
+            const atencaoCheckmark = box.querySelector('.atencao-checkmark svg circle');
+            const atencaoCheckmarkPath = box.querySelector('.atencao-checkmark svg path');
+
+            mensagemConteudo.innerHTML = mensagem;
+
+            if (tipo === 'sucesso') {
+                atencaoHeader.style.color = '#4CAF50';
+                atencaoIcon.innerHTML = '✅ Sucesso!';
+                atencaoCheckmark.setAttribute('fill', '#4CAF50');
+                atencaoCheckmarkPath.setAttribute('stroke', '#fff');
+            } else if (tipo === 'erro') {
+                atencaoHeader.style.color = '#ff6b6b';
+                atencaoIcon.innerHTML = '❌ Erro!';
+                atencaoCheckmark.setAttribute('fill', '#ff6b6b');
+                atencaoCheckmarkPath.setAttribute('stroke', '#fff');
+            } else { // Atenção/Info
+                atencaoHeader.style.color = '#eb5757';
+                atencaoIcon.innerHTML = '⚠️ Atenção!';
+                atencaoCheckmark.setAttribute('fill', '#eb5757');
+                atencaoCheckmarkPath.setAttribute('stroke', '#fff');
+            }
+
+            box.style.display = 'block';
+            setTimeout(() => {
+                box.style.display = 'none';
+            }, 3000); // 3 segundos
         }
 
-        // --- LÓGICA DE EXIBIÇÃO DE CAMPOS CONDICIONAIS ---
-        document.getElementById('local').addEventListener('change', function() {
-            const local = this.value;
-            const campoMesa = document.getElementById('campo-mesa');
-            const camposEndereco = document.getElementById('campos-endereco');
-            
-            campoMesa.style.display = 'none';
-            camposEndereco.style.display = 'none';
-            
-            document.getElementById('mesa').removeAttribute('required');
-            document.getElementById('cep').removeAttribute('required');
-            document.getElementById('rua').removeAttribute('required');
-            document.getElementById('numero').removeAttribute('required');
+        // ======================================
+        // === FUNÇÕES DO CARDÁPIO PRINCIPAL ===
+        // ======================================
 
-            document.getElementById('mesa').value = '';
-            document.getElementById('cep').value = '';
-            document.getElementById('rua').value = '';
-            document.getElementById('numero').value = '';
-            document.getElementById('complemento').value = ''; 
+        function scrollCarousel(gridId, direction) {
+            const grid = document.getElementById(gridId);
+            const scrollAmount = 300; // Valor de rolagem em pixels
 
-            if (local === 'Mesa') {
-                campoMesa.style.display = 'block';
-                document.getElementById('mesa').setAttribute('required', 'required');
-            } else if (local === 'Entrega') {
-                camposEndereco.style.display = 'block';
-                document.getElementById('cep').setAttribute('required', 'required');
-                document.getElementById('rua').setAttribute('required', 'required');
-                document.getElementById('numero').setAttribute('required', 'required');
+            if (direction === 'next') {
+                grid.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            } else if (direction === 'prev') {
+                grid.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
             }
-        });
-
-
-        // ===================================
-        // === CONTROLE DE ETAPAS DO MODAL ===
-        // ===================================
-
-        function showEtapa(etapa) {
-            document.querySelectorAll('.modal-card').forEach(card => card.style.display = 'none');
-            
-            if (etapa === 1) {
-                document.getElementById('card-resumo-pedido').style.display = 'block';
-                atualizarListaCarrinhoModal(); 
-            } else if (etapa === 2) {
-                document.getElementById('card-dados-cliente').style.display = 'block';
-            }
-            etapaAtual = etapa;
         }
+
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id);
+            // Fecha todos os outros dropdowns
+            document.querySelectorAll('.sabores-menu').forEach(m => {
+                if (m.id !== id) {
+                    m.style.display = 'none';
+                }
+            });
+            // Alterna o dropdown atual
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // ======================================
+        // === LÓGICA DO CARRINHO ===
+        // ======================================
+
+        function adicionarAoCarrinho(nome, preco, element) {
+            const card = element.closest('.card');
+            const produtoId = card.dataset.id;
+            const produtoInfo = produtos.find(p => p.id === produtoId);
+            const imgSrc = produtoInfo ? produtoInfo.img : '';
+
+            carrinho.push({
+                id: produtoId,
+                nome: nome,
+                preco: preco,
+                quantidade: 1,
+                observacao: '',
+                imgSrc: imgSrc
+            });
+
+            atualizarCarrinho();
+            mostrarMensagem(`✅ **${nome}** adicionado ao carrinho!`, 'sucesso');
+            
+            // Sugestão de produtos
+            sugerirProdutos();
+        }
+
+        function adicionarCaipifrutaSabor(nomeSabor, preco, element, sabor) {
+            const btn = element.closest('.btn-sabor-item');
+            const saborId = btn ? btn.dataset.id : null; 
+            
+            if (!saborId) {
+                 console.error("ID do sabor não encontrado para adicionar ao carrinho.");
+                 mostrarMensagem("❌ Erro ao adicionar sabor: ID do item faltando.", 'erro');
+                 return;
+            }
+
+            const card = element.closest('.card');
+            const produtoBaseId = card.dataset.id;
+            const produtoInfo = produtos.find(p => p.id === saborId);
+            const imgSrc = produtoInfo ? produtoInfo.img : '';
+
+            carrinho.push({
+                id: saborId,
+                nome: nomeSabor,
+                preco: preco,
+                quantidade: 1,
+                observacao: '',
+                imgSrc: imgSrc
+            });
+
+            atualizarCarrinho();
+            toggleDropdown(element.closest('.sabores-menu').id); // Fecha o dropdown
+            mostrarMensagem(`✅ **${nomeSabor}** adicionado ao carrinho!`, 'sucesso');
+            
+            // Sugestão de produtos
+            sugerirProdutos();
+        }
+
+
+        function removerDoCarrinho(index) {
+            carrinho.splice(index, 1);
+            atualizarCarrinho();
+            mostrarMensagem('Item removido do carrinho. 🗑️', 'erro');
+            // Sugestão de produtos
+            sugerirProdutos();
+        }
+
+        function calcularTotal() {
+            let subtotal = carrinho.reduce((acc, item) => acc + item.preco * item.quantidade, 0);
+            let desconto = 0;
+
+            if (cupomAplicado) {
+                const cupom = cupons[cupomAplicado.codigo];
+                if (cupom.tipo === 'percentual') {
+                    desconto = subtotal * cupom.valor;
+                } else if (cupom.tipo === 'fixo') {
+                    desconto = cupom.valor;
+                }
+            }
+
+            totalCarrinho = subtotal - desconto;
+            totalCarrinho = Math.max(0, totalCarrinho); // Não permite total negativo
+            
+            return { subtotal, desconto, total: totalCarrinho };
+        }
+
+        function atualizarCarrinho() {
+            const lista = document.getElementById('lista-carrinho');
+            lista.innerHTML = '';
+            
+            const { subtotal, desconto, total } = calcularTotal();
+            
+            carrinho.forEach((item, index) => {
+                const li = document.createElement('li');
+                
+                // Linha principal do item
+                li.innerHTML = `
+                    <div class="item-carrinho-row">
+                        <div class="item-carrinho-img" style="background-image: url('${item.imgSrc || ''}')"></div>
+                        <div class="item-details-content">
+                            <div class="item-name-qty">
+                                ${item.nome}
+                                <br>
+                                <small>${formatarMoeda(item.preco)}</small>
+                            </div>
+                            <div class="item-action-buttons">
+                                <button class="btn-obs-item" title="Adicionar Observação" onclick="abrirObsModal(${index})">
+                                    <i class="fas fa-comment-dots"></i>
+                                </button>
+                                <button class="btn-remover" onclick="removerDoCarrinho(${index})">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    ${item.observacao ? `<p class="item-obs">Obs: ${item.observacao}</p>` : ''}
+                `;
+                lista.appendChild(li);
+            });
+            
+            document.getElementById('carrinho-total').textContent = formatarMoeda(total);
+            document.getElementById('carrinho-badge').textContent = carrinho.length;
+            document.getElementById('carrinho-badge').style.display = carrinho.length > 0 ? 'flex' : 'none';
+            
+            // Atualiza exibição do desconto/cupom
+            const discountDisplay = document.getElementById('discount-display');
+            if (desconto > 0) {
+                discountDisplay.textContent = `Desconto: -${formatarMoeda(desconto)}`;
+                discountDisplay.style.display = 'block';
+            } else {
+                discountDisplay.style.display = 'none';
+            }
+        }
+
+
+        // ======================================
+        // === LÓGICA DOS MODAIS (CARRINHO E OBS) ===
+        // ======================================
 
         function abrirModal() {
             if (carrinho.length === 0) {
-                alert('Seu carrinho está vazio! Adicione um item para continuar.');
+                mostrarMensagem('O seu carrinho está vazio. Adicione alguns itens! 😉', 'atencao');
                 return;
             }
             document.getElementById('myModal').style.display = 'block';
-            showEtapa(1); 
+            document.getElementById('card-resumo-pedido').style.display = 'block';
+            document.getElementById('card-dados-cliente').style.display = 'none';
+            atualizarCarrinho();
         }
 
         function fecharModal() {
             document.getElementById('myModal').style.display = 'none';
-            etapaAtual = 1; 
         }
 
         function avancarEtapa() {
+             // 1. Validar se o carrinho não está vazio
             if (carrinho.length === 0) {
-                alert('Seu carrinho está vazio.');
-                fecharModal();
+                mostrarMensagem('🚨 O carrinho não pode estar vazio para finalizar o pedido!', 'erro');
                 return;
             }
-            if (etapaAtual === 1) {
-                showEtapa(2); 
-            }
+            
+            // 2. Mudar a visualização dos cards
+            document.getElementById('card-resumo-pedido').style.display = 'none';
+            document.getElementById('card-dados-cliente').style.display = 'block';
+            
+            // 3. Reiniciar campos de erro e esconder os campos de entrega/mesa se for a primeira vez
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            document.getElementById('local').value = ''; 
+            toggleCamposEndereco(); 
         }
 
         function voltarEtapa() {
-             if (etapaAtual === 2) {
-                showEtapa(1);
-            }
+            document.getElementById('card-dados-cliente').style.display = 'none';
+            document.getElementById('card-resumo-pedido').style.display = 'block';
         }
-
-        // ===================================
-        // === LÓGICA DO CARRINHO ===
-        // ===================================
-
-        function calcularTotalDoCarrinho() {
-            let totalValor = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
-            
-            let totalDescontoParaBotao = 0;
-            if (cupomAplicado && cupomAplicado.type !== 'note') {
-                if (cupomAplicado.type === 'percent') {
-                    totalDescontoParaBotao = totalValor * cupomAplicado.value;
-                } else if (cupomAplicado.type === 'flat') {
-                    totalDescontoParaBotao = cupomAplicado.value;
-                }
-                totalDescontoParaBotao = Math.min(totalDescontoParaBotao, totalValor);
-            }
-            
-            return totalValor - totalDescontoParaBotao;
-        }
-
-        function atualizarCarrinhoFlutuante() {
-            const totalItens = carrinho.reduce((sum, item) => sum + item.quantidade, 0);
-            const carrinhoFlutuante = document.getElementById('carrinho-flutuante');
-            const badge = document.getElementById('carrinho-badge');
-            
-            if (totalItens > 0) {
-                carrinhoFlutuante.style.display = 'flex'; 
-                badge.style.display = 'flex'; 
-                badge.textContent = totalItens;
-            } else {
-                carrinhoFlutuante.style.display = 'flex'; 
-                badge.style.display = 'none'; 
-                badge.textContent = '0';
-            }
-            
-            // 🚨 NOVO: Atualiza a seção de sugestões
-            updateSuggestions();
-        }
-
-        // 🚨 FUNÇÃO MODIFICADA: Adicionada a observacao = '' por padrão
-        function adicionarAoCarrinho(nome, preco, buttonElement) {
-            const precoFloat = parseFloat(String(preco).replace(',', '.'));
-
-            const itemExistente = carrinho.find(item => item.nome === nome && item.observacao === '');
-            if (itemExistente) {
-                itemExistente.quantidade++;
-            } else {
-                // 🚨 NOVO: Incluindo 'observacao' vazia
-                carrinho.push({ nome, preco: precoFloat, quantidade: 1, observacao: '' });
-            }
-            
-            salvarCarrinho();
-            
-            if (buttonElement) {
-                const originalText = buttonElement.textContent;
-                buttonElement.textContent = '✅ Adicionado!';
-                buttonElement.style.backgroundColor = '#66BB6A';
-                buttonElement.disabled = true;
-
-                setTimeout(() => {
-                    buttonElement.textContent = originalText;
-                    buttonElement.style.backgroundColor = '#4CAF50';
-                    buttonElement.disabled = false;
-                }, 800);
-            }
-            
-            atualizarCarrinhoFlutuante();
-            aplicarCupom(true); 
-        }
-
-        // 🚨 FUNÇÃO MODIFICADA: Adicionada a observacao = '' por padrão
-        function adicionarCaipifrutaSabor(nomeCompleto, preco, buttonElement) {
-            const precoFloat = parseFloat(String(preco).replace(',', '.'));
-            
-            // Procura por um item existente sem observação, pois o sabor já define o item
-            const itemExistente = carrinho.find(item => item.nome === nomeCompleto && item.observacao === '');
-
-            if (itemExistente) {
-                itemExistente.quantidade++;
-            } else {
-                // 🚨 NOVO: Incluindo 'observacao' vazia
-                carrinho.push({ nome: nomeCompleto, preco: precoFloat, quantidade: 1, observacao: '' });
-            }
-            
-            salvarCarrinho();
-            
-            if (buttonElement) {
-                const menu = buttonElement.closest('.sabores-menu');
-                if (menu) {
-                     // Fecha o dropdown após a seleção
-                     menu.style.display = 'none';
-                }
-            }
-            
-            atualizarCarrinhoFlutuante();
-            aplicarCupom(true); 
-
-            // Mostrar a mensagem de atenção no lugar do alert()
-            showAtencaoMessage(`✅ ${nomeCompleto.split('(')[0].trim()} adicionado ao carrinho!`);
-            
-            // É importante retornar aqui para não continuar a lógica de animação de botão (se houver)
-            return; 
-        }
-
-
-        function removerItemCarrinho(index) {
-            carrinho.splice(index, 1); 
-            
-            salvarCarrinho();
-            
-            atualizarCarrinhoFlutuante();
-            aplicarCupom(true); 
-            atualizarListaCarrinhoModal(); 
-        }
-        
-        // ===========================================
-        // === 🚨 NOVO: LÓGICA DE OBSERVAÇÃO DO ITEM 🚨 ===
-        // ===========================================
 
         function abrirObsModal(index) {
-            obsItemIndex = index;
-            const item = carrinho[index];
-            
-            document.getElementById('obs-item-title').textContent = `Observação para: ${item.nome}`;
-            document.getElementById('obs-text').value = item.observacao || ''; // Carrega a observação existente
+            itemAtualParaObs = carrinho[index];
+            if (!itemAtualParaObs) return;
+
+            document.getElementById('obs-item-title').textContent = `Observação para: ${itemAtualParaObs.nome}`;
+            document.getElementById('obs-text').value = itemAtualParaObs.observacao;
             document.getElementById('obs-modal').style.display = 'block';
         }
 
         function fecharObsModal() {
             document.getElementById('obs-modal').style.display = 'none';
-            obsItemIndex = -1;
+            itemAtualParaObs = null;
         }
 
         function salvarObservacao() {
-            if (obsItemIndex >= 0 && obsItemIndex < carrinho.length) {
+            if (itemAtualParaObs) {
                 const obsText = document.getElementById('obs-text').value.trim();
-                carrinho[obsItemIndex].observacao = obsText;
-                salvarCarrinho();
-                atualizarListaCarrinhoModal(); 
-                showAtencaoMessage(`Observação salva para: ${carrinho[obsItemIndex].nome.split('(')[0].trim()}`);
+                // Encontra o item no carrinho (garante que está modificando o objeto certo)
+                const index = carrinho.findIndex(item => item === itemAtualParaObs);
+                
+                if (index !== -1) {
+                    carrinho[index].observacao = obsText;
+                }
+                
+                atualizarCarrinho();
+                fecharObsModal();
+                mostrarMensagem('Observação salva com sucesso! 👍', 'sucesso');
             }
-            fecharObsModal();
         }
 
-        // ===================================
-        // === LÓGICA DO CUPOM - MANTIDO
-        // ===================================
+        function toggleCamposEndereco() {
+            const local = document.getElementById('local').value;
+            const campoMesa = document.getElementById('campo-mesa');
+            const camposEndereco = document.getElementById('campos-endereco');
 
-        function removerCupom() {
-            cupomAplicado = null;
-            descontoValor = 0;
-            document.getElementById('coupon-input').value = '';
-            document.getElementById('coupon-message').textContent = 'Cupom removido.';
-            document.getElementById('coupon-message').style.color = 'gray';
-            document.getElementById('remove-coupon-btn').style.display = 'none';
+            // Resetar validações
+            document.getElementById('error-mesa').style.display = 'none';
+            document.getElementById('error-cep').style.display = 'none';
+            document.getElementById('error-numero').style.display = 'none';
+            document.getElementById('error-rua').style.display = 'none';
 
-            salvarCarrinho();
-
-            atualizarListaCarrinhoModal();
-            atualizarCarrinhoFlutuante();
+            if (local === 'Mesa') {
+                campoMesa.style.display = 'block';
+                camposEndereco.style.display = 'none';
+            } else if (local === 'Entrega') {
+                campoMesa.style.display = 'none';
+                camposEndereco.style.display = 'block';
+            } else { // Retirada ou vazio
+                campoMesa.style.display = 'none';
+                camposEndereco.style.display = 'none';
+            }
         }
+        
+        // Inicializa o toggle para garantir que os campos extras estão escondidos ao carregar
+        document.addEventListener('DOMContentLoaded', toggleCamposEndereco);
 
-        function aplicarCupom(isSilent = false) {
+        // ======================================
+        // === LÓGICA DO CUPOM ===
+        // ======================================
+
+        function aplicarCupom() {
             const input = document.getElementById('coupon-input');
-            const messageDisplay = document.getElementById('coupon-message');
+            const codigo = input.value.toUpperCase().trim();
+            const message = document.getElementById('coupon-message');
             const removeBtn = document.getElementById('remove-coupon-btn');
-            const codigoCupom = input.value.trim().toUpperCase();
-            
-            // Usa o código do input se houver, ou o cupom aplicado (se isSilent for true)
-            const cupomParaTestar = codigoCupom.length > 0 ? codigoCupom : (cupomAplicado ? cupomAplicado.codigo : null);
 
-            let novoCupomAplicado = null;
-            descontoValor = 0;
-            
-            if (!isSilent || codigoCupom.length > 0) {
-                 messageDisplay.textContent = '';
-                 messageDisplay.style.color = 'red';
-            }
+            message.textContent = '';
             removeBtn.style.display = 'none';
+            cupomAplicado = null; // Reset
 
-            const totalItens = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
-
-            if (totalItens === 0 && !isSilent) {
-                messageDisplay.textContent = 'Adicione itens ao carrinho antes de aplicar um cupom.';
-                atualizarListaCarrinhoModal();
+            if (codigo === '') {
+                message.textContent = 'Por favor, digite um código de cupom.';
+                message.style.color = '#ff6b6b';
                 return;
             }
 
-            if (cuponsValidos[cupomParaTestar]) {
-                const cupom = cuponsValidos[cupomParaTestar];
-
-                if (totalItens >= cupom.minPurchase) {
-                    novoCupomAplicado = { ...cupom, codigo: cupomParaTestar };
-                    
-                    if (!isSilent) {
-                        messageDisplay.textContent = `✅ ${cupom.message}`;
-                        messageDisplay.style.color = '#4CAF50';
-                    }
-                    removeBtn.style.display = 'inline-block';
-                    input.value = cupomParaTestar;
-
-                } else {
-                    // O cupom é válido, mas o valor mínimo não foi atingido
-                    if (codigoCupom.length > 0) {
-                         // Se foi uma tentativa manual de aplicar, limpa o input
-                        if (!isSilent) {
-                            messageDisplay.textContent = `🚫 Pedido mínimo de R$${cupom.minPurchase.toFixed(2).replace('.', ',')} necessário.`;
-                        }
-                    }
-                }
-            } else if (codigoCupom.length > 0 && !isSilent) {
-                messageDisplay.textContent = '🚫 Cupom inválido ou expirado.';
-            } else if (!cupomAplicado && codigoCupom.length === 0 && !isSilent) {
-                messageDisplay.textContent = 'Digite um cupom e clique em Aplicar.';
-                messageDisplay.style.color = 'gray';
-            }
-
-
-            cupomAplicado = novoCupomAplicado;
-            salvarCarrinho();
-
-            atualizarListaCarrinhoModal(); 
-        }
-
-        // ==================================================================================
-        // =========🚨 FUNÇÃO MODIFICADA: ATUALIZAR LISTA CARRINHO MODAL 🚨=========
-        // ==================================================================================
-        function atualizarListaCarrinhoModal() {
-            const lista = document.getElementById('lista-carrinho');
-            const totalDisplay = document.getElementById('carrinho-total');
-            const discountDisplay = document.getElementById('discount-display');
-            const input = document.getElementById('coupon-input');
-            const messageDisplay = document.getElementById('coupon-message');
-            const removeBtn = document.getElementById('remove-coupon-btn');
-            
-            lista.innerHTML = '';
-            
-            let totalGeral = 0;
-            let totalDesconto = 0;
-
-            if (carrinho.length === 0) {
-                 lista.innerHTML = '<li>Seu carrinho está vazio.</li>';
-                 discountDisplay.style.display = 'none';
-                 cupomAplicado = null;
-                 descontoValor = 0;
-                 messageDisplay.textContent = ''; 
-                 removeBtn.style.display = 'none';
-                 input.value = ''; 
-                 salvarCarrinho(); 
-            }
-
-            carrinho.forEach((item, index) => {
-                const li = document.createElement('li');
-                const subtotal = item.preco * item.quantidade;
-                totalGeral += subtotal;
+            if (cupons[codigo]) {
+                cupomAplicado = { codigo: codigo };
                 
-                const precoFormatado = item.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                const subtotalFormatado = subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-                // --- LÓGICA PARA ENCONTRAR A IMAGEM (NOVO) ---
-                let imageUrl = '';
+                // Simula o cálculo e aplicação
+                const { desconto } = calcularTotal(); 
                 
-                // 1. Tenta encontrar o card original pelo data-id do produto
-                // O data-id é o identificador mais robusto
-                
-                let originalCard = null;
-                
-                // Tentativa de mapeamento pelo nome limpo (para itens de sabor)
-                let nomeBusca = item.nome.split(' (')[0].trim();
-                if (nomeBusca.includes('Caipfruta')) {
-                    originalCard = document.querySelector('[data-id="caipifrutas-base"]');
-                } else if (nomeBusca.includes('Gin')) {
-                     originalCard = document.querySelector('[data-id="gins-base"]');
-                } else if (nomeBusca.includes('Mojito')) {
-                     originalCard = document.querySelector('[data-id="mojito-base"]');
-                } else if (nomeBusca.includes('Soda Italiana')) {
-                     originalCard = document.querySelector('[data-id="soda-italiana-base"]');
-                } else if (nomeBusca.includes('Copão')) {
-                     // Tenta buscar o copão base (Ex: Copão Pitu)
-                     const copaoBaseName = nomeBusca.split(' - ')[0].trim(); 
-                     originalCard = document.querySelector(`[data-name="${copaoBaseName}"]`);
-                } else {
-                     // Busca direta pelo data-name exato (para itens sem sabor)
-                     originalCard = document.querySelector(`[data-name="${nomeBusca}"]`);
-                }
-                
-                
-                if (originalCard) {
-                     const imageDiv = originalCard.querySelector('.product-image');
-                     if (imageDiv) {
-                         imageUrl = imageDiv.style.backgroundImage;
-                     }
-                }
-                // --- FIM LÓGICA PARA ENCONTRAR A IMAGEM ---
+                message.innerHTML = `${cupons[codigo].mensagem} Desconto de **${formatarMoeda(desconto)}**!`;
+                message.style.color = '#4CAF50';
+                removeBtn.style.display = 'block';
+                input.disabled = true;
+                document.getElementById('apply-coupon-btn').disabled = true;
 
-                // Conteúdo formatado com o novo layout
-                li.innerHTML = `
-                    <div class="item-carrinho-row">
-                        <div class="item-carrinho-img" style="${imageUrl}"></div>
-                        <div class="item-details-content">
-                            <span class="item-name-qty">
-                                ${item.nome}
-                                <br>
-                                <small style="color: #666;">${item.quantidade}x ${precoFormatado}</small>
-                            </span>
-                            <div class="item-action-buttons">
-                                <span style="font-weight: bold; margin-right: 5px;">
-                                    ${subtotalFormatado}
-                                </span>
-                                <button class="btn-obs-item" onclick="abrirObsModal(${index})" title="Adicionar/Editar Observação">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                                <button class="btn-remover" onclick="removerItemCarrinho(${index})" title="Remover Item">❌</button>
-                            </div>
-                        </div>
-                    </div>
-                    ${item.observacao ? `<div class="item-obs">Obs: ${item.observacao}</div>` : ''}
-                `;
-
-                lista.appendChild(li);
-            });
-
-            // 2. Calcular o desconto
-            if (cupomAplicado) {
-                if (cupomAplicado.type === 'percent') {
-                    totalDesconto = totalGeral * cupomAplicado.value;
-                } else if (cupomAplicado.type === 'flat') {
-                    totalDesconto = cupomAplicado.value;
-                } else if (cupomAplicado.type === 'note') {
-                    totalDesconto = 0; 
-                }
-                
-                totalDesconto = Math.min(totalDesconto, totalGeral); 
-            }
-            
-            descontoValor = totalDesconto; 
-
-            // 3. Exibir Desconto (Tratamento para cupons de valor e cupons de nota)
-            if (descontoValor > 0) {
-                const descontoFormatado = descontoValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                discountDisplay.textContent = `Desconto (${cupomAplicado.codigo}): - ${descontoFormatado}`;
-                discountDisplay.style.display = 'block';
-                discountDisplay.style.color = '#4CAF50';
-                
-                if (messageDisplay.textContent === '') {
-                     messageDisplay.textContent = `✅ Cupom ${cupomAplicado.codigo} aplicado!`;
-                     messageDisplay.style.color = '#4CAF50';
-                }
-                removeBtn.style.display = 'inline-block';
-
-            } else if (cupomAplicado && cupomAplicado.type === 'note') {
-                discountDisplay.textContent = `✅ Cupom ${cupomAplicado.codigo} aplicado (Sem abatimento em valor).`;
-                discountDisplay.style.display = 'block';
-                discountDisplay.style.color = '#00bcd4'; 
-
-                if (messageDisplay.textContent === '') {
-                     messageDisplay.textContent = `✅ ${cupomAplicado.message}`;
-                     messageDisplay.style.color = '#00bcd4';
-                }
-                removeBtn.style.display = 'inline-block';
+                atualizarCarrinho();
+                mostrarMensagem(`Cupom **${codigo}** aplicado com sucesso!`, 'sucesso');
             } else {
-                discountDisplay.style.display = 'none';
-                removeBtn.style.display = 'none'; 
-                
-                if (input.value === '') { 
-                    messageDisplay.textContent = ''; 
-                }
+                message.textContent = 'Cupom inválido ou expirado.';
+                message.style.color = '#ff6b6b';
+                input.disabled = false;
+                document.getElementById('apply-coupon-btn').disabled = false;
             }
-
-            // 4. Calcular e exibir o Total Final
-            const totalFinal = totalGeral - descontoValor;
-            totalDisplay.textContent = totalFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-            if (carrinho.length === 0 && document.getElementById('myModal').style.display === 'block') {
-                fecharModal();
-            }
-            
-            atualizarCarrinhoFlutuante();
         }
         
-        // ===================================
-        // === VALIDAÇÃO E ENVIO ===
-        // ===================================
+        function removerCupom() {
+            cupomAplicado = null;
+            document.getElementById('coupon-input').value = '';
+            document.getElementById('coupon-input').disabled = false;
+            document.getElementById('apply-coupon-btn').disabled = false;
+            document.getElementById('coupon-message').textContent = 'Cupom removido.';
+            document.getElementById('coupon-message').style.color = '#888';
+            document.getElementById('remove-coupon-btn').style.display = 'none';
+            
+            atualizarCarrinho();
+            mostrarMensagem('Cupom removido. 😟', 'atencao');
+        }
+
+        // ======================================
+        // === LÓGICA DE ENVIO (WHATSAPP) ===
+        // ======================================
 
         function validarFormulario() {
             let isValid = true;
-            
-            const nome = document.getElementById('nome');
-            const telefone = document.getElementById('telefone');
-            const local = document.getElementById('local');
-            const mesa = document.getElementById('mesa');
-            const cep = document.getElementById('cep');
-            const rua = document.getElementById('rua');
-            const numero = document.getElementById('numero');
-            const complemento = document.getElementById('complemento');
+            const nome = document.getElementById('nome').value.trim();
+            const telefone = document.getElementById('telefone').value.replace(/\D/g, "");
+            const local = document.getElementById('local').value;
+            const mesa = document.getElementById('mesa').value.trim();
+            const cep = document.getElementById('cep').value.replace(/\D/g, "");
+            const numero = document.getElementById('numero').value.trim();
+            const rua = document.getElementById('rua').value.trim();
 
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
-            
-            if (nome.value.trim() === '') {
+
+            if (nome.length < 2) {
                 document.getElementById('error-nome').style.display = 'block';
                 isValid = false;
             }
-
-            const telefoneRegex = /^\(\d{2}\) \d{4,5}-\d{4}$/; 
-            if (!telefoneRegex.test(telefone.value.trim())) {
+            if (telefone.length < 10 || telefone.length > 11) {
                 document.getElementById('error-telefone').style.display = 'block';
                 isValid = false;
             }
-
-            if (local.value === '') {
+            if (local === '') {
                 document.getElementById('error-local').style.display = 'block';
                 isValid = false;
             }
 
-            if (local.value === 'Mesa' && mesa.value.trim() === '') {
-                isValid = false;
-            }
-            
-            if (local.value === 'Entrega') {
-                 const cepRegex = /^\d{5}-\d{3}$/;
-                 if (!cepRegex.test(cep.value.trim())) {
-                    isValid = false; 
-                 }
-
-                 if (rua.value.trim() === '' || numero.value.trim() === '') {
-                     isValid = false;
-                 }
-            }
-
-            if (isValid) {
-                form.nome = nome.value.trim();
-                form.telefone = telefone.value.trim();
-                form.local = local.value;
-                form.mesa = local.value === 'Mesa' ? mesa.value.trim() : '';
-                
-                if (local.value === 'Entrega') {
-                    form.cep = cep.value.trim();
-                    form.rua = rua.value.trim();
-                    form.numero = numero.value.trim();
-                    form.complemento = complemento.value.trim();
-                } else {
-                    form.cep = form.rua = form.numero = form.complemento = '';
+            if (local === 'Mesa') {
+                if (mesa === '') {
+                    document.getElementById('error-mesa').style.display = 'block';
+                    isValid = false;
+                }
+            } else if (local === 'Entrega') {
+                if (cep.length !== 8) {
+                    document.getElementById('error-cep').style.display = 'block';
+                    isValid = false;
+                }
+                if (numero === '') {
+                    document.getElementById('error-numero').style.display = 'block';
+                    isValid = false;
+                }
+                if (rua === '') {
+                    document.getElementById('error-rua').style.display = 'block';
+                    isValid = false;
                 }
             }
-            
+
             return isValid;
         }
 
-// ==================================================================================
-// =========🚨 FUNÇÃO MODIFICADA PARA INCLUIR OBSERVAÇÕES E LINK CONDICIONAL 🚨=========
-// ==================================================================================
-        function gerarMensagemPedido() {
-            let mensagemPedido = '';
-            let totalItens = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
-            let totalFinal = totalItens - descontoValor;
-            
-            const totalFinalParaBusca = totalFinal.toFixed(2); 
-            
-            const linkParaPagamento = linksDePagamentoFixos[totalFinalParaBusca] || null;
-
-            const totalItensFormatado = totalItens.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-            const totalFinalFormatado = totalFinal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-            const descontoFormatado = descontoValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-
-            // 1. Dados do Cliente
-            mensagemPedido += `*📋 NOVO PEDIDO - NUANCE 📋*\n`;
-            mensagemPedido += `Nome: ${form.nome}\n`;
-            mensagemPedido += `Telefone: ${form.telefone}\n`;
-            
-            if (form.local === 'Mesa' && form.mesa) {
-                mensagemPedido += `Local: Mesa ${form.mesa} (Consumo no Local)\n`;
-            } else if (form.local === 'Retirada') {
-                 mensagemPedido += `Local: Retirada (Balcão)\n`;
-            } else if (form.local === 'Entrega') {
-                mensagemPedido += `Local: *Entrega*\n`;
-                mensagemPedido += `Rua/Av: ${form.rua}, Nº ${form.numero}\n`;
-                if (form.complemento) {
-                     mensagemPedido += `Comple.: ${form.complemento}\n`;
-                }
-                mensagemPedido += `CEP: ${form.cep}\n`;
-            }
-
-            mensagemPedido += `\n*🛒 ITENS DO PEDIDO 🛒*\n`;
-
-            // 2. Itens do Carrinho
-            carrinho.forEach(item => {
-                const precoUnitarioFormatado = item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-                mensagemPedido += `• ${item.quantidade}x ${item.nome} (R$ ${precoUnitarioFormatado})`;
-                
-                // 🚨 NOVO: Incluindo observação
-                if (item.observacao) {
-                    // Substitui quebras de linha por espaço ou um separador para o WhatsApp
-                    const obsFormatada = item.observacao.replace(/\n/g, ' / '); 
-                    mensagemPedido += `\n  _Obs: ${obsFormatada}_`;
-                }
-                mensagemPedido += `\n`; // Adiciona quebra de linha após o item
-            });
-
-            // 3. Total e Finalização (Com Desconto)
-            mensagemPedido += `\n*🧾 RESUMO DO PEDIDO 🧾*\n`;
-            mensagemPedido += `Subtotal dos Itens: R$ ${totalItensFormatado}\n`;
-
-            if (cupomAplicado) {
-                const codigoCupom = cupomAplicado.codigo;
-
-                if (cupomAplicado.type === 'note') {
-                    mensagemPedido += `\n*🏷️ CUPOM DE OBSERVAÇÃO APLICADO: ${codigoCupom}*\n`;
-                    mensagemPedido += `*OBS:* ${cupomAplicado.message}\n`;
-                } else {
-                    mensagemPedido += `🏷️ Cupom ${codigoCupom} (Desconto de Valor): - R$ ${descontoFormatado}\n`;
-                }
-            }
-
-            mensagemPedido += `\n*💲 TOTAL A PAGAR: R$ ${totalFinalFormatado} 💲*\n\n`;
-
-            // 4. LÓGICA CONDICIONAL DO LINK DE PAGAMENTO SOLICITADA PELO CLIENTE
-            if (linkParaPagamento) {
-                mensagemPedido += `👇*FAÇA O SEU PAGAMENTO*👇\n`;
-                mensagemPedido += `🔗 ${linkParaPagamento} \n\n`;
-                mensagemPedido += `🤗 *Não* esqueça de nos enviar o *Comprovante*: 📃`
-            }
-            else {
-                mensagemPedido += `_Vamos criar o seu *link* de pagamento agora. *Só um estant*e._`;
-            }
-
-            return { mensagem: mensagemPedido, link: linkParaPagamento };
-        }
-
-
         function enviarPedidoWhatsapp() {
-            if (carrinho.length === 0) {
-                alert('Seu carrinho está vazio.');
+            if (!validarFormulario()) {
+                mostrarMensagem('🚨 Preencha todos os campos obrigatórios antes de enviar!', 'erro');
                 return;
             }
 
-            if (!validarFormulario()) {
-                alert('Por favor, preencha todos os campos obrigatórios de contato e local corretamente.');
-                return; 
+            const nome = document.getElementById('nome').value.trim();
+            const telefone = document.getElementById('telefone').value;
+            const local = document.getElementById('local').value;
+            const mesa = document.getElementById('mesa').value.trim();
+            const cep = document.getElementById('cep').value.trim();
+            const numero = document.getElementById('numero').value.trim();
+            const rua = document.getElementById('rua').value.trim();
+            const complemento = document.getElementById('complemento').value.trim();
+            
+            const { total, desconto } = calcularTotal();
+
+            let mensagem = `*✨ PEDIDO CARDÁPIO NUANCE ✨*\n\n`;
+            
+            mensagem += `*Cliente:* ${nome}\n`;
+            mensagem += `*Telefone:* ${telefone}\n`;
+            mensagem += `*Local de Entrega:* ${local}\n`;
+            
+            if (local === 'Mesa') {
+                mensagem += `*Mesa:* ${mesa}\n`;
+            } else if (local === 'Entrega') {
+                mensagem += `\n*Endereço:*\n`;
+                mensagem += `Rua/Av: ${rua}\n`;
+                mensagem += `Nº: ${numero}\n`;
+                mensagem += `CEP: ${cep}\n`;
+                if (complemento) mensagem += `Complemento: ${complemento}\n`;
+            } else {
+                mensagem += `\n*Observação:* Cliente irá retirar no balcão.\n`;
             }
-
-            const { mensagem } = gerarMensagemPedido();
-
-            const numeroWhatsapp = '5562995679219'; 
-            const url = `https://api.whatsapp.com/send?phone=${numeroWhatsapp}&text=${encodeURIComponent(mensagem)}`;
             
+            mensagem += `\n*ITENS DO PEDIDO:*\n`;
+            carrinho.forEach((item, index) => {
+                mensagem += `${index + 1}. ${item.nome} (${formatarMoeda(item.preco)})\n`;
+                if (item.observacao) {
+                    mensagem += `   _Obs:_ ${item.observacao}\n`;
+                }
+            });
+
+            mensagem += `\n*RESUMO FINANCEIRO:*\n`;
+            
+            if (cupomAplicado) {
+                mensagem += `Desconto (${cupomAplicado.codigo}): -${formatarMoeda(desconto)}\n`;
+            }
+            
+            mensagem += `*TOTAL GERAL: ${formatarMoeda(total)}*\n\n`;
+            mensagem += `_Obrigado pelo seu pedido!_ 🥂`;
+
+            const numeroWhatsApp = 'SEU_NUMERO_WHATSAPP_AQUI'; // 🚨 Substitua pelo seu número de WhatsApp
+            const url = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(mensagem)}`;
+
             window.open(url, '_blank');
-            fecharModal(); 
-            
-            // Limpa o carrinho e cupom após o envio
+            fecharModal();
+            // Limpa o carrinho após o envio
             carrinho = [];
-            cupomAplicado = null; 
-            document.getElementById('coupon-input').value = '';
-            document.getElementById('coupon-message').textContent = '';
-            
-            salvarCarrinho();
-            
-            atualizarCarrinhoFlutuante();
+            cupomAplicado = null;
+            atualizarCarrinho();
         }
 
-        // ===================================
-        // LÓGICA DE FILTRAGEM (CORRIGIDA)
-        // ===================================
-
-        function removerAcentos(text) {
-            return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        // ======================================
+        // === LÓGICA DE BUSCA E SUGESTÃO ===
+        // ======================================
+        
+        function getProdutoById(id) {
+            return produtos.find(p => p.id === id);
         }
 
         function filtrarProdutos() {
-            const input = document.getElementById('search-input');
-            const rawFilter = input.value.trim().toLowerCase();
-            const filter = removerAcentos(rawFilter); 
-            
+            const termo = document.getElementById('search-input').value.toLowerCase().trim();
             const originalSections = document.getElementById('original-sections');
             const searchResultsContainer = document.getElementById('search-results-carousel-container');
             const searchResultsTitle = document.getElementById('search-results-title');
             const noResults = document.getElementById('no-results');
             
+            // Oculta todas as seções originais e limpa destaques
+            document.querySelectorAll('.section-original-title').forEach(title => title.style.display = 'none');
+            document.querySelectorAll('.product-grid').forEach(grid => grid.style.display = 'none');
+            document.querySelectorAll('.nav-button').forEach(btn => btn.style.display = 'none');
+            document.querySelectorAll('.card').forEach(card => card.classList.remove('highlight'));
+            
             searchResultsContainer.innerHTML = '';
-            let resultsFound = 0;
+            searchResultsTitle.style.display = 'none';
+            noResults.style.display = 'none';
 
-            if (filter.length === 0) {
+            if (termo.length < 3) {
+                // Se o termo for muito curto, mostra tudo e esconde resultados de busca
                 originalSections.style.display = 'block';
+                document.querySelectorAll('.section-original-title').forEach(title => title.style.display = 'block');
+                document.querySelectorAll('.product-grid').forEach(grid => grid.style.display = 'flex');
+                document.querySelectorAll('.nav-button').forEach(btn => btn.style.display = 'flex');
                 searchResultsContainer.style.display = 'none';
-                searchResultsTitle.style.display = 'none';
-                noResults.style.display = 'none';
                 return;
             }
-            
-            originalSections.style.display = 'none'; 
-            searchResultsTitle.style.display = 'block';
-            searchResultsTitle.textContent = `Resultados da Busca por "${input.value}"`;
-            
-            const allOriginalCards = document.querySelectorAll('.product-grid .card');
 
-            allOriginalCards.forEach((card, index) => {
-                const name = removerAcentos(card.getAttribute('data-name') || '').toLowerCase();
-                const section = removerAcentos(card.getAttribute('data-section') || '').toLowerCase();
-                
-                const cardText = removerAcentos(card.textContent || '').toLowerCase();
+            const resultados = produtos.filter(p => 
+                p.name.toLowerCase().includes(termo) || 
+                p.section.toLowerCase().includes(termo) ||
+                p.id.toLowerCase().includes(termo)
+            );
 
-                if (name.includes(filter) || section.includes(filter) || cardText.includes(filter)) {
+            if (resultados.length > 0) {
+                searchResultsTitle.style.display = 'block';
+                searchResultsContainer.style.display = 'flex';
+                searchResultsContainer.innerHTML = ''; // Limpa o carrossel de busca
+
+                // 1. Cria os cards de resultado no carrossel de busca
+                resultados.forEach(produto => {
+                    // Encontra o CARD original para obter o HTML e a imagem
+                    const originalCard = document.querySelector(`.card[data-id="${produto.id}"]`) || 
+                                         document.querySelector(`.card[data-id="${produto.id.replace(/-[a-z]+$/, '-base')}"]`); 
                     
-                    // 🚨 CORREÇÃO: Não usamos cloneNode(true) para evitar duplicação de IDs.
-                    // Em vez disso, criamos um novo card e copiamos o HTML interno.
-                    
-                    const newCard = document.createElement('div');
-                    newCard.className = card.className; // Copia as classes do card original
-                    // Copia todos os data attributes
-                    card.getAttributeNames().forEach(attrName => {
-                        if (attrName.startsWith('data-')) {
-                            newCard.setAttribute(attrName, card.getAttribute(attrName));
+                    if (originalCard) {
+                        const clone = originalCard.cloneNode(true);
+                        clone.style.minWidth = '180px';
+                        clone.style.marginRight = '20px';
+                        clone.classList.remove('hidden-by-search');
+                        clone.classList.remove('highlight');
+                        
+                        // Atualiza o nome, se for um sabor (Ex: Gin Tropical)
+                        if (produto.name.includes("Gin") || produto.name.includes("Caipfruta") || produto.name.includes("Mojito") || produto.name.includes("Soda")) {
+                            clone.querySelector('h3').textContent = produto.name.split('de ').pop().split('sabir ').pop().split(' - ').pop(); // Título mais curto
+                        } else {
+                            clone.querySelector('h3').textContent = produto.name;
                         }
-                    });
-                    
-                    // Copia o conteúdo interno (innerHTML)
-                    newCard.innerHTML = card.innerHTML;
 
-                    // Ajusta o estilo para ser menor no carrossel de busca
-                    newCard.style.minWidth = '180px'; 
-                    newCard.style.marginRight = '20px';
-                    newCard.style.display = 'inline-block';
-                    
-                    // Ajusta os botões onclick/toggleDropdown para ter novos IDs únicos
-                    // (Embora a função toggleDropdown tenha sido corrigida para aceitar strings, 
-                    // a clonagem de IDs ainda é um problema. O melhor é injetar o HTML limpo.)
-
-                    // Se houver dropdowns, garantimos que eles funcionem no novo card.
-                    // O ID do dropdown é o ID do menu, que é chamado pelo onclick do botão.
-                    newCard.querySelectorAll('.btn-sabores').forEach(btn => {
-                        const originalOnclick = btn.getAttribute('onclick');
-                        if (originalOnclick) {
-                            const originalIdMatch = originalOnclick.match(/'(.*?)'/);
-                            if (originalIdMatch && originalIdMatch[1]) {
-                                const originalDropdownId = originalIdMatch[1]; // Ex: 'saboresCaipiFrutas'
+                        // Remove dropdowns, mantendo apenas o botão de adicionar (se for um produto base com sabor)
+                        const dropdownContainer = clone.querySelector('.dropdown-container');
+                        if (dropdownContainer) {
+                             if (produto.id.endsWith('-base')) {
+                                // Se for o item base, mantém o dropdown.
+                            } else {
+                                // Se for um sabor específico, substitui o dropdown por um botão "Adicionar".
+                                const priceSpan = clone.querySelector('.price-real').textContent;
+                                const volumeSpan = clone.querySelector('.volume').textContent;
                                 
-                                // Gera um novo ID único (ex: 'saboresCaipiFrutas-search-1')
-                                const newDropdownId = `${originalDropdownId}-search-${resultsFound}`; 
+                                const newBtn = document.createElement('button');
+                                newBtn.className = 'btn-add';
+                                newBtn.textContent = 'Adicionar ao Carrinho';
+                                newBtn.setAttribute('onclick', `adicionarAoCarrinho('${produto.name}', ${produto.price}, this)`);
                                 
-                                // Atualiza o onclick do botão com o novo ID
-                                btn.setAttribute('onclick', `toggleDropdown('${newDropdownId}')`);
+                                dropdownContainer.parentNode.replaceChild(newBtn, dropdownContainer);
                                 
-                                // Atualiza o ID do menu de sabores
-                                const menu = newCard.querySelector(`#${originalDropdownId}`);
-                                if (menu) {
-                                    menu.id = newDropdownId;
+                                // Se já removeu o dropdown, pode ser necessário ajustar o HTML do preço
+                                const oldPrice = clone.querySelector('.price-old');
+                                if (oldPrice) oldPrice.remove();
+                                
+                                // Ajusta o estilo do preço para centralizar
+                                const priceRow = clone.querySelector('.price-row');
+                                if (priceRow) {
+                                    priceRow.style.justifyContent = 'center';
+                                    priceRow.querySelector('.price-real').style.fontSize = '1.4em';
+                                    priceRow.querySelector('.volume').style.fontSize = '0.8em';
                                 }
                             }
+                        } else {
+                            // Se não tinha dropdown, apenas garante que o botão "Adicionar" está lá
+                            const btnAdd = clone.querySelector('.btn-add');
+                             if (btnAdd) {
+                                btnAdd.setAttribute('onclick', `adicionarAoCarrinho('${produto.name}', ${produto.price}, this)`);
+                            }
                         }
-                    });
+                        
+                        searchResultsContainer.appendChild(clone);
+                    }
+                });
 
-
-                    searchResultsContainer.appendChild(newCard);
-                    resultsFound++;
-                }
-            });
-
-            if (resultsFound > 0) {
-                searchResultsContainer.style.display = 'block'; 
-                noResults.style.display = 'none';
+                // 2. Esconde todas as seções originais
+                originalSections.style.display = 'none';
+                
             } else {
+                // NENHUM RESULTADO NA BUSCA
+                searchResultsTitle.style.display = 'none';
                 searchResultsContainer.style.display = 'none';
+                
+                // Exibe a mensagem de "Nenhum produto encontrado"
                 noResults.style.display = 'block';
-                searchResultsTitle.style.display = 'none'; 
-            }
-        }
-        
-        // --- DROPDOWN E MODAL GERAL ---
-        function toggleDropdown(id) {
-            // 🚨 CORREÇÃO: Acessa o elemento pelo ID passado
-            const menu = document.getElementById(id);
-            if (!menu) return; // Se o elemento não for encontrado, ignora
-            
-            const isVisible = menu.style.display === 'block';
 
-            // Fecha todos os outros dropdowns
-            document.querySelectorAll('.sabores-menu').forEach(item => {
-                if (item.id !== id) {
-                    item.style.display = 'none';
-                }
+                // Opcional: Se quiser que as seções originais voltem
+                // originalSections.style.display = 'block';
+            }
+            
+            // 3. Atualiza sugestões se a busca foi feita (sugere algo relacionado ao que foi buscado)
+            sugerirProdutos(resultados); 
+        }
+
+        function sugerirProdutos(resultadosBusca = []) {
+            const container = document.getElementById('suggestion-section-content');
+            const title = document.getElementById('suggestion-title');
+            container.innerHTML = '';
+            
+            // IDs de produtos no carrinho ou na busca para evitar sugestão repetida
+            const idsReferencia = new Set(carrinho.map(item => item.id.replace(/-[a-z]+$/, '-base'))); 
+            resultadosBusca.forEach(p => idsReferencia.add(p.id.replace(/-[a-z]+$/, '-base')));
+            
+            // Remove a referência para os itens 'base' que não são compráveis
+            idsReferencia.forEach(id => {
+                if(id.endsWith('-base')) idsReferencia.delete(id);
             });
-
-            // Alterna a visibilidade do dropdown clicado
-            menu.style.display = isVisible ? 'none' : 'block';
-        }
-        
-        window.onclick = function(event) {
-            const modal = document.getElementById('myModal');
-            const obsModal = document.getElementById('obs-modal'); 
-
-            // Fecha o modal principal
-            if (event.target == modal) {
-                fecharModal();
-            }
-            // Fecha o modal de observação
-            if (event.target == obsModal) {
-                fecharObsModal();
-            }
             
-            // Fechar dropdowns ao clicar fora (mantido)
-            document.querySelectorAll('.sabores-menu').forEach(menu => {
-                const dropdownContainer = menu.closest('.dropdown-container');
-                const dropdownButton = dropdownContainer ? dropdownContainer.querySelector('.btn-sabores') : null;
+            // Sugestões manuais baseadas no seu cardápio, para quando o carrinho está vazio ou a busca é vazia
+            let sugestoes = [];
 
-                if (menu.style.display === 'block' && 
-                    event.target !== menu && !menu.contains(event.target) && 
-                    dropdownButton && event.target !== dropdownButton && !dropdownButton.contains(event.target)) {
-                    
-                    menu.style.display = 'none';
+            // Se tem itens no carrinho ou na busca, sugere da mesma seção
+            if (idsReferencia.size > 0) {
+                const produtoBaseId = idsReferencia.values().next().value; // Pega o primeiro ID
+                const produtoReferencia = produtos.find(p => p.id === produtoBaseId || p.id === produtoBaseId.replace(/-base$/, ''));
+                
+                if (produtoReferencia) {
+                    sugestoes = produtos.filter(p => 
+                        p.section === produtoReferencia.section && 
+                        !idsReferencia.has(p.id) &&
+                        p.id.endsWith('-base') // Sugere apenas os itens principais
+                    );
                 }
-            });
-        }
-        
-        document.addEventListener('DOMContentLoaded', () => {
-             // 1. Carrega o carrinho e o cupom salvo
-             carregarCarrinho();
-             
-             // 2. Preenche o input do cupom se houver um salvo
-             if (cupomAplicado) {
-                 document.getElementById('coupon-input').value = cupomAplicado.codigo || '';
-             }
-
-             // 3. Atualiza o ícone flutuante e aplica a lógica do cupom (silenciosamente)
-             atualizarCarrinhoFlutuante();
-             aplicarCupom(true);
-        });
-
-// ===========================================
-// === 🚨 NOVO: LÓGICA DE SUGESTÃO (CROSS-SELLING) 🚨 ===
-// ===========================================
-
-const SUGGESTION_MAP = {
-    // Se o cliente pediu:             // Sugira estes data-id:
-    'moscow-mule': ['abacaxi-hortela', 'cha-tropical'], // Drink alcoolico sugere sem alcool
-    'jack-limoned': ['mocktail', 'grape-fresh'],        // Drink alcoolico sugere sem alcool
-    'copao-pitu': ['abacaxi-hortela'],                  // Copão sugere um refri/acompanhamento
-    'copao-rum': ['mocktail'],
-    'copao-51': ['cha-tropical'],
-    'caipifrutas-base': ['gins-base', 'soda-italiana-base'], // Caipi sugere Gin ou Soda
-    'Caipfruta de Morango 🍓': ['gin-red-fruts', 'soda-red-frits'], // Morango sugere Red Frits
-};
-
-/**
- * Verifica o carrinho e injeta sugestões relevantes (produtos que o usuário AINDA NÃO TEM).
- */
-function updateSuggestions() {
-    const container = document.getElementById('suggestion-section-content');
-    const title = document.getElementById('suggestion-title');
-    container.innerHTML = ''; // Limpa as sugestões anteriores
-    
-    if (carrinho.length === 0) {
-        container.style.display = 'none';
-        title.style.display = 'none';
-        return;
-    }
-    
-    // Conjunto de IDs de produtos que JÁ estão no carrinho (ou são muito semelhantes)
-    const currentItemIds = new Set(carrinho.map(item => {
-        // Mapeamento simplificado para verificar o que já está no carrinho
-        const nameCleaned = removerAcentos(item.nome.toLowerCase()).trim();
-        if (nameCleaned.includes('caipfruta de morango')) return 'Caipfruta de Morango 🍓';
-        if (nameCleaned.includes('moscow mule')) return 'moscow-mule';
-        
-        // Tenta encontrar o data-id do produto base
-        let card = document.querySelector(`[data-name="${item.nome.split(' ')[0]}"]`);
-        if(card) return card.getAttribute('data-id');
-        
-        return item.nome; // Se não encontrar, usa o nome completo como fallback
-    }));
-    
-    // Lista para armazenar os IDs únicos das sugestões
-    let suggestionsToAdd = new Set();
-    
-    // 1. Coleta sugestões baseadas no que está no carrinho
-    carrinho.forEach(item => {
-        // Tenta mapear o item do carrinho para uma chave no SUGGESTION_MAP
-        let itemKey = item.nome.includes('Caipfruta de Morango') ? 'Caipfruta de Morango 🍓' : 
-                        document.querySelector(`[data-name="${item.nome.split(' ')[0]}"]`)?.getAttribute('data-id');
-        
-        // Tratar itens que são "base" mas com sabor
-        if (item.nome.includes('Caipfruta')) itemKey = 'caipifrutas-base';
-        if (item.nome.includes('Gin')) itemKey = 'gins-base';
-        if (item.nome.includes('Mojito')) itemKey = 'mojito-base';
-        if (item.nome.includes('Soda Italiana')) itemKey = 'soda-italiana-base';
-        
-        
-        if (SUGGESTION_MAP[itemKey]) {
-            SUGGESTION_MAP[itemKey].forEach(suggestedId => {
-                // Adiciona apenas se o ID sugerido AINDA NÃO estiver no carrinho
-                if (!currentItemIds.has(suggestedId)) {
-                    suggestionsToAdd.add(suggestedId);
-                }
-            });
-        }
-    });
-
-    // 2. Injeta os cards das sugestões
-    let suggestionCount = 0;
-    suggestionsToAdd.forEach(suggestionId => {
-        let originalCard = document.querySelector(`[data-id="${suggestionId}"]`);
-        
-        // Se o originalCard não for encontrado pelo data-id (caso de sabor específico como gin-red-fruts)
-        if (!originalCard && suggestionId.includes('-')) {
-             originalCard = document.querySelector(`[data-id="${suggestionId.split('-')[0]}"]`);
-        }
-        
-        if (originalCard) {
-            // Usamos o método de cópia limpa, igual ao filtro
-            const clone = document.createElement('div');
-            clone.className = originalCard.className; 
-            originalCard.getAttributeNames().forEach(attrName => {
-                if (attrName.startsWith('data-')) {
-                    clone.setAttribute(attrName, originalCard.getAttribute(attrName));
-                }
-            });
-            clone.innerHTML = originalCard.innerHTML;
-
-            // Ajustes de estilo para a seção de sugestões
-            clone.style.minWidth = '180px'; 
-            clone.style.marginRight = '20px';
-            clone.style.display = 'inline-block';
-            
-            // Remove o dropdown se existir, ele não é útil na seção de sugestões
-            clone.querySelectorAll('.dropdown-container').forEach(el => el.remove()); 
-
-            let finalName = clone.getAttribute('data-name');
-            let priceFloat = parseFloat(clone.getAttribute('data-price')) || 0;
-            let onClickAction = `adicionarAoCarrinho('${finalName}', ${priceFloat}, this)`;
-
-            // Lógica de sobrescrita para sabores específicos sugeridos
-            if (suggestionId === 'gin-red-fruts') {
-                finalName = 'Gin Red-Fruts';
-                priceFloat = 20.00; // Preço do Gin base
-                clone.querySelector('.card-content h3').textContent = finalName;
-                onClickAction = `adicionarCaipifrutaSabor('${finalName} ', ${priceFloat}, this)`; // Usa a função de sabor para ser mais preciso
             }
-             if (suggestionId === 'soda-red-frits') {
-                finalName = 'Soda Italiana sabir Red Frits';
-                priceFloat = 8.00; // Preço da Soda base
-                clone.querySelector('.card-content h3').textContent = 'Soda Red Frits';
-                onClickAction = `adicionarCaipifrutaSabor('${finalName}', ${priceFloat}, this)`;
+            
+            // Se ainda não tiver sugestões ou for a tela inicial, sugere os "melhores"
+            if (sugestoes.length === 0) {
+                 // Sugere itens populares/promocionais (usando IDs específicos)
+                const popularesIds = ['gin-red-fruts', 'moscow-mule', 'soda-red-frits', 'copao-pitu-base'];
+                sugestoes = popularesIds.map(id => getProdutoById(id)).filter(p => p);
             }
-
-            // Remove o botão base se existir
-            clone.querySelector('.btn-add')?.remove(); 
             
-            // Cria o novo botão (padrão)
-            const newButton = document.createElement('button');
-            newButton.className = 'btn-add';
-            newButton.textContent = `Adicionar ${finalName.split(' ')[0]}`;
-            newButton.setAttribute('onclick', onClickAction);
+            // Limita a 5 sugestões
+            sugestoes = sugestoes.slice(0, 5);
+
+            if (sugestoes.length > 0) {
+                title.style.display = 'block';
+                container.style.display = 'flex';
+                
+                sugestoes.forEach(produto => {
+                     // Encontra o CARD original (se for sabor ou item base)
+                    const originalCard = document.querySelector(`.card[data-id="${produto.id}"]`) ||
+                                         document.querySelector(`.card[data-id="${produto.id.replace(/-[a-z]+$/, '-base')}"]`); 
+
+                    if (originalCard) {
+                        const clone = originalCard.cloneNode(true);
+                        clone.style.minWidth = '180px';
+                        clone.style.marginRight = '20px';
+                        clone.classList.remove('hidden-by-search');
+                        clone.classList.remove('highlight');
+                        
+                        // Garante que o ID do produto é o do card base para o JS funcionar
+                        if(produto.id.includes('-base')) {
+                            clone.setAttribute('data-id', produto.id); 
+                        } else if (produto.id.includes('-base')) {
+                            // Se foi sugerido um sabor específico (ex: Gin Red-Fruts), ele deve ser um botão Add
+                            const dropdownContainer = clone.querySelector('.dropdown-container');
+                            if (dropdownContainer) {
+                                // Se for um sabor específico sugerido, transforma em botão "Adicionar"
+                                const newBtn = document.createElement('button');
+                                newBtn.className = 'btn-add';
+                                newBtn.textContent = 'Adicionar ao Carrinho';
+                                newBtn.setAttribute('onclick', `adicionarAoCarrinho('${produto.name}', ${produto.price}, this)`);
+                                dropdownContainer.parentNode.replaceChild(newBtn, dropdownContainer);
+                                
+                                // Atualiza o título e preço para corresponder ao sabor específico
+                                clone.querySelector('h3').textContent = produto.name.split(' - ').pop();
+                                const priceOld = clone.querySelector('.price-old');
+                                if(priceOld) priceOld.remove();
+                                clone.querySelector('.price-real').textContent = formatarMoeda(produto.price);
+                                
+                                const volume = clone.querySelector('.volume');
+                                if(volume) volume.textContent = '(350ml)'; // Valor padrão
+                            }
+                        }
+
+                        container.appendChild(clone);
+                    }
+                });
+            } else {
+                title.style.display = 'none';
+                container.style.display = 'none';
+            }
+        }
+        
+        // ======================================
+        // === ANIMAÇÃO E INICIALIZAÇÃO ===
+        // ======================================
+
+        function startTypingAnimation() {
+            const button = document.getElementById('myButton');
+            const text = "FAÇA SEU COPÃO!";
+            let i = 0;
             
-            // Corrige o preço (para garantir)
-            clone.querySelector('.price-real').textContent = priceFloat.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-
-            clone.querySelector('.card-content').appendChild(newButton);
-            container.appendChild(clone);
-            suggestionCount++;
+            function type() {
+                if (i < text.length) {
+                    button.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, 100); 
+                } else {
+                    button.classList.add('typing-complete');
+                }
+            }
+            
+            // Garante que o botão está vazio antes de começar
+            button.textContent = '';
+            type();
         }
-    });
 
-    // 3. Exibe a seção se houver sugestões
-    if (suggestionCount > 0) {
-        container.style.display = 'block';
-        title.style.display = 'block';
-    } else {
-        container.style.display = 'none';
-        title.style.display = 'none';
-    }
-}
-
-
-/**
- * Rola o carrossel (product-grid) na direção especificada. (MANTIDA)
- */
-function scrollCarousel(elementId, direction) {
-    const carousel = document.getElementById(elementId);
-    if (!carousel) return;
-
-    const scrollDistance = carousel.clientWidth;
-
-    if (direction === 'next') {
-        carousel.scrollBy({
-            left: scrollDistance,
-            behavior: 'smooth'
-        });
-    } else if (direction === 'prev') {
-        carousel.scrollBy({
-            left: -scrollDistance,
-            behavior: 'smooth'
-        });
-    }
-}
-
-//================================
-//==Botão: Faça seu Copão========= (MANTIDA)
-
-const button = document.getElementById('myButton');
-const textToType = "Cliqui aqui para Fazer seu Copão"; 
-const typingSpeed = 120; 
-const repeatInterval = 6000; 
-
-let charIndex = 0;
-let typingTimeout; 
-
-function typeWriter() {
-    if (charIndex < textToType.length) {
-        button.textContent += textToType.charAt(charIndex);
-        charIndex++;
-        typingTimeout = setTimeout(typeWriter, typingSpeed);
-    } else {
-        button.classList.add('typing-complete');
-    }
-}
-
-function startTypingEffect() {
-    button.textContent = ''; 
-    charIndex = 0;
-    button.classList.remove('typing-complete');
-    
-    clearTimeout(typingTimeout); 
-    
-    typeWriter();
-}
-
-startTypingEffect();
-
-setInterval(startTypingEffect, repeatInterval);
-
-
-//-----------------------------------------
-//---__Mensagens de Atenção__-------------- (AJUSTADA PARA SER DINÂMICA)
-
-// Funcao auxiliar para mostrar a mensagem de atencao sob demanda (sem o ciclo)
-function showAtencaoMessage(message, isSuccess = true) {
-    // Insere o conteúdo, convertendo **texto** para <strong>texto</strong> (negrito)
-    // E *texto* para <em>texto</em> (itálico)
-    let finalMessage = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    finalMessage = finalMessage.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
-    conteudoElement_Msg.innerHTML = finalMessage;
-    
-    const checkmarkCircle = boxElement_Msg.querySelector('.atencao-checkmark circle');
-    const checkmarkPath = boxElement_Msg.querySelector('.atencao-checkmark path');
-    const headerIcon = boxElement_Msg.querySelector('.atencao-icon');
-    
-    // Altera cores e ícone conforme sucesso/erro
-    if (isSuccess) {
-        headerIcon.textContent = '✅ Sucesso!';
-        headerIcon.style.color = '#4CAF50';
-        checkmarkCircle.setAttribute('fill', '#4CAF50');
-        checkmarkPath.setAttribute('stroke', '#fff');
-    } else {
-         headerIcon.textContent = '⚠️ Atenção!';
-         headerIcon.style.color = '#eb5757';
-         checkmarkCircle.setAttribute('fill', '#eb5757');
-         checkmarkPath.setAttribute('stroke', 'none'); 
-    }
-
-
-    // Exibe a caixa
-    boxElement_Msg.style.display = 'flex';
-
-    // Agenda para esconder a caixa após 3 segundos
-    setTimeout(() => {
-        boxElement_Msg.style.display = 'none';
-    }, 3000);
-}
-
-
-// 🚨 NOVO: Mensagens de Venda/Demanda Simulado e Tempo de Preparo
-const mensagensFixas = [
-    // Mensagens de Venda/Demanda Simulado (Índice 0-3)
-    (carrinho) => {
-        const item = ['Moscow Mule', 'CaipiFrutas', 'Gin Tônica'][Math.floor(Math.random() * 3)];
-        const count = Math.floor(Math.random() * (7 - 3 + 1)) + 3; // 3 a 7
-        return `**${count} drinks ${item}** foram vendidos na última hora!`;
-    },
-    (carrinho) => {
-        const section = ['Copões', 'Drinks com Álcool', 'Drinks Sem Álcool'][Math.floor(Math.random() * 3)];
-        return `Nossa seção de **${section}** está com alta demanda neste momento.`;
-    },
-    (carrinho) => {
-        const count = Math.floor(Math.random() * (5 - 2 + 1)) + 2; // 2 a 5
-        return `**${count}** pessoas estão montando seus pedidos agora! Não perca tempo.`;
-    },
-    // Mensagem de Cupom (Índice 3)
-    (carrinho) => `**Fernando** acabou de usar o **Cupom** de 5 reais de desconto adquirido no Instagram.`,
-    // Mensagem de Tempo de Preparo (Índice 4)
-    (carrinho) => {
-        if (carrinho.length > 0) {
-            const minTime = 15;
-            const maxTime = 25;
-            const time = Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
-            return `O tempo de preparo estimado para *seu* pedido é de **${time} minutos**!`;
-        }
-        return `O Drink **Caipfruta** de morango foi o mais pedido hoje!`; // Padrão se o carrinho estiver vazio
-    }
-];
-
-// O array que será embaralhado
-let mensagensAlternadas_Dynamic = [...mensagensFixas];
-
-
-let currentIndex_Msg = 0; 
-const boxElement_Msg = document.getElementById('atencao-box');
-const conteudoElement_Msg = document.getElementById('mensagem-conteudo');
-
-const tempoExibicao_Msg = 9000; 
-const tempoIntervalo_Msg = 20000; 
-const tempoEspera_Msg = tempoIntervalo_Msg - tempoExibicao_Msg; 
-
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
-function showNextMessageCycle() {
-    // Re-embaralha o array (exceto na primeira visita)
-    if (currentIndex_Msg === 0) {
-        shuffleArray(mensagensAlternadas_Dynamic);
-    }
-    
-    // Pega a função da mensagem e a executa, passando o carrinho
-    const messageFunc = mensagensAlternadas_Dynamic[currentIndex_Msg];
-    let message = messageFunc(carrinho); 
-
-    // Insere o conteúdo e formata o texto para negrito/itálico
-    let finalMessage = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    finalMessage = finalMessage.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
-    conteudoElement_Msg.innerHTML = finalMessage;
-
-    // Garante que o ícone de atenção seja exibido (é o padrão para estas mensagens)
-    boxElement_Msg.querySelector('.atencao-icon').textContent = '⚠️ Atenção!';
-    boxElement_Msg.querySelector('.atencao-icon').style.color = '#eb5757';
-    boxElement_Msg.querySelector('.atencao-checkmark circle').setAttribute('fill', '#eb5757');
-    boxElement_Msg.querySelector('.atencao-checkmark path').setAttribute('stroke', 'none'); 
-
-    // 1. Exibe a caixa (Display ON)
-    boxElement_Msg.style.display = 'flex';
-
-    // 2. Agenda para esconder a caixa após o tempo de exibição
-    setTimeout(() => {
-        boxElement_Msg.style.display = 'none';
-
-        // 3. Agenda a próxima exibição após o tempo de espera
-        setTimeout(showNextMessageCycle, tempoEspera_Msg);
-    }, tempoExibicao_Msg);
-
-    // Atualiza o índice para a próxima mensagem (circular)
-    currentIndex_Msg = (currentIndex_Msg + 1) % mensagensAlternadas_Dynamic.length;
-}
-
-// Inicia o ciclo de mensagens após um atraso de 1.8 segundos (1800 ms)
-setTimeout(showNextMessageCycle, 1800);    
+        // Chamadas de inicialização
+        window.onload = function() {
+            startTypingAnimation();
+            atualizarCarrinho();
+            sugerirProdutos(); // Sugere ao carregar
+        };
     </script>
 </body>
 </html>
