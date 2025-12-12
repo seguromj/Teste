@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <title>Nuance</title>
+    
+    <style>
+        /* [Seu CSS anterior omitido por brevidade] */
+        /* Cores */
+        .cor-card { color: #5C5454; }
+        .cor-logo2 { color: #68736B; font-size: 9px; }
+        .cor-text { color: #1D3312; }
+
+        /*-----------------------------------*/
+        /*---------Style perfil------------*/
+
+        /* Base */
+        body {
+            background-color: white;
+            font-family: sans-serif;
+            margin: 0;
+        }
+
+        /* Container que simula a tela do app */
+        .app-screen {
+            max-width: 600px;
+            margin: 0 auto; /* Centraliza no desktop */
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding-top: 0;
+        }
+
+        /* Define as cires do fundo do body (nuance-info-box) */
+        .nuance-info-box {
+            text-align: center;
+            padding: 10px 20px;
+            margin-top: -50px; 
+            border-radius: 20px 20px 0 0; 
+            position: relative; 
+            /* 1. Definir o Gradiente (cores, ângulo) */
+            background: linear-gradient(-45deg, #225214, #18A373, #5C3691, #B71FCC);
+            /* 2. Aumentar o tamanho do fundo (ex: 400% da largura/altura) */
+            background-size: 400% 400%;
+            /* 3. Aplicar a animação (nome, duração, tipo, repetição) */
+            animation: gradientMove1 6s ease infinite;
+        }
+
+        /* 4. Definir a Animação (@keyframes) */
+        @keyframes gradientMove1 {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 1. CABEÇALHO COM IMAGEM DE FUNDO */
+        .header-banner {
+            height: 150px;
+            background: url('https://www.shutterstock.com/image-photo/great-view-smiling-man-bartender-600nw-2163858961.jpg') no-repeat center center/cover; 
+            position: relative;
+        }
+
+        .logo-box {
+            margin-top: -40px; 
+            margin-bottom: 10px;
+        }
+
+        .nuance-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .avaliacao-1 {
+            font-size: 15px;
+        }
+
+        .text-CEP {
+            font-size: 15px;
+        }
+        
+        /*Função mexer imagem ABAIXO*/
+        .img3-cep {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            
+            animation-name: bounce;
+            animation-duration: 2s;
+            animation-iteration-count: infinite;
+            animation-timing-function: ease-in-out;    
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0); 
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+        /*Função mexer imagem ACIMA*/
+        
+        .estrela-diagonal {
+            display: inline-block; 
+            padding-top: 3px;
+            font-size: 16px;
+            background: linear-gradient(to bottom right, 
+                #EDE902 0%, 
+                #EDE902 52%,
+                black 50%,
+                black 100%
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+
+        /* 7. Status ABERTO/FECHADO*/
+        .status {
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+            transition: background-color 0.3s ease, color 0.1s ease;
+        }
+
+        /* Estilo para status ABERTO */
+        .aberto {
+            background-color: #4CAF50;
+            color: white;
+            animation: pulse-aberto 2s infinite ease-in-out; /* Aplica a animação ao status ABERTO */
+        }
+
+        @keyframes pulse-aberto {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 10px 2px rgba(76, 175, 80, 0.9);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            }
+        }
+
+        /* Remove a animação quando estiver FECHADO */
+        .fechado {
+            animation: none;
+            transform: none;
+            background-color: #F44336;
+            color: white;
+        }
+
+        /*-----------------------------------*/
+        /*----Carrocel Automatico de imgs ---*/
+
+        /* Container principal. Define a área visível do carrossel. */
+        .carrossel-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 30px auto;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        /* Faixa que contém todas as imagens. Será animada para criar o movimento. */
+        .carrossel-faixa {
+            display: flex;
+            animation: rolar 8s linear infinite; /* Aumentei para 8s para um movimento mais suave */
+        }
+
+        /* Container de cada imagem */
+        .item-carrossel {
+            flex-shrink: 0;
+            margin: 0 10px;
+        }
+
+        /* Estilização da imagem (60x60 e redonda) */
+        .item-carrossel img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: none;
+            display: block;
+        }
+
+        /* Keyframes para a animação. Controla o movimento horizontal da faixa. */
+        @keyframes rolar {
+            0% { transform: translateX(0); }
+            /* AJUSTE ESSENCIAL: O valor -490px corresponde exatamente à largura 
+               de 7 itens (60px * 7) + 7 gaps (10px * 7) */
+            100% { transform: translateX(-490px); } 
+        }
+
+        /*--------------------------style loja---------------------------------------------------------*/
+
+        .container-loja {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 5px;
+        }
+
+        /* Estilos comuns para todos os botões principais de navegação (Cardápio, Eventos, Sobre) */
+        .container-loja a:not(.barman-btn) { /* Seletor para os botões grandes, excluindo os barmans */
+            display: flex; 
+            align-items: center;
+            width: 300px;
+            height: auto;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            margin: 5px;
+            padding: 20px;
+            justify-content: space-between;
+        }
+
+        /* Estilizando o botão do Cardápio */
+        .btn-loja-cardapio {
+            background-color: #CC3B3B;
+        }
+        
+        /* Estilizando o botão de Eventos (usa o href como seletor) */
+        a[href="pacote.html"] {
+            background-color: #323332;
+        }
+        
+        /* Estilizando o botão de Localizações/Sobre (usa o href como seletor) */
+        a[href="Sobre.nos.html"] {
+            background-color: #141414;
+        }
+
+
+        /* Ícones dentro dos botões (Cardápio, Eventos, Sobre) */
+        .btn-loja-cardapio .fa-cocktail, 
+        a[href="pacote.html"] .fa-champagne-glasses, 
+        a[href="Sobre.nos.html"] .fa-location-crosshairs {
+            margin-right: 5px; /* Espaço à direita do ícone inicial */
+            font-size: 1.2em;
+        }
+
+        /* Ícones no final (Cardápio, Eventos) */
+        .btn-loja-cardapio .fa-book-open,
+        a[href="pacote.html"] .fa-champagne-glasses:last-child {
+            margin-left: 5px; /* Espaço à esquerda do ícone final */
+            font-size: 1.2em;
+        }
+        
+        /* Cores específicas dos ícones */
+        .btn-loja-cardapio .fa-cocktail { color: white; }
+        .btn-loja-cardapio .fa-book-open { color: white; }
+        .btn-loja-cardapio .btn-text { flex-grow: 1; text-align: center; } /* Para texto do Cardápio */
+        
+        a[href="Sobre.nos.html"]
+        .fa-location-crosshairs { 
+            margin-left: 5px; /* Espaço à esquerda do ícone final */
+            font-size: 1.2em;
+            color: white; 
+        }
+
+
+        /* Botões dos Barmans (Layout flexível) */
+        .barmans-group {
+            display: flex;
+            gap: 5px; 
+            margin-bottom: 0; 
+            max-width: 300px; 
+            width: 100%;
+            justify-content: center; 
+        }
+        
+        /* Estilos base para os botões individuais de barman */
+        .barman-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            text-decoration: none; 
+            color: inherit;
+            padding: 5px; 
+            flex: 1;
+            /* Garante que o barman-btn não tenha borda visível */
+            border: none; 
+            background: none;
+        }
+
+        .perfil-barman {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 5px; 
+            object-fit: cover;
+        }
+
+        /* Estilos para o texto dos barmans que está dentro de um link */
+        .barman-btn .btn-text, .barman-btn .btn-texto {
+            font-size: 0.9em;
+            font-weight: normal;
+            text-align: center;
+            text-decoration: none; 
+            color: #333; /* Cor do texto normal */
+            display: block;
+            margin-top: 0;
+            padding: 0px;
+            /* REMOVIDO: background-color: red; para correção visual */
+            border-radius: 20px;
+        }
+
+        /* ------------------------------------- */
+        /* 4. BLOCO CEP */
+        /* ------------------------------------- */
+        .text-CEP {
+            display: block;
+            padding: 5px 0;
+        }
+
+        /* CEP Image link */
+        .cep-link-box {
+            display: block;
+            width: 100%;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .img3-cep {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        /*-----------------------------------*/
+        /*-----Avaliação comentario----------*/
+
+        .review-carousel-container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 40px auto;
+            position: relative;
+            overflow: hidden; 
+            padding: 10px 0;
+        }
+
+        .review-carousel-container h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            font-size: 16px;
+        }
+
+        /* 2. A Pista de Rolagem (Track) */
+        .carousel-track {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory; 
+            padding: 10px;
+            scroll-behavior: smooth;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .carousel-track::-webkit-scrollbar { display: none; }
+
+        /* 3. Estilo e Dimensões de Cada Card */
+        .review-card {
+            flex-shrink: 0;
+            width: 250px;
+            align-items: center;
+            height: 290px;
+            border: 1px solid #e0e0e0;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            scroll-snap-align: start; 
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        /* 4. Espaço da Imagem */
+        .img-estrela {
+            width: 100px;
+            height: 100px;
+            border-radius: 30px;
+            border: none;
+            object-fit: cover;
+            margin: 10px auto;
+        }
+        
+        /* 5. Cor das estrelas */
+        .estrela-carrocel { color: #EDE902; }
+
+        /* 6. Conteúdo (Texto) do Card */
+        .card-content {
+            padding: 10px;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .client-name {
+            font-weight: bold;
+            color: #444;
+        }
+
+        .comment {
+            font-size: 0.80em;
+            font-style: italic;
+            color: #555;
+            margin-top: 5px;
+        }
+        
+        /*--------------------------------------------------*/
+        /*-----Styles.CSS do Pacote (Apenas placeholders)---*/
+        .pacotes-card {
+            background-color: red;
+            width: 300px;
+            height: 400px;
+        }
+
+        .img-pacotes {
+            width: 300px;
+            height: 100px;
+        }
+
+        /*--------------------------------------*/
+        /*--------Buttons Imagens (toggle)------*/
+        #button-imgs {
+            background-color: #2E7343;
+            border: none;
+            width: 300px;
+            padding: 13px;
+            border-radius: 40px;
+        }
+
+        .imgbutton001 {
+            display: none;
+            max-width: 100%; 
+            height: auto;
+            margin-top: 20px;
+            border: 2px solid #333;
+        }
+
+        .imagem-visivel {
+            display: block;
+        }
+
+        /*--------------------------------------*/
+        /*------Mensagens de Atenção------------*/
+
+        #atencao-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            z-index: 1000;
+            display: none;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 300px;
+            width: 90%;
+            box-sizing: border-box;
+        }
+
+        .atencao-header {
+            display: flex;
+            align-items: center;
+            font-size: 1em;
+            font-weight: bold;
+            color: #eb5757;
+            margin-bottom: 5px;
+        }
+
+        .atencao-checkmark {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
+
+        .atencao-checkmark svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .atencao-icon {
+            color: #eb5757;
+        }
+
+        .atencao-body {
+            font-size: 9px;
+            color: #333;
+            line-height: 1.4;
+            margin-top: 5px;
+            padding-left: 25px;
+        }
+
+        .atencao-body strong {
+            color: #000;
+            font-weight: 700;
+        }
+        
+        /*----------------------------------------------------*/
+        /*----------- MODAIS PERSONALIZADOS (3 PASSOS) --------*/
+        /*----------------------------------------------------*/
+        .modal-overlay {
+            position: fixed;
+            z-index: 9999; /* Z-index alto para garantir que fique no topo */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7); /* Fundo escuro */
+            display: none; /* Escondido por padrão, mostrado por JS */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content-custom {
+            background-color: white;
+            padding: 30px 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-width: 350px;
+            width: 90%;
+            animation: fadeIn 0.5s;
+        }
+
+        .modal-content-custom h3 {
+            color: #333;
+            margin-top: 0;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .modal-content-custom p {
+            font-size: 1em;
+            color: #68736B;
+            margin-bottom: 15px;
+        }
+
+        .modal-content-custom select,
+        .modal-content-custom button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+        
+        /* Restaurando o select para o comportamento padrão (dropdown com seta) */
+        .modal-content-custom select {
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            /* Removendo size fixo */
+            max-height: auto; 
+            overflow-y: auto;
+            text-align: left; /* Padrão do select */
+        }
+
+        .modal-content-custom button {
+            background-color: #2E7343; 
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        /* Estilo do botão de acesso final */
+        #accessButton {
+            background-color: #CC3B3B; /* Uma cor de destaque, diferente do padrão */
+            margin-top: 20px;
+            display: none; /* Escondido até a análise ser concluída */
+        }
+
+        /* Loading Spinner para o terceiro modal */
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2E7343;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Animação para entrada do modal */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<main class="app-screen">
+        <header class="header-banner">
+        </header>
+
+<div id="main-content-wrapper"> <section class="nuance-info-box">
+            <div class="logo-box">
+                  <img class="nuance-logo" src="imgs/Logo-principal.jpg" alt="Nuance Logo Placeholder">
+            </div>
+            
+            <h2>Nuance</h2>
+
+            <div id="status-container" class="status aberto">
+                 <span id="status-text">ABERTO</span>
+            </div>
+ <br><br>           
+             <i class="fa-solid fa-location-dot"></i>
+             <span class="avaliacao-1">
+                 Fazemos entregas
+                 <br>
+                 Anápolis-GO
+             </span>
+ <br>
+             <i class="fa-solid fa-star estrela-diagonal"></i> <span class="avaliacao-1">
+                 4,9 (1.719 avaliações)
+             </span>
+    
+             
+<div class="carrossel-container">
+        <div class="carrossel-faixa">
+            <div class="item-carrossel"><img src="https://superandreazza.com.br/wp-content/uploads/2022/12/3-drinks-maravilhosos-para-se-refrescar-no-verao-andreazza-1-optimized.jpg" alt="Imagem 1"></div>
+            <div class="item-carrossel"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTM9tTZglRlrqtfNZj7uWAosy10qoD4CV5ETMNqK4o91dq8LbggBYKyfbc&s=10" alt="Imagem 2"></div>
+            <div class="item-carrossel"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2rh_DMUHCsY2jt3rpwsZCRNecOjkp1L2Ecwd5pvQpCx3Biqr586rQi9t-&s=10" alt="Imagem 3"></div>
+            <div class="item-carrossel"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKjZzVKlJvKOZcKU4a4gRC8mRErmoSXf1NbRfAaDXAuQ&s=10" alt="Imagem 4"></div>
+            <div class="item-carrossel"><img src="https://www.drinkpedia.net.br/wp-content/uploads/2023/12/drinks-com-abacaxi-01-edited.png" alt="Imagem 5"></div>
+            <div class="item-carrossel"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkT3WyhLsQSxtsMuCuHb_O_3GvRZ6mCV48TqQzWH7x7sxIm3cein5yrWVW&s=10" alt="Imagem 6"></div>
+            <div class="item-carrossel"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMN9PgGD0KCgO2dVV0tifn2j2R6VqxhxFQ7j-oAL01S63_lnvJjH2gx1s&s=10" alt="Imagem 7"></div>
+                  
+            <div class="item-carrossel"><img src="https://superandreazza.com.br/wp-content/uploads/2022/12/3-drinks-maravilhosos-para-se-refrescar-no-verao-andreazza-1-optimized.jpg" alt="Imagem 1"></div>
+            <div class="item-carrossel"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTM9tTZglRlrqtfNZj7uWAosy10qoD4CV5ETMNqK4o91dq8LbggBYKyfbc&s=10" alt="Imagem 2"></div>
+            <div class="item-carrossel"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2rh_DMUHCsY2jt3rpwsZCRNecOjkp1L2Ecwd5pvQpCx3Biqr586rQi9t-&s=10" alt="Imagem 3"></div>
+            <div class="item-carrossel"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKjZzVKlJvKOZcKU4a4gRC8mRErmoSXf1NbRfAaDXAuQ&s=10" alt="Imagem 4"></div>
+            <div class="item-carrossel"><img src="https://www.drinkpedia.net.br/wp-content/uploads/2023/12/drinks-com-abacaxi-01-edited.png" alt="Imagem 5"></div>
+            <div class="item-carrossel"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkT3WyhLsQSxtsMuCuHb_O_3GvRZ6mCV48TqQzWH7x7sxIm3cein5yrWVW&s=10" alt="Imagem 6"></div>
+            <div class="item-carrossel"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMN9PgGD0KCgO2dVV0tifn2j2R6VqxhxFQ7j-oAL01S63_lnvJjH2gx1s&s=10" alt="Imagem 7"></div>
+            
+        </div>
+    </div>
+<div class="container-loja">
+        <a href="Cardapio-MJ.html" class="btn-loja-cardapio">
+              <i class="fa-solid fa-cocktail"></i>
+            <span class="btn-text">Cardápio Completo</span>
+            <i class="fa-solid fa-book-open"></i>
+        </a>
+
+        <a href="pacote.html">
+            <i class="fa-solid fa-champagne-glasses"></i>
+            <span class="nome-eventos">Eventos, Festa, Celebrações...</span>
+            <i class="fa-solid fa-champagne-glasses"></i>
+        </a>
+           
+           
+        <div class="barmans-group">
+             <a href="https://wa.me/..." class="btn-action barman-btn">
+                 <img class="perfil-barman" src="imgs/Perfil.Darwin.jpg" alt="Barman Darwin">
+                 <span class="btn-texto">Barman Darwin</span>
+            </a>
+
+            <a href="https://wa.me/..." class="btn-action barman-btn">
+                <img class="perfil-barman" src="imgs/Perfil.Douglas.png" alt="Barman Douglas">
+                <span class="btn-text">Barman Douglas</span>
+            </a>
+        </div>
+       
+           
+           
+           
+        <a href="Sobre.nos.html">
+            <i class="fa-solid fa-location-crosshairs"></i>
+            <span class="btn-text">Localizações e Sobre nós</span>
+            <i class="fa-solid fa-location-crosshairs"></i>
+        </a>
+
+       </div>
+
+
+    <span class="text-CEP">⚠️<br>ATENÇÃO</span>
+                <span class="text-CEP">Não esqueça de consultar seu CEP <br>Assim você saberá nossas áreas de atendimentos.<br>👇</span>
+            <br><br>
+            <a href="#" onclick="showModal('stateModal'); return false;">
+                <img class="img3-cep" src="https://via.placeholder.com/80/F44336/FFFFFF?text=CEP" alt="Imagem-mapa">
+            </a>
+
+    
+           
+<div class="review-carousel-container">
+         <br>
+     <hr>
+    <h2>
+    <i class="fa-solid fa-star estrela-diagonal"></i>
+    4,9 (986 Comentários)
+    </h2>
+    
+        
+
+    <div class="carousel-track" id="carouselTrack">
+        <div class="review-card">
+            <img class="img-estrela" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3EBqT4g59WluzImtcXJ4SWxFZze7ObwS3L4GpHZ_zY97lYdT3MWLjry-&s=10" alt="imagem-drink">
+            <div class="card-content">
+                
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                
+                <p class="client-name">Juliana P.</p>
+                <p class="comment">"O<strong> **Mojito Clássico de Morango**</strong> estava PERFEITO, o melhor que já tomei. Super recomendo!"</p>
+            </div>
+        </div>
+
+        <div class="review-card">
+            <img class="img-estrela" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzKgMB3dSrhi7WheJuoGQ9P8SURCz8rGKpCL8GyGukG81VB7c3ue1ErOEz&s=10" alt="imagem-drink">
+            <div class="card-content">
+                
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-diagonal"></i>
+                
+                <p class="client-name">Ricardo L.</p>
+                <p class="comment">"Pedi o famoso <strong>**Drink com Morango**</strong> da casa e fiquei impressionado com a espuma de gengibre e o sabor equilibrado."</p>
+            </div>
+        </div>
+        
+        <div class="review-card">
+            <img class="img-estrela" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_JjEEmuwAJW1EPEZbPrELjDMRA96_ccAtRYCyjA_yP0kHIsdJbsEPHs0&s=10" alt="imagem-drink">
+            <div class="card-content">
+                
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                
+                <p class="client-name">Mariane S.</p>
+                <p class="comment">"O <strong>**Mango Fizz**</strong> estava na temperatura ideal e com a proporção perfeita. Combinação excelente."</p>
+            </div>
+        </div>
+
+        <div class="review-card">
+            <img class="img-estrela" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoDONHktjVLYiXDd_Oh-3kscKaiVNX61BsilyT-4-yuSBU160r6-t&s=10" alt="imagem-drink">
+            <div class="card-content">
+                
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                
+                <p class="client-name">Felipe B.</p>
+                <p class="comment">"Pedi o <strong>**Blackberry Gin & Tonic**</strong> e deu para sentir a qualidade dos ingredientes. Um drink de respeito."</p>
+            </div>
+        </div>
+
+        <div class="review-card">
+            <img class="img-estrela" src="https://cdn.dooca.store/1390/files/image-24.png?v=1610486883&webp=0" alt="imagem-drink">
+            <div class="card-content">
+                
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-diagonal"></i>
+                
+                <p class="client-name">Ana C.</p>
+                <p class="comment">"O <strong>**Summer Sunset Smash**</strong> estava doce na medida certa, refrescante e muito bem apresentado!"</p>
+            </div>
+        </div>
+
+        <div class="review-card">
+            <img class="img-estrela" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjkOydpFDr0WRpc6LrKFw3IJvBrIrDt9NKfucVoCaHgRV-foqxWf7Enu4&s=10" alt="imagem-drink">
+            <div class="card-content">
+                
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+                <i class="fa-solid fa-star estrela-carrocel"></i>
+
+                <p class="client-name">Guilherme N.</p>
+                <p class="comment">"Não posso deixar de falar do **Gin Tônica de Frutas Vermelhas**. A apresentação era linda e o sabor... uau!"</p>
+            </div>
+        </div>
+    </div>
+    
+
+
+<div id="atencao-box">
+    <div class="atencao-header">
+        <div class="atencao-checkmark">
+            <svg viewBox="0 0 52 52">
+                <circle cx="26" cy="26" r="25" fill="#4CAF50"/>
+                <path stroke="#fff" stroke-width="5" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+        </div>
+        <span class="atencao-icon">⚠️ Atenção!</span>
+    </div>
+    <div id="mensagem-conteudo" class="atencao-body">
+        </div>
+  </div>
+         
+</section>
+</div> </main>
+
+<div id="stateModal" class="modal-overlay">
+    <div class="modal-content-custom">
+        <h3>Procure o Delivery mais próximo de você.</h3>
+        <p>Escolha seu estado:</p>
+        <select id="stateSelect"> 
+            </select>
+        <button onclick="nextToCityModal()">Continuar</button>
+    </div>
+</div>
+
+<div id="cityModal" class="modal-overlay">
+    <div class="modal-content-custom">
+        <h3>Estamos quase lá</h3>
+        <p>Agora, selecione sua cidade:</p>
+        <select id="citySelect">
+            </select>
+        <button onclick="nextToLoadingModal()">Buscar</button>
+    </div>
+</div>
+
+<div id="loadingModal" class="modal-overlay">
+    <div class="modal-content-custom">
+        <div class="loading-spinner"></div>
+        <h3>Analisando a nossa base mais próxima de você...</h3>
+        <p id="loadingMessage">Buscando...</p>
+        <button id="accessButton" onclick="completeFlowAndCloseModals()">Acessar o Site</button>
+    </div>
+</div>
+
+<script>
+    // Usando suas constantes originais para demonstração
+const HORA_FECHAMENTO = '23:59'; 
+const HORA_REABERTURA = '18:00'; 
+
+// --------------------
+
+function verificarStatus() {
+    const agora = new Date();
+    const horaAtual = agora.getHours();
+    const minutoAtual = agora.getMinutes();
+
+    // 1. Converte a hora atual para um número (Ex: 15h30m vira 1530)
+    const horaMinutoAtual = horaAtual * 100 + minutoAtual;
+
+    // 2. Converte os horários de configuração
+    const [fechamentoHora, fechamentoMinuto] = HORA_FECHAMENTO.split(':').map(Number);
+    const horaMinutoFechamento = fechamentoHora * 100 + fechamentoMinuto;
+
+    const [reaberturaHora, reaberturaMinuto] = HORA_REABERTURA.split(':').map(Number);
+    const horaMinutoReabertura = reaberturaHora * 100 + reaberturaMinuto;
+
+    const container = document.getElementById('status-container');
+    const texto = document.getElementById('status-text');
+
+    let isFechado = false;
+
+    // --- LÓGICA CORRIGIDA ---
+
+    if (horaMinutoFechamento > horaMinutoReabertura) {
+        // Cenário 1: Fechamento no dia anterior e Reabertura no dia ATUAL (Ex: 23:00 -> 08:00)
+        // O período de fechamento atravessa a meia-noite.
+        // Está FECHADO se a hora atual for APÓS o fechamento OU ANTES da reabertura.
+        if (horaMinutoAtual >= horaMinutoFechamento || horaMinutoAtual < horaMinutoReabertura) {
+            isFechado = true;
+        }
+
+    } else {
+        // Cenário 2: Fechamento e Reabertura no MESMO dia (Ex: 12:00 -> 14:00)
+        // O período de fechamento está contido no dia.
+        // Está FECHADO se a hora atual for MAIOR OU IGUAL ao fechamento E MENOR que a reabertura.
+        if (horaMinutoAtual >= horaMinutoFechamento && horaMinutoAtual < horaMinutoReabertura) {
+            isFechado = true;
+        }
+    }
+
+    // --- APLICAÇÃO DO ESTADO ---
+
+    if (isFechado) {
+        container.classList.remove('aberto');
+        container.classList.add('fechado');
+        texto.textContent = 'FECHADO';
+        // O texto extra foi removido, mas você pode adicioná-lo de volta se quiser!
+    } else {
+        container.classList.remove('fechado');
+        container.classList.add('aberto');
+        texto.textContent = 'ABERTO';
+    }
+    
+    // Opcional: Mostra a hora atual no console para debug
+    console.log(`Hora atual: ${horaMinutoAtual}. Status: ${isFechado ? 'FECHADO' : 'ABERTO'}`);
+}
+
+// Executa a função imediatamente ao carregar
+verificarStatus();
+
+// Configura para verificar o status a cada minuto (60000 milissegundos)
+setInterval(verificarStatus, 60000);
+
+
+
+
+
+    
+    /** Objeto de dados MESTRE: Mapeia estados e suas cidades (Lista COMPLETA).
+     */
+    const locationData = {
+        // Região Centro-Oeste
+        'GO': ['ANÁPOLIS', 'GOIÂNIA', 'Pirenópolis', 'Aparecida de Goiânia', 'Rio Verde', 'Luziânia', 'Águas Lindas de Goiás', 'Valparaíso de Goiás', 'Trindade'],
+        'MT': ['Cuiabá', 'Várzea Grande', 'Rondonópolis', 'Sinop', 'Tangará da Serra'],
+        'MS': ['Campo Grande', 'Dourados', 'Três Lagoas', 'Corumbá', 'Ponta Porã'],
+        'DF': ['Brasília', 'Taguatinga', 'Ceilândia', 'Gama', 'Guará', 'Águas Claras'],
+        
+        // Região Norte
+        'AM': ['Manaus', 'Parintins', 'Itacoatiara', 'Manacapuru', 'Coari'],
+        'PA': ['BELÉM', 'ANANINDEUA', 'Santarém', 'Marabá', 'Castanhal', 'Parauapebas', 'BRAGANÇA', 'VISEU', 'Augusto Correia', 'Tracuateua'],
+        'RO': ['Porto Velho', 'Ji-Paraná', 'Ariquemes', 'Vilhena', 'Cacoal'],
+        'TO': ['Palmas', 'Araguaína', 'Gurupi', 'Porto Nacional', 'Paraíso do Tocantins'],
+        'AC': ['Rio Branco', 'Cruzeiro do Sul', 'Sena Madureira', 'Tarauacá'],
+        'AP': ['Macapá', 'Santana', 'Laranjal do Jari', 'Oiapoque'],
+        'RR': ['Boa Vista', 'Rorainópolis', 'Caracaraí', 'Mucajaí'],
+
+        // Região Sudeste (Adicionadas para completar a lista)
+        'SP': ['São Paulo', 'Campinas', 'Guarulhos'],
+        'RJ': ['Rio de Janeiro', 'Niterói'],
+        'MG': ['Belo Horizonte', 'Uberlândia'],
+        'ES': ['Vitória', 'Vila Velha'],
+        
+        // Região Sul (Adicionadas para completar a lista)
+        'PR': ['Curitiba', 'Londrina'],
+        'SC': ['Florianópolis', 'Joinville'],
+        'RS': ['Porto Alegre', 'Caxias do Sul'],
+
+        // Região Nordeste (Adicionadas para completar a lista)
+        'BA': ['Salvador', 'Feira de Santana'],
+        'PE': ['Recife', 'Jaboatão dos Guararapes'],
+        'CE': ['Fortaleza', 'Caucaia'],
+        'MA': ['São Luís', 'Imperatriz'],
+        'PB': ['João Pessoa', 'Campina Grande'],
+        'RN': ['Natal', 'Mossoró'],
+        'AL': ['Maceió', 'Arapiraca'],
+        'PI': ['Teresina', 'Parnaíba'],
+        'SE': ['Aracaju', 'Nossa Senhora do Socorro'],
+    };
+
+    const stateNames = {
+        'GO': 'Goiás', 'MT': 'Mato Grosso', 'MS': 'Mato Grosso do Sul', 'DF': 'Distrito Federal',
+        'SP': 'São Paulo', 'RJ': 'Rio de Janeiro', 'MG': 'Minas Gerais', 'ES': 'Espírito Santo',
+        'PR': 'Paraná', 'SC': 'Santa Catarina', 'RS': 'Rio Grande do Sul',
+        'BA': 'Bahia', 'PE': 'Pernambuco', 'CE': 'Ceará', 'MA': 'Maranhão',
+        'PB': 'Paraíba', 'RN': 'Rio Grande do Norte', 'AL': 'Alagoas', 'PI': 'Piauí', 'SE': 'Sergipe',
+        'AM': 'Amazonas', 'PA': 'Pará', 'RO': 'Rondônia', 'TO': 'Tocantins', 'AC': 'Acre', 'AP': 'Amapá', 'RR': 'Roraima'
+    };
+    
+    // Variáveis globais para armazenar a seleção atual
+    let selectedStateCode = 'GO';
+    let selectedCity = 'ANÁPOLIS';
+
+
+    /**
+     * Funções de Controle de UI
+     */
+    function showModal(id) {
+        // document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); // Mantenha esta linha para esconder outros modais, se necessário
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+
+    function closeAllModals() {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+    }
+
+    /**
+     * Função principal para popular o Select de Estados
+     */
+    function populateStates() {
+        const stateSelect = document.getElementById('stateSelect');
+        stateSelect.innerHTML = ''; // Limpa as opções existentes
+        
+        // Ordena os códigos dos estados (mantendo GO no topo se quiser)
+        const sortedCodes = Object.keys(locationData).sort((a, b) => {
+            if (a === 'GO') return -1; // Mantém GO no topo
+            if (b === 'GO') return 1;
+            return a.localeCompare(b);
+        });
+
+        // Adiciona todos os estados ordenados
+        sortedCodes.forEach(code => {
+            const option = document.createElement('option');
+            option.value = code;
+            option.textContent = `${stateNames[code]} (${code})`;
+            stateSelect.appendChild(option);
+        });
+
+        // Garante que o estado de Goiás esteja selecionado inicialmente
+        stateSelect.value = selectedStateCode;
+        
+        // Adiciona o Listener para atualizar as cidades quando o estado muda
+        stateSelect.addEventListener('change', updateCities);
+    }
+
+    /**
+     * Função para popular o Select de Cidades baseado no estado selecionado
+     */
+    function updateCities() {
+        const stateSelect = document.getElementById('stateSelect');
+        const citySelect = document.getElementById('citySelect');
+        
+        // Obtém o código do estado selecionado
+        selectedStateCode = stateSelect.value;
+        const cities = locationData[selectedStateCode] || [];
+
+        citySelect.innerHTML = ''; // Limpa as opções existentes
+
+        // Adiciona cada cidade do array ao select
+        cities.forEach(city => {
+            const option = document.createElement('option');
+            option.value = city;
+            option.textContent = city.toUpperCase();
+            citySelect.appendChild(option);
+        });
+
+        // Tenta manter a cidade anteriormente selecionada ou define a primeira
+        if (selectedStateCode === 'GO' && cities.includes('ANÁPOLIS')) {
+            citySelect.value = 'ANÁPOLIS';
+        } else {
+            if (cities.length > 0) {
+                citySelect.value = cities[0];
+            }
+        }
+        
+        // Atualiza a variável global com a cidade atualmente selecionada
+        selectedCity = citySelect.value;
+    }
+
+    /**
+     * Funções de Navegação dos Modais
+     */
+
+    // Ação do Botão "Continuar" (Modal 1)
+    function nextToCityModal() {
+        // Atualiza a lista de cidades antes de mostrar o modal 2
+        updateCities(); 
+        showModal('cityModal');
+    }
+
+    // Ação do Botão "Buscar" (Modal 2) -> Inicia o Carregamento (Modal 3)
+    function nextToLoadingModal() {
+        const citySelect = document.getElementById('citySelect');
+        // Pega a cidade atualmente selecionada
+        selectedCity = citySelect.options[citySelect.selectedIndex].text.toUpperCase();
+        
+        document.getElementById('cityModal').style.display = 'none';
+        showModal('loadingModal');
+
+        const loadingMessageElement = document.getElementById('loadingMessage');
+        const spinner = document.querySelector('#loadingModal .loading-spinner');
+        const accessButton = document.getElementById('accessButton');
+        
+        spinner.style.display = 'block';
+        accessButton.style.display = 'none'; // Esconde o botão de acesso durante a busca
+        loadingMessageElement.innerHTML = `Analisando a sua região, ${selectedCity}...`;
+
+        // 1. Simulação do Carregamento (3 segundos)
+        setTimeout(() => {
+            
+            spinner.style.display = 'none';
+            let finalMessage = '';
+
+            // Lógica de mensagens personalizadas:
+            if (selectedStateCode === 'GO' && selectedCity === 'ANÁPOLIS') {
+                finalMessage = `✅ Base Nuance mais próxima encontrada: <strong>1.6 km</strong>. Boas-vindas a Anápolis! Delivery disponível.`;
+                accessButton.textContent = 'Acessar o Site'; // Mensagem padrão para acesso
+            } else if (['GO'].includes(selectedStateCode)) {
+                finalMessage = `👋 Você está em ${selectedCity}! Atendemos essa região com nossos serviços de <strong>Barman para eventos</strong>. Para Delivery, entre em contato.`;
+                accessButton.textContent = 'Acessar o Site'; // Mensagem padrão para acesso
+            } else {
+                // Demais cidades
+                finalMessage = `No momento, só realizamos entrega de Drinks Prontos em Anápolis. Para ${selectedCity}, oferecemos apenas o serviço de Barman para eventos.`;
+                accessButton.textContent = 'Continuar para o Site'; // Mensagem alternativa para acesso
+            }
+
+            loadingMessageElement.innerHTML = finalMessage;
+            accessButton.style.display = 'block'; // Mostra o botão após a análise (NOVA FUNCIONALIDADE)
+
+        }, 3000); // 3 segundos para simular a análise
+    }
+    
+    /**
+     * Função para completar o fluxo de modais e liberar o conteúdo principal.
+     */
+    function completeFlowAndCloseModals() {
+        // 1. Define que o fluxo de modais foi concluído
+        localStorage.setItem(COMPLETED_FLOW_KEY, 'true');
+        
+        // 2. Define o próximo tempo de exibição (4 minutos a partir de agora)
+        const newNextDisplayTime = Date.now() + INTERVALO_MS;
+        localStorage.setItem(NEXT_DISPLAY_KEY, newNextDisplayTime.toString());
+        
+        // 3. Fecha os modais
+        closeAllModals();
+        
+        // 4. Garante que o conteúdo principal está visível (embora já devesse estar)
+        document.getElementById('main-content-wrapper').style.display = 'block';
+        
+        console.log(`Fluxo concluído. Próxima exibição do modal em: ${new Date(newNextDisplayTime).toLocaleTimeString()}`);
+    }
+
+
+    // ----------------------------------------------------
+    // LÓGICA DE CONTROLE DE TEMPO E OBRIGATORIEDADE
+    // ----------------------------------------------------
+    
+    // Constante para definir o intervalo de tempo (4 minutos em milissegundos)
+    const INTERVALO_MINUTOS = 2;
+    const INTERVALO_MS = INTERVALO_MINUTOS * 60 * 1000;
+    const NEXT_DISPLAY_KEY = 'nuance_next_modal_display_time'; 
+    const COMPLETED_FLOW_KEY = 'nuance_flow_completed'; // Chave para o estado de conclusão
+    
+    function handleModalDisplayByTime() {
+        const agora = Date.now();
+        const nextDisplayTime = parseInt(localStorage.getItem(NEXT_DISPLAY_KEY)) || 0;
+        const flowCompleted = localStorage.getItem(COMPLETED_FLOW_KEY) === 'true';
+
+        // Lógica Principal:
+        // Se o fluxo NÃO foi completado E o tempo de 4 minutos já passou, O MODAL É OBRIGATÓRIO.
+        if (!flowCompleted && agora >= nextDisplayTime) {
+            
+            console.log("Tempo de espera de 4 minutos passou. Modal de localização é obrigatório.");
+            
+            // Ação Crucial: Esconde o conteúdo principal para forçar a interação com o modal.
+            document.getElementById('main-content-wrapper').style.display = 'none';
+
+            // Reseta o estado (apenas para garantir a exibição forçada se o tempo passou)
+            localStorage.setItem(COMPLETED_FLOW_KEY, 'false');
+            
+            // Mostra o modal de estado para iniciar o fluxo
+            populateStates(); 
+            updateCities();   
+            showModal('stateModal');
+            
+        } else if (flowCompleted) {
+             // Se o fluxo foi completado, mostra o conteúdo principal
+            document.getElementById('main-content-wrapper').style.display = 'block';
+            console.log("Fluxo de localização já concluído. Conteúdo liberado.");
+
+            // Se o fluxo foi completado, mas o tempo de 4 minutos já passou:
+            // O conteúdo principal continua visível, mas o estado de "concluído" é resetado para `false` 
+            // e o `nextDisplayTime` é atualizado para o próximo intervalo (4 minutos).
+            // Isso garante que o modal será OBRIGATÓRIO na PRÓXIMA recarga que cair neste `if` novamente.
+            if (agora >= nextDisplayTime) {
+                localStorage.setItem(COMPLETED_FLOW_KEY, 'false');
+                console.log("Reiniciando o estado do modal para a próxima visita.");
+                
+                // Define um novo tempo de espera.
+                const newNextDisplayTime = agora + INTERVALO_MS;
+                localStorage.setItem(NEXT_DISPLAY_KEY, newNextDisplayTime.toString());
+            }
+        
+        } else {
+            // Caso contrário: (Tempo não passou E fluxo não foi completado)
+            // O conteúdo principal é visível.
+            document.getElementById('main-content-wrapper').style.display = 'block';
+            const remainingTime = nextDisplayTime - agora;
+            const minutes = Math.ceil(remainingTime / 60000);
+            console.log(`Conteúdo liberado (padrão). Faltam aproximadamente ${minutes} minutos para a próxima checagem obrigatória.`);
+        }
+    }
+    
+    // Inicialização ao carregar a página
+    document.addEventListener('DOMContentLoaded', () => {
+        // Inicialmente, se não houver um tempo definido, define o primeiro intervalo
+        if (!localStorage.getItem(NEXT_DISPLAY_KEY)) {
+             const newNextDisplayTime = Date.now() + INTERVALO_MS;
+             localStorage.setItem(NEXT_DISPLAY_KEY, newNextDisplayTime.toString());
+             localStorage.setItem(COMPLETED_FLOW_KEY, 'false');
+             console.log(`Primeiro intervalo definido. Próxima checagem obrigatória em: ${new Date(newNextDisplayTime).toLocaleTimeString()}`);
+        }
+        
+        handleModalDisplayByTime(); 
+    });
+    // ----------------------------------------------------
+    // FIM DA NOVA LÓGICA
+    // ----------------------------------------------------
+</script>
+</body>
+</html>
