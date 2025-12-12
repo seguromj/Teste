@@ -9,6 +9,7 @@
     <title>Nuance</title>
     
     <style>
+        /* [Seu CSS anterior omitido por brevidade] */
         /* Cores */
         .cor-card { color: #5C5454; }
         .cor-logo2 { color: #68736B; font-size: 9px; }
@@ -31,9 +32,6 @@
             background-color: white;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             padding-top: 0;
-            /* Garante que o conteúdo principal do app fique no topo (abaixo do modal) */
-            position: relative;
-            z-index: 1; 
         }
 
         /* Define as cires do fundo do body (nuance-info-box) */
@@ -540,11 +538,6 @@
             justify-content: center;
             align-items: center;
         }
-        
-        /* Bloqueia a rolagem do corpo quando o modal estiver ativo */
-        .modal-active {
-            overflow: hidden;
-        }
 
         .modal-content-custom {
             background-color: white;
@@ -597,13 +590,6 @@
             cursor: pointer;
             font-weight: bold;
         }
-        
-        /* Estilo do botão de acesso final */
-        #accessButton {
-            background-color: #CC3B3B; /* Uma cor de destaque, diferente do padrão */
-            margin-top: 20px;
-            display: none; /* Escondido até a análise ser concluída */
-        }
 
         /* Loading Spinner para o terceiro modal */
         .loading-spinner {
@@ -630,11 +616,10 @@
 </head>
 <body>
 
-<main class="app-screen">
-    <div id="main-content-wrapper"> 
-        <header class="header-banner">
+<main class="app-screen"><header class="header-banner">
         </header>
-        <section class="nuance-info-box">
+
+<section class="nuance-info-box">
             <div class="logo-box">
                   <img class="nuance-logo" src="imgs/Logo-principal.jpg" alt="Nuance Logo Placeholder">
             </div>
@@ -842,8 +827,8 @@
         </div>
   </div>
          
-</section>
-</div> </main>
+</section>     
+ </main>
 
 <div id="stateModal" class="modal-overlay">
     <div class="modal-content-custom">
@@ -870,7 +855,6 @@
         <div class="loading-spinner"></div>
         <h3>Analisando a nossa base mais próxima de você...</h3>
         <p id="loadingMessage">Buscando...</p>
-        <button id="accessButton" onclick="completeFlowAndCloseModals()">Acessar o Site</button>
     </div>
 </div>
 
@@ -878,17 +862,23 @@
     // Usando suas constantes originais para demonstração
 const HORA_FECHAMENTO = '23:59'; 
 const HORA_REABERTURA = '18:00'; 
+// ALTERAÇÃO AQUI: Definindo a constante para 2 carregamentos
+const MAX_CARREGAMENTOS = 2; 
 
 // --------------------
-// Função para verificar se a loja está aberta/fechada
+
 function verificarStatus() {
     const agora = new Date();
     const horaAtual = agora.getHours();
     const minutoAtual = agora.getMinutes();
 
+    // 1. Converte a hora atual para um número (Ex: 15h30m vira 1530)
     const horaMinutoAtual = horaAtual * 100 + minutoAtual;
+
+    // 2. Converte os horários de configuração
     const [fechamentoHora, fechamentoMinuto] = HORA_FECHAMENTO.split(':').map(Number);
     const horaMinutoFechamento = fechamentoHora * 100 + fechamentoMinuto;
+
     const [reaberturaHora, reaberturaMinuto] = HORA_REABERTURA.split(':').map(Number);
     const horaMinutoReabertura = reaberturaHora * 100 + reaberturaMinuto;
 
@@ -897,26 +887,39 @@ function verificarStatus() {
 
     let isFechado = false;
 
+    // --- LÓGICA CORRIGIDA ---
+
     if (horaMinutoFechamento > horaMinutoReabertura) {
+        // Cenário 1: Fechamento no dia anterior e Reabertura no dia ATUAL (Ex: 23:00 -> 08:00)
+        // O período de fechamento atravessa a meia-noite.
+        // Está FECHADO se a hora atual for APÓS o fechamento OU ANTES da reabertura.
         if (horaMinutoAtual >= horaMinutoFechamento || horaMinutoAtual < horaMinutoReabertura) {
             isFechado = true;
         }
+
     } else {
+        // Cenário 2: Fechamento e Reabertura no MESMO dia (Ex: 12:00 -> 14:00)
+        // O período de fechamento está contido no dia.
+        // Está FECHADO se a hora atual for MAIOR OU IGUAL ao fechamento E MENOR que a reabertura.
         if (horaMinutoAtual >= horaMinutoFechamento && horaMinutoAtual < horaMinutoReabertura) {
             isFechado = true;
         }
     }
 
+    // --- APLICAÇÃO DO ESTADO ---
+
     if (isFechado) {
         container.classList.remove('aberto');
         container.classList.add('fechado');
         texto.textContent = 'FECHADO';
+        // O texto extra foi removido, mas você pode adicioná-lo de volta se quiser!
     } else {
         container.classList.remove('fechado');
         container.classList.add('aberto');
         texto.textContent = 'ABERTO';
     }
     
+    // Opcional: Mostra a hora atual no console para debug
     console.log(`Hora atual: ${horaMinutoAtual}. Status: ${isFechado ? 'FECHADO' : 'ABERTO'}`);
 }
 
@@ -927,16 +930,20 @@ verificarStatus();
 setInterval(verificarStatus, 60000);
 
 
-// ----------------------------------------------------
-// LÓGICA DE LOCALIZAÇÃO E MODAIS
-// ----------------------------------------------------
+
+
+
     
+    /** Objeto de dados MESTRE: Mapeia estados e suas cidades (Lista COMPLETA).
+     */
     const locationData = {
+        // Região Centro-Oeste
         'GO': ['ANÁPOLIS', 'GOIÂNIA', 'Pirenópolis', 'Aparecida de Goiânia', 'Rio Verde', 'Luziânia', 'Águas Lindas de Goiás', 'Valparaíso de Goiás', 'Trindade'],
         'MT': ['Cuiabá', 'Várzea Grande', 'Rondonópolis', 'Sinop', 'Tangará da Serra'],
         'MS': ['Campo Grande', 'Dourados', 'Três Lagoas', 'Corumbá', 'Ponta Porã'],
         'DF': ['Brasília', 'Taguatinga', 'Ceilândia', 'Gama', 'Guará', 'Águas Claras'],
         
+        // Região Norte
         'AM': ['Manaus', 'Parintins', 'Itacoatiara', 'Manacapuru', 'Coari'],
         'PA': ['BELÉM', 'ANANINDEUA', 'Santarém', 'Marabá', 'Castanhal', 'Parauapebas', 'BRAGANÇA', 'VISEU', 'Augusto Correia', 'Tracuateua'],
         'RO': ['Porto Velho', 'Ji-Paraná', 'Ariquemes', 'Vilhena', 'Cacoal'],
@@ -945,15 +952,18 @@ setInterval(verificarStatus, 60000);
         'AP': ['Macapá', 'Santana', 'Laranjal do Jari', 'Oiapoque'],
         'RR': ['Boa Vista', 'Rorainópolis', 'Caracaraí', 'Mucajaí'],
 
+        // Região Sudeste (Adicionadas para completar a lista)
         'SP': ['São Paulo', 'Campinas', 'Guarulhos'],
         'RJ': ['Rio de Janeiro', 'Niterói'],
         'MG': ['Belo Horizonte', 'Uberlândia'],
         'ES': ['Vitória', 'Vila Velha'],
         
+        // Região Sul (Adicionadas para completar a lista)
         'PR': ['Curitiba', 'Londrina'],
         'SC': ['Florianópolis', 'Joinville'],
         'RS': ['Porto Alegre', 'Caxias do Sul'],
 
+        // Região Nordeste (Adicionadas para completar a lista)
         'BA': ['Salvador', 'Feira de Santana'],
         'PE': ['Recife', 'Jaboatão dos Guararapes'],
         'CE': ['Fortaleza', 'Caucaia'],
@@ -974,6 +984,7 @@ setInterval(verificarStatus, 60000);
         'AM': 'Amazonas', 'PA': 'Pará', 'RO': 'Rondônia', 'TO': 'Tocantins', 'AC': 'Acre', 'AP': 'Amapá', 'RR': 'Roraima'
     };
     
+    // Variáveis globais para armazenar a seleção atual
     let selectedStateCode = 'GO';
     let selectedCity = 'ANÁPOLIS';
 
@@ -982,31 +993,33 @@ setInterval(verificarStatus, 60000);
      * Funções de Controle de UI
      */
     function showModal(id) {
-        // Para garantir que apenas um modal esteja ativo
-        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); 
-        
+        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
         const modal = document.getElementById(id);
         if (modal) {
             modal.style.display = 'flex';
-            document.body.classList.add('modal-active'); // Bloqueia o scroll do fundo
         }
     }
 
     function closeAllModals() {
         document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-        document.body.classList.remove('modal-active'); // Desbloqueia o scroll do fundo
     }
 
+    /**
+     * Função principal para popular o Select de Estados
+     * **RESTAUROU TODOS OS ESTADOS**
+     */
     function populateStates() {
         const stateSelect = document.getElementById('stateSelect');
-        stateSelect.innerHTML = ''; 
+        stateSelect.innerHTML = ''; // Limpa as opções existentes
         
+        // Ordena os códigos dos estados (mantendo GO no topo se quiser)
         const sortedCodes = Object.keys(locationData).sort((a, b) => {
-            if (a === 'GO') return -1;
+            if (a === 'GO') return -1; // Mantém GO no topo
             if (b === 'GO') return 1;
             return a.localeCompare(b);
         });
 
+        // Adiciona todos os estados ordenados
         sortedCodes.forEach(code => {
             const option = document.createElement('option');
             option.value = code;
@@ -1014,21 +1027,27 @@ setInterval(verificarStatus, 60000);
             stateSelect.appendChild(option);
         });
 
+        // Garante que o estado de Goiás esteja selecionado inicialmente
         stateSelect.value = selectedStateCode;
         
-        stateSelect.removeEventListener('change', updateCities); // Remove e adiciona para evitar duplicação
+        // Adiciona o Listener para atualizar as cidades quando o estado muda
         stateSelect.addEventListener('change', updateCities);
     }
 
+    /**
+     * Função para popular o Select de Cidades baseado no estado selecionado
+     */
     function updateCities() {
         const stateSelect = document.getElementById('stateSelect');
         const citySelect = document.getElementById('citySelect');
         
+        // Obtém o código do estado selecionado
         selectedStateCode = stateSelect.value;
         const cities = locationData[selectedStateCode] || [];
 
-        citySelect.innerHTML = ''; 
+        citySelect.innerHTML = ''; // Limpa as opções existentes
 
+        // Adiciona cada cidade do array ao select
         cities.forEach(city => {
             const option = document.createElement('option');
             option.value = city;
@@ -1036,6 +1055,7 @@ setInterval(verificarStatus, 60000);
             citySelect.appendChild(option);
         });
 
+        // Tenta manter a cidade anteriormente selecionada ou define a primeira
         if (selectedStateCode === 'GO' && cities.includes('ANÁPOLIS')) {
             citySelect.value = 'ANÁPOLIS';
         } else {
@@ -1044,17 +1064,25 @@ setInterval(verificarStatus, 60000);
             }
         }
         
+        // Atualiza a variável global com a cidade atualmente selecionada
         selectedCity = citySelect.value;
     }
 
+    /**
+     * Funções de Navegação dos Modais
+     */
 
+    // Ação do Botão "Continuar" (Modal 1)
     function nextToCityModal() {
+        // Atualiza a lista de cidades antes de mostrar o modal 2
         updateCities(); 
         showModal('cityModal');
     }
 
+    // Ação do Botão "Buscar" (Modal 2) -> Inicia o Carregamento
     function nextToLoadingModal() {
         const citySelect = document.getElementById('citySelect');
+        // Pega a cidade atualmente selecionada
         selectedCity = citySelect.options[citySelect.selectedIndex].text.toUpperCase();
         
         document.getElementById('cityModal').style.display = 'none';
@@ -1062,134 +1090,75 @@ setInterval(verificarStatus, 60000);
 
         const loadingMessageElement = document.getElementById('loadingMessage');
         const spinner = document.querySelector('#loadingModal .loading-spinner');
-        const accessButton = document.getElementById('accessButton');
         
         spinner.style.display = 'block';
-        accessButton.style.display = 'none';
         loadingMessageElement.innerHTML = `Analisando a sua região, ${selectedCity}...`;
 
+        // 1. Simulação do Carregamento (3 segundos)
         setTimeout(() => {
             
             spinner.style.display = 'none';
             let finalMessage = '';
 
+            // Lógica de mensagens personalizadas:
             if (selectedStateCode === 'GO' && selectedCity === 'ANÁPOLIS') {
                 finalMessage = `✅ Base Nuance mais próxima encontrada: <strong>1.6 km</strong>. Boas-vindas a Anápolis! Delivery disponível.`;
-                accessButton.textContent = 'Acessar o Site';
+                // Aqui você faria o redirecionamento para o cardápio principal
             } else if (['GO'].includes(selectedStateCode)) {
                 finalMessage = `👋 Você está em ${selectedCity}! Atendemos essa região com nossos serviços de <strong>Barman para eventos</strong>. Para Delivery, entre em contato.`;
-                accessButton.textContent = 'Acessar o Site';
             } else {
+                // Demais cidades
                 finalMessage = `No momento, só realizamos entrega de Drinks Prontos em Anápolis. Para ${selectedCity}, oferecemos apenas o serviço de Barman para eventos.`;
-                accessButton.textContent = 'Continuar para o Site';
             }
 
             loadingMessageElement.innerHTML = finalMessage;
-            accessButton.style.display = 'block';
+            
+            // 2. Fecha o modal 3 após 5 segundos 
+            setTimeout(() => {
+                closeAllModals();
+            }, 5000); 
 
-        }, 3000); 
-    }
-    
-    function completeFlowAndCloseModals() {
-        // 1. Define que o fluxo de modais foi concluído
-        localStorage.setItem(COMPLETED_FLOW_KEY, 'true');
-        
-        // 2. Define o próximo tempo de exibição (2 minutos a partir de agora)
-        const newNextDisplayTime = Date.now() + INTERVALO_MS;
-        localStorage.setItem(NEXT_DISPLAY_KEY, newNextDisplayTime.toString());
-        
-        // 3. Fecha os modais
-        closeAllModals();
-        
-        console.log(`Fluxo concluído. Próxima exibição do modal em: ${new Date(newNextDisplayTime).toLocaleTimeString()}`);
+        }, 3000); // 3 segundos para simular a análise
     }
 
-
     // ----------------------------------------------------
-    // LÓGICA DE CONTROLE DE TEMPO E OBRIGATORIEDADE (REFORÇADA)
+    // INÍCIO DA NOVA FUNCIONALIDADE: CONTADOR DE CARREGAMENTO
     // ----------------------------------------------------
     
-    // Constante para definir o intervalo de tempo (2 minutos em milissegundos)
-    const INTERVALO_MINUTOS = 5; // ***** Intervalo de 2 minutos *****
-    const INTERVALO_MS = INTERVALO_MINUTOS * 60 * 1000;
-    
-    const NEXT_DISPLAY_KEY = 'nuance_next_modal_display_time'; 
-    const COMPLETED_FLOW_KEY = 'nuance_flow_completed'; 
-    const INTERVAL_CONTROL_KEY = 'nuance_current_interval_minutes'; // NOVA CHAVE DE CONTROLE
+    function handlePageLoadCount() {
+        // Chave para armazenar a contagem no localStorage
+        const countKey = 'nuance_page_load_count';
+        
+        // 1. Pega o valor atual do contador (se não existir, é 0)
+        let loadCount = parseInt(localStorage.getItem(countKey)) || 0;
+        
+        // 2. Incrementa a contagem para o carregamento atual
+        loadCount++;
+        localStorage.setItem(countKey, loadCount);
+        
+        console.log(`Página carregada ${loadCount} de ${MAX_CARREGAMENTOS} vezes.`);
 
-    
-    function handleModalDisplayByTime() {
-        const agora = Date.now();
-        const nextDisplayTime = parseInt(localStorage.getItem(NEXT_DISPLAY_KEY)) || 0;
-        let flowCompleted = localStorage.getItem(COMPLETED_FLOW_KEY) === 'true';
+        // 3. Verifica se a contagem atingiu o limite
+        if (loadCount >= MAX_CARREGAMENTOS) {
+            
+            // Reseta a contagem para 0 para começar o ciclo novamente
+            localStorage.setItem(countKey, 0); 
 
-        // 1. CHECAGEM OBRIGATÓRIA (Tempo Expirado)
-        if (agora >= nextDisplayTime) {
-            
-            // A) Se expirou E estava 'completo', a permissão de navegação acabou.
-            if (flowCompleted) {
-                localStorage.setItem(COMPLETED_FLOW_KEY, 'false'); 
-                const newNextDisplayTime = agora + INTERVALO_MS;
-                localStorage.setItem(NEXT_DISPLAY_KEY, newNextDisplayTime.toString());
-                
-                console.log(`Tempo de ${INTERVALO_MINUTOS}m expirou. Permissão de navegação resetada. Conteúdo liberado. OBRIGATÓRIO na próxima recarga.`);
-                
-            } else {
-            // B) Se expirou E NÃO estava 'completo', força o modal AGORA.
-                console.log(`Tempo de ${INTERVALO_MINUTOS}m passou e fluxo não foi concluído. Modal de localização é obrigatório.`);
-                
-                // NOTA: O conteúdo principal permanece visível, mas o modal o cobre e impede a interação.
-                populateStates(); 
-                updateCities();   
-                showModal('stateModal');
-            }
-            
-        } else {
-            // 2. TEMPO VÁLIDO (Modal não é obrigatório)
-            const remainingTime = nextDisplayTime - agora;
-            const minutes = Math.floor(remainingTime / 60000);
-            const seconds = Math.floor((remainingTime % 60000) / 1000);
-            console.log(`Conteúdo liberado (padrão). Faltam: ${minutes}m e ${seconds}s para a próxima checagem obrigatória.`);
-            
-            // Fecha qualquer modal aberto, caso o usuário tente abrir manualmente e o tempo não tenha expirado.
-            closeAllModals(); 
+            // Mostra o modal
+            populateStates(); 
+            updateCities();   
+            showModal('stateModal');
         }
+        
+        // Se loadCount for menor que MAX_CARREGAMENTOS, nada acontece e o modal permanece escondido (display: none).
     }
-    
     
     // Inicialização ao carregar a página
     document.addEventListener('DOMContentLoaded', () => {
-        
-        const storedInterval = parseInt(localStorage.getItem(INTERVAL_CONTROL_KEY));
-        
-        // **NOVA LÓGICA DE CONTROLE DE VERSÃO/TEMPO**
-        // Se o intervalo armazenado for diferente do intervalo atual (2 minutos),
-        // ou se não existir, resetamos TUDO para garantir que a nova regra seja aplicada.
-        if (storedInterval !== INTERVALO_MINUTOS) {
-             console.warn(`Intervalo mudou de ${storedInterval || 'Não definido'} para ${INTERVALO_MINUTOS}m. Resetando a chave de tempo.`);
-             
-             // Limpa as chaves antigas e define a nova chave de controle
-             localStorage.removeItem(NEXT_DISPLAY_KEY);
-             localStorage.setItem(COMPLETED_FLOW_KEY, 'false');
-             localStorage.setItem(INTERVAL_CONTROL_KEY, INTERVALO_MINUTOS);
-
-             // Define o novo tempo inicial
-             const newNextDisplayTime = Date.now() + INTERVALO_MS;
-             localStorage.setItem(NEXT_DISPLAY_KEY, newNextDisplayTime.toString());
-             console.log(`Novo intervalo de ${INTERVALO_MINUTOS}m definido. Próxima checagem: ${new Date(newNextDisplayTime).toLocaleTimeString()}`);
-        }
-        
-        // Se a chave de tempo não existir após o reset ou se for a primeira visita, define-a.
-        if (!localStorage.getItem(NEXT_DISPLAY_KEY)) {
-             const newNextDisplayTime = Date.now() + INTERVALO_MS;
-             localStorage.setItem(NEXT_DISPLAY_KEY, newNextDisplayTime.toString());
-             localStorage.setItem(COMPLETED_FLOW_KEY, 'false');
-             localStorage.setItem(INTERVAL_CONTROL_KEY, INTERVALO_MINUTOS);
-             console.log(`Primeiro intervalo definido: ${INTERVALO_MINUTOS}m. Próxima checagem: ${new Date(newNextDisplayTime).toLocaleTimeString()}`);
-        }
-        
-        handleModalDisplayByTime(); 
+        handlePageLoadCount(); 
     });
+    // ----------------------------------------------------
+    // FIM DA NOVA FUNCIONALIDADE
     // ----------------------------------------------------
 </script>
 </body>
