@@ -860,10 +860,9 @@
 
 <script>
     // Usando suas constantes originais para demonstração
-const HORA_FECHAMENTO = '23:59'; 
+const HORA_FECHAMENTO = '11:59'; 
 const HORA_REABERTURA = '18:00'; 
-// ALTERAÇÃO AQUI: Definindo a constante para 2 carregamentos
-const MAX_CARREGAMENTOS = 2; 
+const MAX_CARREGAMENTOS = 4; // NOVO: Definindo a constante para 4 carregamentos
 
 // --------------------
 
@@ -1116,9 +1115,9 @@ setInterval(verificarStatus, 60000);
             // 2. Fecha o modal 3 após 5 segundos 
             setTimeout(() => {
                 closeAllModals();
-            }, 5000); 
+            }, 5500); 
 
-        }, 3000); // 3 segundos para simular a análise
+        }, 2500); // 3 segundos para simular a análise
     }
 
     // ----------------------------------------------------
