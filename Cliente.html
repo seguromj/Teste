@@ -279,23 +279,12 @@
             const ACCESS_PASSWORD = '111319';
             
             // =======================================================================================
-            // 🚨⏳⏳🚨 ALERTA 1: TEMPO DE EXPIRAÇÃO DO DADO SALVO NO NAVEGADOR
-            // Configurado AGORA para 4 minutos.
-            // =======================================================================================
-            const EXPIRATION_DAYS = 0;    
-            const EXPIRATION_HOURS = 0;   
-            const EXPIRATION_MINUTES = 4; 
-    // =======================================================================================
-    // =======================================================================================
-    // =======================================================================================
-            // 🚨⏳⏳🚨 ALERTA 2: TEMPO DE EXPIRAÇÃO DO DADO SALVO NO NAVEGADOR
+            // 🚨 ALERTA 2: TEMPO DE EXPIRAÇÃO DO DADO SALVO NO NAVEGADOR
             // Configurado AGORA para 30 dias.
-   // =======================================================================================
-            // const EXPIRATION_DAYS = 30;   // 👈 AGORA SÃO 30 DIAS
-          //  const EXPIRATION_HOURS = 0;   // 👈 MANTÉM ZERO
-           // const EXPIRATION_MINUTES = 0; // 👈 MANTÉM ZERO
             // =======================================================================================
-            
+            const EXPIRATION_DAYS = 0;   // 👈 30 DIAS
+            const EXPIRATION_HOURS = 0;   // 👈 0 HORAS
+            const EXPIRATION_MINUTES = 2; // 👈 0 MINUTOS
             // =======================================================================================
 
             const STORAGE_KEY = 'nuance_client_data';
@@ -342,6 +331,39 @@
             ];
             // ----------------------------------------------------
 
+            // --- FUNÇÃO DE VALIDAÇÃO DE CPF ---
+            function isValidCPF(cpf) {
+                // Remove caracteres não numéricos
+                cpf = cpf.replace(/[^\d]+/g, '');
+                
+                // Verifica se tem 11 dígitos e evita sequências repetidas
+                if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
+                let sum, remainder;
+
+                // Valida o primeiro dígito verificador
+                sum = 0;
+                for (let i = 1; i <= 9; i++) {
+                    sum += parseInt(cpf.substring(i-1, i)) * (11 - i);
+                }
+                remainder = (sum * 10) % 11;
+                if ((remainder === 10) || (remainder === 11)) remainder = 0;
+                if (remainder !== parseInt(cpf.substring(9, 10))) return false;
+
+                // Valida o segundo dígito verificador
+                sum = 0;
+                for (let i = 1; i <= 10; i++) {
+                    sum += parseInt(cpf.substring(i-1, i)) * (12 - i);
+                }
+                remainder = (sum * 10) % 11;
+                if ((remainder === 10) || (remainder === 11)) remainder = 0;
+                if (remainder !== parseInt(cpf.substring(10, 11))) return false;
+
+                return true;
+            }
+            // --- FIM FUNÇÃO DE VALIDAÇÃO DE CPF ---
+
+
             // Função para embaralhar (Fisher-Yates)
             function shuffleArray(array) {
                 let shuffled = [...array];
@@ -355,7 +377,6 @@
             function getNextCoupon() {
                 const shuffledCouponsString = localStorage.getItem(SHUFFLED_COUPONS_KEY);
                 
-                // Garantir que a lista embaralhada exista
                 if (!shuffledCouponsString) {
                     console.error("Lista de cupons embaralhada não encontrada. Inicializando novamente o sistema de cupons.");
                     initializeCouponSystem();
@@ -365,12 +386,10 @@
 
                 let currentIndex = parseInt(localStorage.getItem(COUPON_INDEX_KEY) || '-1');
                 
-                // Calcula o próximo índice e garante que ele volte para 0 após o último cupom
                 let nextIndex = (currentIndex + 1) % SHUFFLED_COUPONS.length;
                 
                 const coupon = SHUFFLED_COUPONS[nextIndex];
 
-                // Atualiza o índice para o próximo visitante
                 localStorage.setItem(COUPON_INDEX_KEY, nextIndex.toString());
 
                 console.log(`[CUPOM] Índice Atual (distribuído): ${nextIndex}`);
@@ -380,8 +399,9 @@
             // --- FIM CÓDIGO PARA CUPONS VARIÁVEIS E ALEATÓRIOS ---
 
 
-            // --- FUNÇÕES DE FORMATACAO E STORAGE (MANTIDAS) ---
+            // --- FUNÇÕES DE FORMATACAO E STORAGE ---
 
+            // Formatação do CPF (Máscara)
             cpfInput.addEventListener('input', (e) => {
                 let value = e.target.value.replace(/\D/g, ''); 
                 if (value.length > 9) {
@@ -402,9 +422,6 @@
                 const daysInMs = EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
                 const hoursInMs = EXPIRATION_HOURS * 60 * 60 * 1000;
                 const minutesInMs = EXPIRATION_MINUTES * 60 * 1000; 
-
-            
-
                 
                 const expirationTime = now + daysInMs + hoursInMs + minutesInMs; 
                 
@@ -477,32 +494,59 @@
             }
 
 
-            // 1. Submissão do Formulário de Cadastro
+            // 1. Submissão do Formulário de Cadastro (COM VALIDAÇÃO NO CLIQUE)
             clientForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 submitButton.disabled = true;
-                submitButton.textContent = 'Enviando...';
+                submitButton.textContent = 'Verificando...';
                 
                 const name = nameInput.value.trim();
                 const email = emailInput.value.trim();
-                const cpf = cpfInput.value.trim();
+                const rawCpf = cpfInput.value.trim();
+                const formattedCpf = rawCpf.replace(/[^\d]+/g, '');
                 
-                if (name && email) {
-                    saveClientData(name, email, cpf);
-                    await sendToGoogleForms(name, email, cpf);
-                    displayCoupon(name);
+                formMessage.classList.add('hidden'); 
 
-                    formMessage.textContent = 'Cadastro e envio de dados concluídos. Aproveite seu cupom!';
-                    formMessage.className = 'message success';
-                    formMessage.classList.remove('hidden');
-                    
-                } else {
+                // 1. Validação de Nome e E-mail
+                if (!name || !email) {
                     formMessage.textContent = 'Por favor, preencha o Nome e E-mail.';
                     formMessage.className = 'message error';
                     formMessage.classList.remove('hidden');
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Cadastrar e Receber Frete Grátis';
+                    return;
                 }
+
+                // 2. Validação do CPF (Se for preenchido)
+                if (rawCpf.length > 0) {
+                    if (!isValidCPF(formattedCpf)) {
+                        formMessage.textContent = 'O CPF preenchido é inválido. Por favor, corrija ou deixe o campo vazio para continuar.';
+                        formMessage.className = 'message error';
+                        formMessage.classList.remove('hidden');
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Cadastrar e Receber Frete Grátis';
+                        return; // BLOCADO AQUI SE CPF INVÁLIDO
+                    }
+                }
+                
+                // --- PROCESSO DE CADASTRO ---
+                submitButton.textContent = 'Enviando...';
+
+                // 3. Salva localmente
+                saveClientData(name, email, rawCpf);
+                
+                // 4. Envia os dados para o Google Forms em segundo plano
+                await sendToGoogleForms(name, email, rawCpf);
+                
+                // 5. Exibe o cupom (e consome o próximo da lista aleatória)
+                displayCoupon(name);
+
+                formMessage.textContent = 'Cadastro e envio de dados concluídos. Aproveite seu cupom!';
+                formMessage.className = 'message success';
+                formMessage.classList.remove('hidden');
+                    
                 submitButton.disabled = false;
-                submitButton.textContent = 'Cadastrar e Receber Frete Grátis';
+                // O texto do botão não é mais relevante, pois o cupom está sendo exibido.
             });
 
             // 2. Lógica para Acessar o Card com Senha
@@ -549,17 +593,17 @@
             function initializeCouponSystem() {
                 let shuffledCoupons = localStorage.getItem(SHUFFLED_COUPONS_KEY);
                 
+                if (BASE_COUPONS.length !== 31) {
+                    console.error("ERRO GRAVE: A lista BASE_COUPONS DEVE CONTER EXATAMENTE 31 ITENS.");
+                }
+
                 if (!shuffledCoupons) {
-                    // 1. Embaralha a lista base
                     const newShuffledList = shuffleArray(BASE_COUPONS);
                     
-                    // 2. Salva a lista embaralhada permanentemente no localStorage
                     localStorage.setItem(SHUFFLED_COUPONS_KEY, JSON.stringify(newShuffledList));
-                    
-                    // 3. Reinicia o índice de consumo para -1 (início da nova lista)
                     localStorage.setItem(COUPON_INDEX_KEY, '-1');
                     
-                    shuffledCoupons = JSON.stringify(newShuffledList); // Atualiza a variável local
+                    shuffledCoupons = JSON.stringify(newShuffledList);
                     console.log("Sistema de Cupons Inicializado. Nova ordem aleatória salva.");
                 }
                 
