@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -268,7 +269,6 @@
             // =======================================================================================
             // 🚨 ALERTA 1: CONFIGURAÇÃO OBRIGATÓRIA DO GOOGLE FORMS
             // Substitua os valores abaixo pelos seus dados EXATOS do Formulário Google.
-            // Se você não fizer isso, o cadastro NÃO chegará à sua planilha.
             // =======================================================================================
             const FORM_ACTION_URL = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSeQ_y-A81q0-gGqYjS8d-2/formResponse'; // 🚨 Substitua pela URL de ação do seu Forms
             const NAME_FIELD_GF = 'entry.12345678';   // 🚨 Substitua pelo "name" do campo Nome
@@ -278,19 +278,98 @@
 
             const ACCESS_PASSWORD = '111319';
             
-          // =======================================================================================
-// 🚨 ALERTA 2: TEMPO DE EXPIRAÇÃO DO DADO SALVO NO NAVEGADOR
-// Configurado AGORA para 4 minutos.
-// =======================================================================================
-const EXPIRATION_DAYS = 0;    // 👈 Deve ser ZERO (0)
-const EXPIRATION_HOURS = 0;   // 👈 Deve ser ZERO (0)
-const EXPIRATION_MINUTES = 4; // 👈 Deve ser QUATRO (4)
-// =======================================================================================
+            // =======================================================================================
+            // 🚨 ALERTA 2: TEMPO DE EXPIRAÇÃO DO DADO SALVO NO NAVEGADOR
+            // Configurado AGORA para 4 minutos.
+            // =======================================================================================
+            const EXPIRATION_DAYS = 0;    
+            const EXPIRATION_HOURS = 0;   
+            const EXPIRATION_MINUTES = 4; 
+            // =======================================================================================
 
             const STORAGE_KEY = 'nuance_client_data';
-            const FREIGHT_COUPON = 'FRETEGRATIS'; 
+            
+            // --- CÓDIGO PARA CUPONS VARIÁVEIS E ALEATÓRIOS ---
+            const COUPON_INDEX_KEY = 'nuance_coupon_index';
+            const SHUFFLED_COUPONS_KEY = 'nuance_shuffled_coupons'; 
 
-            // --- FUNÇÕES DE FORMATACAO E STORAGE ---
+            // --- 🎯 LISTA DE CUPONS PERSONALIZADA (31 cupons) ---
+            // IMPORTANTE: Mantenha exatamente 31 itens nesta lista.
+            const BASE_COUPONS = [
+                "NUANCE_MAR24_A", // Cupom 1
+                "NUANCE_MAR24_B", // Cupom 2
+                "NUANCE_MAR24_C", // Cupom 3
+                "NUANCE_MAR24_D", // Cupom 4
+                "NUANCE_MAR24_E", // Cupom 5
+                "NUANCE_MAR24_F", // Cupom 6
+                "NUANCE_MAR24_G", // Cupom 7
+                "NUANCE_MAR24_H", 
+                "NUANCE_MAR24_I", 
+                "NUANCE_MAR24_J", 
+                "NUANCE_MAR24_K", 
+                "NUANCE_MAR24_L", 
+                "NUANCE_MAR24_M", 
+                "NUANCE_MAR24_N", 
+                "NUANCE_MAR24_O", 
+                "NUANCE_MAR24_P", 
+                "NUANCE_MAR24_Q", 
+                "NUANCE_MAR24_R", 
+                "NUANCE_MAR24_S", 
+                "NUANCE_MAR24_T", 
+                "NUANCE_MAR24_U", 
+                "NUANCE_MAR24_V", 
+                "NUANCE_MAR24_W", 
+                "NUANCE_MAR24_X", 
+                "NUANCE_MAR24_Y", 
+                "NUANCE_MAR24_Z1", 
+                "NUANCE_MAR24_Z2", 
+                "NUANCE_MAR24_Z3", 
+                "NUANCE_MAR24_Z4", 
+                "NUANCE_MAR24_Z5", 
+                "NUANCE_MAR24_Z6", 
+                "NUANCE_MAR24_Z7" // Cupom 31
+            ];
+            // ----------------------------------------------------
+
+            // Função para embaralhar (Fisher-Yates)
+            function shuffleArray(array) {
+                let shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            }
+
+            function getNextCoupon() {
+                const shuffledCouponsString = localStorage.getItem(SHUFFLED_COUPONS_KEY);
+                
+                // Garantir que a lista embaralhada exista
+                if (!shuffledCouponsString) {
+                    console.error("Lista de cupons embaralhada não encontrada. Inicializando novamente o sistema de cupons.");
+                    initializeCouponSystem();
+                    return getNextCoupon(); 
+                }
+                const SHUFFLED_COUPONS = JSON.parse(shuffledCouponsString);
+
+                let currentIndex = parseInt(localStorage.getItem(COUPON_INDEX_KEY) || '-1');
+                
+                // Calcula o próximo índice e garante que ele volte para 0 após o último cupom
+                let nextIndex = (currentIndex + 1) % SHUFFLED_COUPONS.length;
+                
+                const coupon = SHUFFLED_COUPONS[nextIndex];
+
+                // Atualiza o índice para o próximo visitante
+                localStorage.setItem(COUPON_INDEX_KEY, nextIndex.toString());
+
+                console.log(`[CUPOM] Índice Atual (distribuído): ${nextIndex}`);
+                
+                return coupon;
+            }
+            // --- FIM CÓDIGO PARA CUPONS VARIÁVEIS E ALEATÓRIOS ---
+
+
+            // --- FUNÇÕES DE FORMATACAO E STORAGE (MANTIDAS) ---
 
             cpfInput.addEventListener('input', (e) => {
                 let value = e.target.value.replace(/\D/g, ''); 
@@ -309,10 +388,9 @@ const EXPIRATION_MINUTES = 4; // 👈 Deve ser QUATRO (4)
             function saveClientData(name, email, cpf) {
                 const now = new Date().getTime();
                 
-                // CÁLCULO CORRETO: Converte as constantes (dias, horas, minutos) para milissegundos
                 const daysInMs = EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
                 const hoursInMs = EXPIRATION_HOURS * 60 * 60 * 1000;
-                const minutesInMs = EXPIRATION_MINUTES * 60 * 1000; // 4 * 60 * 1000 = 240.000 ms (4 minutos)
+                const minutesInMs = EXPIRATION_MINUTES * 60 * 1000; 
 
                 const expirationTime = now + daysInMs + hoursInMs + minutesInMs; 
                 
@@ -363,14 +441,15 @@ const EXPIRATION_MINUTES = 4; // 👈 Deve ser QUATRO (4)
             // --- FUNÇÃO PARA EXIBIR O CUPOM ---
             function displayCoupon(name) {
                 const firstName = name.split(' ')[0];
+                const couponCode = getNextCoupon(); 
 
                 couponDiv.innerHTML = `
                     <h3>🎉 Bem-Vindo(a), ${firstName}!</h3>
                     <p style="font-size: 1.1em; color: var(--cor-texto-escuro);">
                         Seu presente de primeiro pedido chegou! Use o código:
                     </p>
-                    <div id="coupon-value" onclick="navigator.clipboard.writeText('${FREIGHT_COUPON}'); alert('Cupom copiado: ${FREIGHT_COUPON}');">
-                        ${FREIGHT_COUPON} <span style="font-size: 0.6em; opacity: 0.8;">(Clique para copiar)</span>
+                    <div id="coupon-value" onclick="navigator.clipboard.writeText('${couponCode}'); alert('Cupom copiado: ${couponCode}');">
+                        ${couponCode} <span style="font-size: 0.6em; opacity: 0.8;">(Clique para copiar)</span>
                     </div>
                     <p id="coupon-info">
                         * Válido apenas no seu primeiro pedido.
@@ -384,8 +463,6 @@ const EXPIRATION_MINUTES = 4; // 👈 Deve ser QUATRO (4)
             }
 
 
-            // --- LÓGICA DE EVENTOS PRINCIPAL ---
-
             // 1. Submissão do Formulário de Cadastro
             clientForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -397,13 +474,8 @@ const EXPIRATION_MINUTES = 4; // 👈 Deve ser QUATRO (4)
                 const cpf = cpfInput.value.trim();
                 
                 if (name && email) {
-                    // 1. Salva localmente
                     saveClientData(name, email, cpf);
-                    
-                    // 2. Envia os dados para o Google Forms em segundo plano
                     await sendToGoogleForms(name, email, cpf);
-                    
-                    // 3. Exibe o cupom para o cliente IMEDIATAMENTE
                     displayCoupon(name);
 
                     formMessage.textContent = 'Cadastro e envio de dados concluídos. Aproveite seu cupom!';
@@ -459,8 +531,39 @@ const EXPIRATION_MINUTES = 4; // 👈 Deve ser QUATRO (4)
                 }
             });
 
-            // 3. Inicialização: Verifica se já existem dados salvos
+            // --- FUNÇÃO DE INICIALIZAÇÃO DO SISTEMA DE CUPONS ---
+            function initializeCouponSystem() {
+                let shuffledCoupons = localStorage.getItem(SHUFFLED_COUPONS_KEY);
+                
+                if (!shuffledCoupons) {
+                    // 1. Embaralha a lista base
+                    const newShuffledList = shuffleArray(BASE_COUPONS);
+                    
+                    // 2. Salva a lista embaralhada permanentemente no localStorage
+                    localStorage.setItem(SHUFFLED_COUPONS_KEY, JSON.stringify(newShuffledList));
+                    
+                    // 3. Reinicia o índice de consumo para -1 (início da nova lista)
+                    localStorage.setItem(COUPON_INDEX_KEY, '-1');
+                    
+                    shuffledCoupons = JSON.stringify(newShuffledList); // Atualiza a variável local
+                    console.log("Sistema de Cupons Inicializado. Nova ordem aleatória salva.");
+                }
+                
+                const currentCoupons = JSON.parse(shuffledCoupons);
+                const currentIndex = parseInt(localStorage.getItem(COUPON_INDEX_KEY) || '-1');
+
+                console.log("--- Status de Cupons (Aleatório e Sequencial) ---");
+                console.log("Lista Embaralhada:", currentCoupons);
+                console.log(`Último Índice Usado: ${currentIndex}`);
+                console.log(`Próximo Cupom a ser distribuído: ${currentCoupons[(currentIndex + 1) % currentCoupons.length]}`);
+                console.log("-------------------------------------------------");
+            }
+
+
+            // 3. Inicialização Principal
             function initialize() {
+                initializeCouponSystem(); 
+                
                 const clientData = getClientData();
                 if (clientData) {
                     registrationDiv.classList.add('hidden');
