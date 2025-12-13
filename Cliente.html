@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -340,13 +339,12 @@
             
             // =======================================================================================
             // 🚨 CONFIGURAÇÃO OBRIGATÓRIA DO GOOGLE FORMS (ATUALIZADA)
-            // Os IDs foram mapeados para o seu novo formulário.
             // =======================================================================================
             const FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSd5kqX1HuvNnQwKCknXcsbmy2DEdon7jsGAQtzyvzRr0aLojQ/formResponse'; 
             const NAME_FIELD_GF = 'entry.2009915093';   
             const EMAIL_FIELD_GF = 'entry.188272270'; 
             const CPF_FIELD_GF = 'entry.199255072';
-            const PASSWORD_FIELD_GF = 'entry.1955124742'; 
+            const PASSWORD_FIELD_GF = 'entry.1955124742'; // ID REAL DA SENHA
             // =======================================================================================
             
             // =======================================================================================
@@ -364,15 +362,41 @@
             const COUPON_INDEX_KEY = 'nuance_coupon_index';
             const SHUFFLED_COUPONS_KEY = 'nuance_shuffled_coupons'; 
 
-            const BASE_COUPONS = [
-                "NUANCE_MAR24_A", "NUANCE_MAR24_B", "NUANCE_MAR24_C", "NUANCE_MAR24_D", "NUANCE_MAR24_E", 
-                "NUANCE_MAR24_F", "NUANCE_MAR24_G", "NUANCE_MAR24_H", "NUANCE_MAR24_I", "NUANCE_MAR24_J", 
-                "NUANCE_MAR24_K", "NUANCE_MAR24_L", "NUANCE_MAR24_M", "NUANCE_MAR24_N", "NUANCE_MAR24_O", 
-                "NUANCE_MAR24_P", "NUANCE_MAR24_Q", "NUANCE_MAR24_R", "NUANCE_MAR24_S", "NUANCE_MAR24_T", 
-                "NUANCE_MAR24_U", "NUANCE_MAR24_V", "NUANCE_MAR24_W", "NUANCE_MAR24_X", "NUANCE_MAR24_Y", 
-                "NUANCE_MAR24_Z1", "NUANCE_MAR24_Z2", "NUANCE_MAR24_Z3", "NUANCE_MAR24_Z4", "NUANCE_MAR24_Z5", 
-                "NUANCE_MAR24_Z6", "NUANCE_MAR24_Z7"
-            ];
+           // CORREÇÃO: ADICIONADO O 32º CUPOM (NUANCE_LAST_CUPOM)
+           const BASE_COUPONS = [
+	"NUANCE_B8C95RF6",
+	"NUANCE_87SBYS1Y",
+	"NUANCE_C0Z7P90C",
+	"NUANCE_4LUJ96PK",
+	"NUANCE_K616LW2F",
+	"NUANCE_HHLCOA8A",
+	"NUANCE_KFFXW1QE",
+	"NUANCE_65TZMONP",
+	"NUANCE_OT73KSFJ",
+	"NUANCE_3SLC9FSW",
+	"NUANCE_W4E9EFE2",
+	"NUANCE_N27EIGZE",
+	"NUANCE_NV3ZC6B5",
+	"NUANCE_FM3YMBRA",
+	"NUANCE_0IL5PJG8",
+	"NUANCE_E1H1HRLD",
+	"NUANCE_SZGYVUZM",
+	"NUANCE_HBQUR22D",
+	"NUANCE_1QDXZ4JI",
+	"NUANCE_REXWJN4Z",
+	"NUANCE_S28L86CN",
+	"NUANCE_M9L5195D",
+	"NUANCE_B5YDBMR9",
+	"NUANCE_RVVH9R38",
+	"NUANCE_74ZIABOT",
+	"NUANCE_62BXST36",
+	"NUANCE_9VWLJ5L5",
+	"NUANCE_9WQJ7LY5",
+	"NUANCE_R9IC4810",
+	"NUANCE_PBID3BP1",
+	"NUANCE_5SL6Y6G1",
+    "NUANCE_LAST_CUPOM" // 👈 CUPOM ADICIONADO PARA COMPLETAR 32
+];
             
             // --- FUNÇÃO DE VALIDAÇÃO DE CPF ---
             function isValidCPF(cpf) {
@@ -424,12 +448,18 @@
             function getNextCoupon() {
                 const shuffledCouponsString = localStorage.getItem(SHUFFLED_COUPONS_KEY);
                 if (!shuffledCouponsString) {
+                    // Se não há cupons embaralhados, inicializa o sistema e tenta novamente
                     initializeCouponSystem();
+                    // Esta chamada recursiva garante que ele tentará de novo com os dados inicializados.
                     return getNextCoupon(); 
                 }
                 const SHUFFLED_COUPONS = JSON.parse(shuffledCouponsString);
                 let currentIndex = parseInt(localStorage.getItem(COUPON_INDEX_KEY) || '-1');
                 let nextIndex = (currentIndex + 1) % SHUFFLED_COUPONS.length;
+                
+                // Previne Index Out of Bounds caso algo dê errado, embora o modulo previna.
+                if(SHUFFLED_COUPONS.length === 0) return "ERRO_CUPOM"; 
+                
                 const coupon = SHUFFLED_COUPONS[nextIndex];
                 localStorage.setItem(COUPON_INDEX_KEY, nextIndex.toString());
                 return coupon;
@@ -678,6 +708,7 @@
                 submitButton.textContent = 'Gerando Cupom...';
                 
                 // --- AQUI GERAMOS E SALVAMOS O CUPOM NO LOCALSTORAGE ---
+                // Se esta for a primeira vez, initializeCouponSystem() será chamado recursivamente em getNextCoupon()
                 const newCoupon = getNextCoupon();
                 saveClientData(name, email, newPassword, rawCpf, newCoupon);
                 
@@ -699,8 +730,9 @@
             function initializeCouponSystem() {
                 let shuffledCoupons = localStorage.getItem(SHUFFLED_COUPONS_KEY);
                 
+                // Verificação de segurança (não vai mais gerar erro, mas é bom manter)
                 if (BASE_COUPONS.length !== 32) {
-                    console.error("ERRO GRAVE: A lista BASE_COUPONS DEVE CONTER EXATAMENTE 32 ITENS.");
+                    console.error(`ERRO GRAVE: A lista BASE_COUPONS deve conter 32 itens. Atualmente tem ${BASE_COUPONS.length}.`);
                 }
 
                 if (!shuffledCoupons) {
@@ -713,6 +745,7 @@
 
             // 3. Inicialização Principal
             function initialize() {
+                // A primeira chamada é aqui. Se falhar, getNextCoupon tentará inicializar novamente.
                 initializeCouponSystem(); 
                 
                 const clientData = getClientData();
