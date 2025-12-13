@@ -1,4 +1,7 @@
 
+
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -167,7 +170,7 @@
             color: #666;
         }
 
-        /* Estilo para o botão Voltar ao Carrinho */
+        /* Estilo para o botão Voltar ao Carrinho (Comum e no Password Form) */
         #return-to-cart {
             margin-top: 20px;
             background-color: var(--cor-secundaria); 
@@ -181,6 +184,8 @@
             text-decoration: none; 
             display: inline-block;
             transition: background-color 0.3s;
+            width: 100%; /* Ajuste para preencher o container */
+            box-sizing: border-box;
         }
         
         #return-to-cart:hover {
@@ -228,7 +233,7 @@
             cursor: pointer;
         }
         
-        /* NOVO: Estilos do Formulário de Recuperação */
+        /* Estilos do Formulário de Recuperação */
         #recovery-form {
              text-align: center;
             margin-top: 20px;
@@ -273,15 +278,7 @@
             </div>
 
         <div id="password-form" class="hidden">
-            <h3>Acesso Rápido</h3>
-            <label for="card-password">Insira sua Senha de Acesso:</label>
-            <input type="password" id="card-password" placeholder="******" maxlength="12" style="margin-bottom: 10px;">
-            <button id="access-button">Acessar Cartão</button>
-            
-            <span id="forgot-password-link">Esqueceu a senha?</span>
-            
-            <div id="password-message" class="message hidden"></div>
-        </div>
+            </div>
         
         <div id="recovery-form" class="hidden">
             <h3>Recuperar Senha de Acesso</h3>
@@ -311,27 +308,24 @@
             const clientForm = document.getElementById('client-form');
             const registrationDiv = document.getElementById('registration-form');
             const passwordFormDiv = document.getElementById('password-form');
-            const recoveryFormDiv = document.getElementById('recovery-form'); // NOVO: Div de recuperação
-            const recoveryEmailForm = document.getElementById('email-recovery-form'); // NOVO: Formulário de e-mail
+            const recoveryFormDiv = document.getElementById('recovery-form'); 
+            const recoveryEmailForm = document.getElementById('email-recovery-form'); 
             const cardDiv = document.getElementById('data-card');
             const couponDiv = document.getElementById('coupon-display');
             const submitButton = document.getElementById('submit-button');
-            const accessButton = document.getElementById('access-button');
-            const recoverButton = document.getElementById('recover-button'); // NOVO: Botão Recuperar
-            const forgotPasswordLink = document.getElementById('forgot-password-link'); 
-            const backToLoginLink = document.getElementById('back-to-login'); // NOVO: Link Voltar
+            const recoverButton = document.getElementById('recover-button'); 
+            const backToLoginLink = document.getElementById('back-to-login'); 
 
             const nameInput = document.getElementById('name');
             const emailInput = document.getElementById('email');
             const newPasswordInput = document.getElementById('new-password'); 
             const cpfInput = document.getElementById('cpf');
             
-            const recoveryEmailInput = document.getElementById('recovery-email'); // NOVO: Input de e-mail de recuperação
+            const recoveryEmailInput = document.getElementById('recovery-email'); 
             
             const formMessage = document.getElementById('form-message');
-            const passwordMessage = document.getElementById('password-message');
-            const recoveryMessage = document.getElementById('recovery-message'); // NOVO: Mensagem de recuperação
-            const passwordInput = document.getElementById('card-password'); 
+            // passwordMessage e passwordInput serão buscados dinamicamente no initialize
+            const recoveryMessage = document.getElementById('recovery-message'); 
             
             // =======================================================================================
             // 🚨 ALERTA 1: CONFIGURAÇÃO OBRIGATÓRIA DO GOOGLE FORMS
@@ -348,8 +342,8 @@
             // =======================================================================================
             const EXPIRATION_DAYS = 0;   
             const EXPIRATION_HOURS = 0;   
-            const EXPIRATION_MINUTES = 2; 
-            const CARDAPIO_URL = 'Cardapio-Nuance.html'; 
+            const EXPIRATION_MINUTES = 3; 
+            const CARDAPIO_URL = 'Cardapio-Nuance.html'; // 👈 URL DO CARDÁPIO
             // =======================================================================================
 
             const STORAGE_KEY = 'nuance_client_data';
@@ -368,7 +362,7 @@
             ];
             
 
-            // --- FUNÇÃO DE VALIDAÇÃO DE CPF (INALTERADA) ---
+            // --- FUNÇÃO DE VALIDAÇÃO DE CPF ---
             function isValidCPF(cpf) {
                 cpf = cpf.replace(/[^\d]+/g, '');
                 if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
@@ -389,9 +383,23 @@
                 if (remainder !== parseInt(cpf.substring(10, 11))) return false;
                 return true;
             }
-            // --- FIM FUNÇÃO DE VALIDAÇÃO DE CPF ---
+            
+            // --- INPUT EVENTO CPF ---
+            cpfInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, ''); 
+                if (value.length > 9) {
+                    value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                } else if (value.length > 6) {
+                    value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
+                } else if (value.length > 3) {
+                    value = value.replace(/(\d{3})(\d{3})/, '$1.$2');
+                } else if (value.length > 0) {
+                    value = value.replace(/(\d{3})/, '$1');
+                }
+                e.target.value = value;
+            });
 
-            // --- FUNÇÕES DE CUPOM E STORAGE (INALTERADAS, exceto CPF input event) ---
+            // --- FUNÇÕES DE STORAGE E CUPOM ---
             function shuffleArray(array) {
                 let shuffled = [...array];
                 for (let i = shuffled.length - 1; i > 0; i--) {
@@ -414,20 +422,6 @@
                 localStorage.setItem(COUPON_INDEX_KEY, nextIndex.toString());
                 return coupon;
             }
-
-            cpfInput.addEventListener('input', (e) => {
-                let value = e.target.value.replace(/\D/g, ''); 
-                if (value.length > 9) {
-                    value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-                } else if (value.length > 6) {
-                    value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
-                } else if (value.length > 3) {
-                    value = value.replace(/(\d{3})(\d{3})/, '$1.$2');
-                } else if (value.length > 0) {
-                    value = value.replace(/(\d{3})/, '$1');
-                }
-                e.target.value = value;
-            });
 
             function saveClientData(name, email, password, cpf) {
                 const now = new Date().getTime();
@@ -507,18 +501,15 @@
             // --- FIM FUNÇÕES DE CUPOM E STORAGE ---
 
 
-            // 4. NOVO: FUNÇÃO DE RECUPERAÇÃO DE SENHA (Abre o formulário de e-mail)
+            // --- LÓGICA DE RECUPERAÇÃO DE SENHA ---
             function handleForgotPassword() {
-                // Esconde o formulário de login/acesso
                 passwordFormDiv.classList.add('hidden');
-                // Mostra o formulário de recuperação
                 recoveryFormDiv.classList.remove('hidden');
                 
-                recoveryMessage.classList.add('hidden'); // Limpa mensagens anteriores
-                recoveryEmailInput.value = ''; // Limpa o campo
+                recoveryMessage.classList.add('hidden'); 
+                recoveryEmailInput.value = ''; 
             }
 
-            // 5. NOVO: LÓGICA DE MOSTRAR SENHA
             recoveryEmailForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 recoverButton.disabled = true;
@@ -533,18 +524,15 @@
                     recoveryMessage.className = 'message error';
                     recoveryMessage.classList.remove('hidden');
                 } else if (enteredEmail.toLowerCase() === clientData.email.toLowerCase()) {
-                    // E-mail corresponde. Mostra a senha.
                     recoveryMessage.innerHTML = `✅ Sua senha de acesso é: <strong>${clientData.password}</strong>.`;
                     recoveryMessage.className = 'message success';
                     recoveryMessage.classList.remove('hidden');
                     
-                    // Opcional: Redireciona de volta para o login em 5 segundos
                     setTimeout(() => {
                         handleBackToLogin();
                     }, 5000);
 
                 } else {
-                    // E-mail não corresponde
                     recoveryMessage.textContent = 'E-mail não corresponde ao cadastro ativo. Verifique e tente novamente.';
                     recoveryMessage.className = 'message error';
                     recoveryMessage.classList.remove('hidden');
@@ -554,21 +542,69 @@
                 recoverButton.textContent = 'Mostrar Senha';
             });
             
-            // 6. NOVO: FUNÇÃO VOLTAR (Retorna para a tela de acesso/senha)
             function handleBackToLogin() {
                 recoveryFormDiv.classList.add('hidden');
                 passwordFormDiv.classList.remove('hidden');
-                passwordMessage.classList.add('hidden');
+                document.getElementById('login-feedback-message').classList.add('hidden');
             }
 
-
-            forgotPasswordLink.addEventListener('click', handleForgotPassword);
+            // Anexo do evento Voltar do recovery
             backToLoginLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 handleBackToLogin();
             });
+            // --- FIM LÓGICA DE RECUPERAÇÃO DE SENHA ---
 
-            // 1. Submissão do Formulário de Cadastro (INALTERADA)
+
+            // --- FUNÇÃO CORRIGIDA DE ACESSO AO CARTÃO ---
+            function handleAccessCard() {
+                const passwordInput = document.getElementById('card-password');
+                const feedbackMessage = document.getElementById('login-feedback-message');
+                const enteredPassword = passwordInput.value;
+                const clientData = getClientData();
+                
+                feedbackMessage.classList.add('hidden');
+                cardDiv.classList.add('hidden');
+                couponDiv.classList.add('hidden'); 
+
+                if (!clientData) {
+                     feedbackMessage.textContent = 'Nenhum dado encontrado ou expirou. Por favor, faça um novo cadastro.';
+                     feedbackMessage.className = 'message error';
+                     feedbackMessage.classList.remove('hidden');
+                     registrationDiv.classList.remove('hidden');
+                     passwordFormDiv.classList.add('hidden');
+                     return;
+                }
+
+                if (enteredPassword === clientData.password) { 
+                    const cardName = document.getElementById('card-name');
+                    const cardEmail = document.getElementById('card-email');
+                    const cardCpf = document.getElementById('card-cpf');
+                    const expiryTimeSpan = document.getElementById('expiry-time');
+
+                    cardName.textContent = clientData.name;
+                    cardEmail.textContent = clientData.email;
+                    cardCpf.textContent = clientData.cpf || 'Não Informado'; 
+                    const expiryDate = new Date(clientData.expiry);
+                    expiryTimeSpan.textContent = expiryDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + 
+                                           ' de ' + expiryDate.toLocaleDateString('pt-BR');
+
+                    cardDiv.classList.remove('hidden');
+                    feedbackMessage.textContent = 'Acesso liberado! (Dados visíveis abaixo)';
+                    feedbackMessage.className = 'message success';
+                    feedbackMessage.classList.remove('hidden');
+                    passwordInput.value = ''; // Limpa o campo
+                } else {
+                    feedbackMessage.textContent = 'Senha incorreta. Tente novamente.';
+                    feedbackMessage.className = 'message error';
+                    feedbackMessage.classList.remove('hidden'); 
+                    passwordInput.value = '';
+                }
+            }
+            // --- FIM FUNÇÃO CORRIGIDA DE ACESSO AO CARTÃO ---
+
+
+            // 1. Submissão do Formulário de Cadastro
             clientForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 submitButton.disabled = true;
@@ -626,56 +662,12 @@
                 submitButton.disabled = false;
             });
 
-            // 2. Lógica para Acessar o Card com Senha (INALTERADA)
-            accessButton.addEventListener('click', () => {
-                const enteredPassword = passwordInput.value;
-                const clientData = getClientData();
-                
-                passwordMessage.classList.add('hidden');
-                cardDiv.classList.add('hidden');
-                couponDiv.classList.add('hidden'); 
-
-                if (!clientData) {
-                     passwordMessage.textContent = 'Nenhum dado encontrado ou expirou. Por favor, faça um novo cadastro.';
-                     passwordMessage.className = 'message error';
-                     passwordMessage.classList.remove('hidden');
-                     registrationDiv.classList.remove('hidden');
-                     passwordFormDiv.classList.add('hidden');
-                     return;
-                }
-
-                if (enteredPassword === clientData.password) { 
-                    const cardName = document.getElementById('card-name');
-                    const cardEmail = document.getElementById('card-email');
-                    const cardCpf = document.getElementById('card-cpf');
-                    const expiryTimeSpan = document.getElementById('expiry-time');
-
-                    cardName.textContent = clientData.name;
-                    cardEmail.textContent = clientData.email;
-                    cardCpf.textContent = clientData.cpf || 'Não Informado'; 
-                    const expiryDate = new Date(clientData.expiry);
-                    expiryTimeSpan.textContent = expiryDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + 
-                                           ' de ' + expiryDate.toLocaleDateString('pt-BR');
-
-                    cardDiv.classList.remove('hidden');
-                    passwordMessage.textContent = 'Acesso liberado!';
-                    passwordMessage.className = 'message success';
-                    passwordMessage.classList.remove('hidden');
-                    passwordInput.value = ''; 
-                } else {
-                    passwordMessage.textContent = 'Senha incorreta. Tente novamente.';
-                    passwordMessage.className = 'message error';
-                    passwordMessage.classList.remove('hidden'); 
-                    passwordInput.value = '';
-                }
-            });
-
-            // --- FUNÇÃO DE INICIALIZAÇÃO DO SISTEMA DE CUPONS (INALTERADA) ---
+            // --- FUNÇÃO DE INICIALIZAÇÃO DO SISTEMA DE CUPONS ---
             function initializeCouponSystem() {
                 let shuffledCoupons = localStorage.getItem(SHUFFLED_COUPONS_KEY);
                 
-                if (BASE_COUPONS.length !== 31) {
-                    console.error("ERRO GRAVE: A lista BASE_COUPONS DEVE CONTER EXATAMENTE 31 ITENS.");
+                if (BASE_COUPONS.length !== 32) { // 32 cupons na lista
+                    console.error("ERRO GRAVE: A lista BASE_COUPONS DEVE CONTER EXATAMENTE 32 ITENS.");
                 }
 
                 if (!shuffledCoupons) {
@@ -686,7 +678,7 @@
             }
 
 
-            // 3. Inicialização Principal
+            // 3. Inicialização Principal (Ajustado para o posicionamento do botão e re-anexo de eventos)
             function initialize() {
                 initializeCouponSystem(); 
                 
@@ -695,9 +687,30 @@
                     registrationDiv.classList.add('hidden');
                     passwordFormDiv.classList.remove('hidden');
                     
-                    passwordMessage.textContent = `Olá ${clientData.name.split(' ')[0]}! Seus dados estão salvos. Insira a senha que você criou para acessar o cartão.`;
-                    passwordMessage.className = 'message success';
-                    passwordMessage.classList.remove('hidden');
+                    const firstName = clientData.name.split(' ')[0];
+
+                    // **INJEÇÃO DO HTML CORRIGIDA**
+                    passwordFormDiv.innerHTML = `
+                        <h3>Acesso Rápido</h3>
+                        <div class="message success" style="margin-top: 0;">
+                            Olá ${firstName}! Seus dados estão salvos. Insira a senha que você criou para acessar o cartão.
+                        </div>
+                        
+                        <a id="return-to-cart" href="${CARDAPIO_URL}">Voltar ao Carrinho</a>
+                        
+                        <label for="card-password" style="margin-top: 25px;">Insira sua Senha de Acesso:</label>
+                        <input type="password" id="card-password" placeholder="******" maxlength="12" style="margin-bottom: 10px;">
+                        <button id="access-button">Acessar Cartão</button>
+                        
+                        <span id="forgot-password-link">Esqueceu a senha?</span>
+                        
+                        <div id="login-feedback-message" class="message hidden"></div>
+                    `;
+
+                    // **RE-ANEXO DOS EVENTOS INJETADOS**
+                    document.getElementById('access-button').addEventListener('click', handleAccessCard);
+                    document.getElementById('forgot-password-link').addEventListener('click', handleForgotPassword);
+                    
                 } else {
                     registrationDiv.classList.remove('hidden');
                     passwordFormDiv.classList.add('hidden');
