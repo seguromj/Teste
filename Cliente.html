@@ -279,12 +279,23 @@
             const ACCESS_PASSWORD = '111319';
             
             // =======================================================================================
-            // 🚨 ALERTA 2: TEMPO DE EXPIRAÇÃO DO DADO SALVO NO NAVEGADOR
+            // 🚨⏳⏳🚨 ALERTA 1: TEMPO DE EXPIRAÇÃO DO DADO SALVO NO NAVEGADOR
             // Configurado AGORA para 4 minutos.
             // =======================================================================================
             const EXPIRATION_DAYS = 0;    
             const EXPIRATION_HOURS = 0;   
             const EXPIRATION_MINUTES = 4; 
+    // =======================================================================================
+    // =======================================================================================
+    // =======================================================================================
+            // 🚨⏳⏳🚨 ALERTA 2: TEMPO DE EXPIRAÇÃO DO DADO SALVO NO NAVEGADOR
+            // Configurado AGORA para 30 dias.
+   // =======================================================================================
+            // const EXPIRATION_DAYS = 30;   // 👈 AGORA SÃO 30 DIAS
+          //  const EXPIRATION_HOURS = 0;   // 👈 MANTÉM ZERO
+           // const EXPIRATION_MINUTES = 0; // 👈 MANTÉM ZERO
+            // =======================================================================================
+            
             // =======================================================================================
 
             const STORAGE_KEY = 'nuance_client_data';
@@ -392,6 +403,9 @@
                 const hoursInMs = EXPIRATION_HOURS * 60 * 60 * 1000;
                 const minutesInMs = EXPIRATION_MINUTES * 60 * 1000; 
 
+            
+
+                
                 const expirationTime = now + daysInMs + hoursInMs + minutesInMs; 
                 
                 const clientData = {
