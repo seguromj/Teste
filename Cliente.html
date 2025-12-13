@@ -198,6 +198,16 @@
             border-radius: 8px;
         }
 
+        /* Estilo do link de recuperação */
+        #forgot-password-link {
+            display: block;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: var(--cor-secundaria);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
@@ -226,7 +236,6 @@
                     <input type="text" id="cpf" maxlength="14" placeholder="000.000.000-00">
                 </div>
                 <button type="submit" id="submit-button">Cadastrar e Receber Frete Grátis</button>
-                <Button>Voltar para o Carrinho</Button>
             </form>
             <div id="form-message" class="message hidden"></div>
         </div>
@@ -239,6 +248,9 @@
             <label for="card-password">Insira sua Senha de Acesso:</label>
             <input type="password" id="card-password" placeholder="******" maxlength="12" style="margin-bottom: 10px;">
             <button id="access-button">Acessar Cartão</button>
+            
+            <span id="forgot-password-link">Esqueceu a senha? Clique aqui para refazer o cadastro.</span>
+            
             <div id="password-message" class="message hidden"></div>
         </div>
 
@@ -248,9 +260,9 @@
             <p><span class="card-label">E-mail:</span> <span id="card-email"></span></p>
             <p><span class="card-label">CPF:</span> <span id="card-cpf"></span></p>
             <p style="font-size: 0.85em; margin-top: 15px;">* Estes dados expiram em <span id="expiry-time"></span>.</p>
+        <Button>Voltar ao Carrinho</Button>
         </div>
 
-        <Button>Voltar para o Carrinho</Button>
     </div>
 
     <script>
@@ -263,15 +275,16 @@
             const couponDiv = document.getElementById('coupon-display');
             const submitButton = document.getElementById('submit-button');
             const accessButton = document.getElementById('access-button');
+            const forgotPasswordLink = document.getElementById('forgot-password-link'); // NOVO ELEMENTO
 
             const nameInput = document.getElementById('name');
             const emailInput = document.getElementById('email');
-            const newPasswordInput = document.getElementById('new-password'); // NOVO: Campo de criação de senha
+            const newPasswordInput = document.getElementById('new-password'); 
             const cpfInput = document.getElementById('cpf');
             
             const formMessage = document.getElementById('form-message');
             const passwordMessage = document.getElementById('password-message');
-            const passwordInput = document.getElementById('card-password'); // Campo de acesso com senha
+            const passwordInput = document.getElementById('card-password'); 
             
             // =======================================================================================
             // 🚨 ALERTA 1: CONFIGURAÇÃO OBRIGATÓRIA DO GOOGLE FORMS
@@ -281,10 +294,7 @@
             const NAME_FIELD_GF = 'entry.12345678';   // 🚨 Substitua pelo "name" do campo Nome
             const EMAIL_FIELD_GF = 'entry.98765432'; // 🚨 Substitua pelo "name" do campo E-mail
             const CPF_FIELD_GF = 'entry.11223344';   // 🚨 Substitua pelo "name" do campo CPF
-            // A senha não será enviada ao Google Forms, apenas salva localmente
             // =======================================================================================
-            
-            // A CONSTANTE ACCESS_PASSWORD FOI REMOVIDA, POIS A SENHA É CRIADA PELO CLIENTE.
             
             // =======================================================================================
             // 🚨 ALERTA 2: TEMPO DE EXPIRAÇÃO DO DADO SALVO NO NAVEGADOR
@@ -302,7 +312,6 @@
             const SHUFFLED_COUPONS_KEY = 'nuance_shuffled_coupons'; 
 
             // --- 🎯 LISTA DE CUPONS PERSONALIZADA (31 cupons) ---
-            // IMPORTANTE: Mantenha exatamente 31 itens nesta lista.
             const BASE_COUPONS = [
                 "NUANCE_MAR24_A", "NUANCE_MAR24_B", "NUANCE_MAR24_C", "NUANCE_MAR24_D", "NUANCE_MAR24_E", 
                 "NUANCE_MAR24_F", "NUANCE_MAR24_G", "NUANCE_MAR24_H", "NUANCE_MAR24_I", "NUANCE_MAR24_J", 
@@ -310,20 +319,15 @@
                 "NUANCE_MAR24_P", "NUANCE_MAR24_Q", "NUANCE_MAR24_R", "NUANCE_MAR24_S", "NUANCE_MAR24_T", 
                 "NUANCE_MAR24_U", "NUANCE_MAR24_V", "NUANCE_MAR24_W", "NUANCE_MAR24_X", "NUANCE_MAR24_Y", 
                 "NUANCE_MAR24_Z1", "NUANCE_MAR24_Z2", "NUANCE_MAR24_Z3", "NUANCE_MAR24_Z4", "NUANCE_MAR24_Z5", 
-                "NUANCE_MAR24_Z6", "NUANCE_MAR24_Z7" // Cupom 31
+                "NUANCE_MAR24_Z6", "NUANCE_MAR24_Z7"
             ];
             // ----------------------------------------------------
 
-            // --- FUNÇÃO DE VALIDAÇÃO DE CPF ---
+            // --- FUNÇÃO DE VALIDAÇÃO DE CPF (INALTERADA) ---
             function isValidCPF(cpf) {
-                // Remove caracteres não numéricos
                 cpf = cpf.replace(/[^\d]+/g, '');
-                
                 if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
-
                 let sum, remainder;
-
-                // Valida o primeiro dígito verificador
                 sum = 0;
                 for (let i = 1; i <= 9; i++) {
                     sum += parseInt(cpf.substring(i-1, i)) * (11 - i);
@@ -331,8 +335,6 @@
                 remainder = (sum * 10) % 11;
                 if ((remainder === 10) || (remainder === 11)) remainder = 0;
                 if (remainder !== parseInt(cpf.substring(9, 10))) return false;
-
-                // Valida o segundo dígito verificador
                 sum = 0;
                 for (let i = 1; i <= 10; i++) {
                     sum += parseInt(cpf.substring(i-1, i)) * (12 - i);
@@ -340,13 +342,12 @@
                 remainder = (sum * 10) % 11;
                 if ((remainder === 10) || (remainder === 11)) remainder = 0;
                 if (remainder !== parseInt(cpf.substring(10, 11))) return false;
-
                 return true;
             }
             // --- FIM FUNÇÃO DE VALIDAÇÃO DE CPF ---
 
 
-            // Função para embaralhar (Fisher-Yates)
+            // --- FUNÇÕES DE CUPOM E STORAGE (INALTERADAS) ---
             function shuffleArray(array) {
                 let shuffled = [...array];
                 for (let i = shuffled.length - 1; i > 0; i--) {
@@ -358,31 +359,18 @@
 
             function getNextCoupon() {
                 const shuffledCouponsString = localStorage.getItem(SHUFFLED_COUPONS_KEY);
-                
                 if (!shuffledCouponsString) {
                     initializeCouponSystem();
                     return getNextCoupon(); 
                 }
                 const SHUFFLED_COUPONS = JSON.parse(shuffledCouponsString);
-
                 let currentIndex = parseInt(localStorage.getItem(COUPON_INDEX_KEY) || '-1');
-                
                 let nextIndex = (currentIndex + 1) % SHUFFLED_COUPONS.length;
-                
                 const coupon = SHUFFLED_COUPONS[nextIndex];
-
                 localStorage.setItem(COUPON_INDEX_KEY, nextIndex.toString());
-
-                console.log(`[CUPOM] Índice Atual (distribuído): ${nextIndex}`);
-                
                 return coupon;
             }
-            // --- FIM CÓDIGO PARA CUPONS VARIÁVEIS E ALEATÓRIOS ---
 
-
-            // --- FUNÇÕES DE FORMATACAO E STORAGE ---
-
-            // Formatação do CPF (Máscara)
             cpfInput.addEventListener('input', (e) => {
                 let value = e.target.value.replace(/\D/g, ''); 
                 if (value.length > 9) {
@@ -397,20 +385,17 @@
                 e.target.value = value;
             });
 
-            // FUNÇÃO ATUALIZADA PARA INCLUIR A SENHA
             function saveClientData(name, email, password, cpf) {
                 const now = new Date().getTime();
-                
                 const daysInMs = EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
                 const hoursInMs = EXPIRATION_HOURS * 60 * 60 * 1000;
                 const minutesInMs = EXPIRATION_MINUTES * 60 * 1000; 
-                
                 const expirationTime = now + daysInMs + hoursInMs + minutesInMs; 
                 
                 const clientData = {
                     name: name,
                     email: email,
-                    password: password, // SALVA A NOVA SENHA
+                    password: password,
                     cpf: cpf,
                     expiry: expirationTime
                 };
@@ -431,7 +416,6 @@
                 return data;
             }
 
-            // --- FUNÇÃO PARA ENVIAR DADOS AO GOOGLE FORMS (INALTERADA) ---
             async function sendToGoogleForms(name, email, cpf) {
                 const formData = new FormData();
                 formData.append(NAME_FIELD_GF, name);
@@ -444,7 +428,7 @@
                         mode: 'no-cors', 
                         body: formData
                     });
-                    console.log("Dados enviados para o Google Forms com sucesso (Status: no-cors/opaque).");
+                    console.log("Dados enviados para o Google Forms com sucesso.");
                     return true;
                 } catch (error) {
                     console.error("Erro ao enviar dados para o Google Forms:", error);
@@ -452,7 +436,6 @@
                 }
             }
             
-            // --- FUNÇÃO PARA EXIBIR O CUPOM (INALTERADA) ---
             function displayCoupon(name) {
                 const firstName = name.split(' ')[0];
                 const couponCode = getNextCoupon(); 
@@ -475,9 +458,33 @@
                 cardDiv.classList.add('hidden');
                 couponDiv.classList.remove('hidden');
             }
+            // --- FIM FUNÇÕES DE CUPOM E STORAGE ---
 
 
-            // 1. Submissão do Formulário de Cadastro (COM VALIDAÇÃO DE SENHA E CPF)
+            // --- FUNÇÃO NOVO: REDEFINIÇÃO DE SENHA LOCAL ---
+            function handleForgotPassword() {
+                if (confirm('Atenção: Para redefinir a senha, seus dados salvos localmente serão perdidos, e você precisará se cadastrar novamente (mas receberá um novo cupom). Continuar?')) {
+                    localStorage.removeItem(STORAGE_KEY);
+                    
+                    // Limpa o formulário de cadastro (opcional, mas bom para UX)
+                    clientForm.reset(); 
+                    formMessage.classList.add('hidden'); 
+                    
+                    // Mostra a tela de cadastro e esconde o resto
+                    registrationDiv.classList.remove('hidden');
+                    passwordFormDiv.classList.add('hidden');
+                    cardDiv.classList.add('hidden');
+                    couponDiv.classList.add('hidden');
+
+                    alert('Dados de acesso removidos. Por favor, preencha o formulário novamente para criar uma nova senha e receber o cupom atualizado.');
+                }
+            }
+            // --- FIM FUNÇÃO NOVO: REDEFINIÇÃO DE SENHA LOCAL ---
+            
+            forgotPasswordLink.addEventListener('click', handleForgotPassword); // ESCUTANDO O NOVO LINK
+
+
+            // 1. Submissão do Formulário de Cadastro (INALTERADA)
             clientForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 submitButton.disabled = true;
@@ -485,13 +492,12 @@
                 
                 const name = nameInput.value.trim();
                 const email = emailInput.value.trim();
-                const newPassword = newPasswordInput.value.trim(); // NOVO: Captura a senha
+                const newPassword = newPasswordInput.value.trim();
                 const rawCpf = cpfInput.value.trim();
                 const formattedCpf = rawCpf.replace(/[^\d]+/g, '');
                 
                 formMessage.classList.add('hidden'); 
 
-                // 1. Validação de Nome e E-mail
                 if (!name || !email) {
                     formMessage.textContent = 'Por favor, preencha o Nome e E-mail.';
                     formMessage.className = 'message error';
@@ -501,7 +507,6 @@
                     return;
                 }
 
-                // 2. Validação da Senha
                 if (newPassword.length < 4) {
                     formMessage.textContent = 'A senha de acesso deve ter no mínimo 4 caracteres.';
                     formMessage.className = 'message error';
@@ -511,8 +516,6 @@
                     return;
                 }
 
-
-                // 3. Validação do CPF (Se for preenchido)
                 if (rawCpf.length > 0) {
                     if (!isValidCPF(formattedCpf)) {
                         formMessage.textContent = 'O CPF preenchido é inválido. Por favor, corrija ou deixe o campo vazio para continuar.';
@@ -524,16 +527,12 @@
                     }
                 }
                 
-                // --- PROCESSO DE CADASTRO ---
                 submitButton.textContent = 'Enviando...';
 
-                // 4. Salva localmente (agora inclui a senha)
                 saveClientData(name, email, newPassword, rawCpf);
                 
-                // 5. Envia os dados para o Google Forms em segundo plano
                 await sendToGoogleForms(name, email, rawCpf);
                 
-                // 6. Exibe o cupom
                 displayCoupon(name);
 
                 formMessage.textContent = 'Cadastro e envio de dados concluídos. Aproveite seu cupom!';
@@ -543,7 +542,7 @@
                 submitButton.disabled = false;
             });
 
-            // 2. Lógica para Acessar o Card com Senha (AGORA USA A SENHA SALVA)
+            // 2. Lógica para Acessar o Card com Senha (INALTERADA)
             accessButton.addEventListener('click', () => {
                 const enteredPassword = passwordInput.value;
                 const clientData = getClientData();
@@ -561,7 +560,6 @@
                      return;
                 }
 
-                // Verifica a senha salva no localStorage
                 if (enteredPassword === clientData.password) { 
                     const cardName = document.getElementById('card-name');
                     const cardEmail = document.getElementById('card-email');
@@ -598,22 +596,9 @@
 
                 if (!shuffledCoupons) {
                     const newShuffledList = shuffleArray(BASE_COUPONS);
-                    
                     localStorage.setItem(SHUFFLED_COUPONS_KEY, JSON.stringify(newShuffledList));
                     localStorage.setItem(COUPON_INDEX_KEY, '-1');
-                    
-                    shuffledCoupons = JSON.stringify(newShuffledList);
-                    console.log("Sistema de Cupons Inicializado. Nova ordem aleatória salva.");
                 }
-                
-                // Logging de status
-                // const currentCoupons = JSON.parse(shuffledCoupons);
-                // const currentIndex = parseInt(localStorage.getItem(COUPON_INDEX_KEY) || '-1');
-                // console.log("--- Status de Cupons (Aleatório e Sequencial) ---");
-                // console.log("Lista Embaralhada:", currentCoupons);
-                // console.log(`Último Índice Usado: ${currentIndex}`);
-                // console.log(`Próximo Cupom a ser distribuído: ${currentCoupons[(currentIndex + 1) % currentCoupons.length]}`);
-                // console.log("-------------------------------------------------");
             }
 
 
