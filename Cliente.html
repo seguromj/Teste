@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -166,6 +165,26 @@
             font-size: 0.85em;
             color: #666;
         }
+
+        /* Estilo para o botão Voltar ao Carrinho */
+        #return-to-cart {
+            margin-top: 20px;
+            background-color: var(--cor-secundaria); /* Usa a cor secundária para destaque */
+            color: var(--cor-texto-claro);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 700;
+            text-decoration: none; /* Garante que não tenha sublinhado se for um âncora */
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+        
+        #return-to-cart:hover {
+            background-color: #316d41; /* Um tom um pouco mais escuro */
+        }
         
         /* Estilos do Card de Dados (Exibição com senha) */
         #data-card {
@@ -260,7 +279,6 @@
             <p><span class="card-label">E-mail:</span> <span id="card-email"></span></p>
             <p><span class="card-label">CPF:</span> <span id="card-cpf"></span></p>
             <p style="font-size: 0.85em; margin-top: 15px;">* Estes dados expiram em <span id="expiry-time"></span>.</p>
-        <Button>Voltar ao Carrinho</Button>
         </div>
 
     </div>
@@ -275,7 +293,7 @@
             const couponDiv = document.getElementById('coupon-display');
             const submitButton = document.getElementById('submit-button');
             const accessButton = document.getElementById('access-button');
-            const forgotPasswordLink = document.getElementById('forgot-password-link'); // NOVO ELEMENTO
+            const forgotPasswordLink = document.getElementById('forgot-password-link'); 
 
             const nameInput = document.getElementById('name');
             const emailInput = document.getElementById('email');
@@ -297,21 +315,19 @@
             // =======================================================================================
             
             // =======================================================================================
-            // 🚨 ALERTA 2: TEMPO DE EXPIRAÇÃO DO DADO SALVO NO NAVEGADOR
-            // Configurado AGORA para 30 dias.
+            // 🚨 ALERTA 2: TEMPO DE EXPIRAÇÃO E URL DO CARDÁPIO
             // =======================================================================================
-            const EXPIRATION_DAYS = 0;   // 👈 30 DIAS
-            const EXPIRATION_HOURS = 0;   // 👈 0 HORAS
-            const EXPIRATION_MINUTES = 3; // 👈 0 MINUTOS
+            const EXPIRATION_DAYS = 30;   
+            const EXPIRATION_HOURS = 0;   
+            const EXPIRATION_MINUTES = 0; 
+            const CARDAPIO_URL = 'Cardapio-Nuance.html'; // 👈 URL DO CARDÁPIO
             // =======================================================================================
 
             const STORAGE_KEY = 'nuance_client_data';
             
-            // --- CÓDIGO PARA CUPONS VARIÁVEIS E ALEATÓRIOS ---
             const COUPON_INDEX_KEY = 'nuance_coupon_index';
             const SHUFFLED_COUPONS_KEY = 'nuance_shuffled_coupons'; 
 
-            // --- 🎯 LISTA DE CUPONS PERSONALIZADA (31 cupons) ---
             const BASE_COUPONS = [
                 "NUANCE_MAR24_A", "NUANCE_MAR24_B", "NUANCE_MAR24_C", "NUANCE_MAR24_D", "NUANCE_MAR24_E", 
                 "NUANCE_MAR24_F", "NUANCE_MAR24_G", "NUANCE_MAR24_H", "NUANCE_MAR24_I", "NUANCE_MAR24_J", 
@@ -321,7 +337,7 @@
                 "NUANCE_MAR24_Z1", "NUANCE_MAR24_Z2", "NUANCE_MAR24_Z3", "NUANCE_MAR24_Z4", "NUANCE_MAR24_Z5", 
                 "NUANCE_MAR24_Z6", "NUANCE_MAR24_Z7"
             ];
-            // ----------------------------------------------------
+            
 
             // --- FUNÇÃO DE VALIDAÇÃO DE CPF (INALTERADA) ---
             function isValidCPF(cpf) {
@@ -345,7 +361,6 @@
                 return true;
             }
             // --- FIM FUNÇÃO DE VALIDAÇÃO DE CPF ---
-
 
             // --- FUNÇÕES DE CUPOM E STORAGE (INALTERADAS) ---
             function shuffleArray(array) {
@@ -436,6 +451,7 @@
                 }
             }
             
+            // --- FUNÇÃO DE EXIBIÇÃO DE CUPOM (ADICIONANDO O BOTÃO) ---
             function displayCoupon(name) {
                 const firstName = name.split(' ')[0];
                 const couponCode = getNextCoupon(); 
@@ -451,26 +467,21 @@
                     <p id="coupon-info">
                         * Válido apenas no seu primeiro pedido.
                     </p>
-                `;
+                    <a id="return-to-cart" href="${CARDAPIO_URL}">Voltar ao Carrinho</a> `;
                 
                 registrationDiv.classList.add('hidden');
                 passwordFormDiv.classList.add('hidden');
                 cardDiv.classList.add('hidden');
                 couponDiv.classList.remove('hidden');
             }
-            // --- FIM FUNÇÕES DE CUPOM E STORAGE ---
+            // --- FIM FUNÇÃO DE EXIBIÇÃO DE CUPOM ---
 
-
-            // --- FUNÇÃO NOVO: REDEFINIÇÃO DE SENHA LOCAL ---
+            // --- FUNÇÃO DE REDEFINIÇÃO DE SENHA LOCAL (INALTERADA) ---
             function handleForgotPassword() {
                 if (confirm('Atenção: Para redefinir a senha, seus dados salvos localmente serão perdidos, e você precisará se cadastrar novamente (mas receberá um novo cupom). Continuar?')) {
                     localStorage.removeItem(STORAGE_KEY);
-                    
-                    // Limpa o formulário de cadastro (opcional, mas bom para UX)
                     clientForm.reset(); 
                     formMessage.classList.add('hidden'); 
-                    
-                    // Mostra a tela de cadastro e esconde o resto
                     registrationDiv.classList.remove('hidden');
                     passwordFormDiv.classList.add('hidden');
                     cardDiv.classList.add('hidden');
@@ -479,10 +490,8 @@
                     alert('Dados de acesso removidos. Por favor, preencha o formulário novamente para criar uma nova senha e receber o cupom atualizado.');
                 }
             }
-            // --- FIM FUNÇÃO NOVO: REDEFINIÇÃO DE SENHA LOCAL ---
             
-            forgotPasswordLink.addEventListener('click', handleForgotPassword); // ESCUTANDO O NOVO LINK
-
+            forgotPasswordLink.addEventListener('click', handleForgotPassword); 
 
             // 1. Submissão do Formulário de Cadastro (INALTERADA)
             clientForm.addEventListener('submit', async (e) => {
@@ -626,3 +635,4 @@
     </script>
 </body>
 </html>
+
