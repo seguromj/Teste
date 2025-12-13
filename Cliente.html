@@ -213,6 +213,15 @@
             min-width: 60px;
         }
         
+        /* Estilo específico para o cupom no card de dados */
+        #card-coupon-value {
+            font-weight: 700;
+            color: #fff; /* Branco para destacar */
+            background-color: var(--cor-secundaria);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
         #password-form {
             text-align: center;
             margin-top: 20px;
@@ -290,11 +299,13 @@
             <div id="recovery-message" class="message hidden"></div>
             <a href="#" id="back-to-login" style="display: block; margin-top: 15px; font-size: 0.9em; color: var(--cor-secundaria);">Voltar</a>
         </div>
+        
         <div id="data-card" class="hidden">
             <h3>Dados do Visitante</h3>
             <p><span class="card-label">Nome:</span> <span id="card-name"></span></p>
             <p><span class="card-label">E-mail:</span> <span id="card-email"></span></p>
             <p><span class="card-label">CPF:</span> <span id="card-cpf"></span></p>
+            <p><span class="card-label">Cupom:</span> <span id="card-coupon-value"></span></p>
             <p style="font-size: 0.85em; margin-top: 15px;">* Estes dados expiram em <span id="expiry-time"></span>.</p>
         </div>
 
@@ -322,7 +333,6 @@
             const recoveryEmailInput = document.getElementById('recovery-email'); 
             
             const formMessage = document.getElementById('form-message');
-            // passwordMessage e passwordInput serão buscados dinamicamente no initialize
             const recoveryMessage = document.getElementById('recovery-message'); 
             
             // =======================================================================================
@@ -345,6 +355,7 @@
             // =======================================================================================
 
             const STORAGE_KEY = 'nuance_client_data';
+            const STORAGE_KEY_COUPON = 'nuance_client_coupon'; // Chave para salvar o cupom
             
             const COUPON_INDEX_KEY = 'nuance_coupon_index';
             const SHUFFLED_COUPONS_KEY = 'nuance_shuffled_coupons'; 
@@ -359,7 +370,6 @@
                 "NUANCE_MAR24_Z6", "NUANCE_MAR24_Z7"
             ];
             
-
             // --- FUNÇÃO DE VALIDAÇÃO DE CPF ---
             function isValidCPF(cpf) {
                 cpf = cpf.replace(/[^\d]+/g, '');
@@ -421,7 +431,7 @@
                 return coupon;
             }
 
-            function saveClientData(name, email, password, cpf) {
+            function saveClientData(name, email, password, cpf, coupon) { // Recebe cupom
                 const now = new Date().getTime();
                 const daysInMs = EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
                 const hoursInMs = EXPIRATION_HOURS * 60 * 60 * 1000;
@@ -436,6 +446,7 @@
                     expiry: expirationTime
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(clientData));
+                localStorage.setItem(STORAGE_KEY_COUPON, coupon); // Salva o cupom
             }
 
             function getClientData() {
@@ -447,9 +458,14 @@
 
                 if (now > data.expiry) {
                     localStorage.removeItem(STORAGE_KEY); 
+                    localStorage.removeItem(STORAGE_KEY_COUPON); // Remove o cupom também
                     return null;
                 }
                 return data;
+            }
+
+            function getClientCoupon() {
+                return localStorage.getItem(STORAGE_KEY_COUPON) || 'N/A';
             }
 
             async function sendToGoogleForms(name, email, cpf) {
@@ -472,9 +488,8 @@
                 }
             }
             
-            function displayCoupon(name) {
+            function displayCoupon(name, couponCode) { // Recebe o cupom para exibição
                 const firstName = name.split(' ')[0];
-                const couponCode = getNextCoupon(); 
 
                 couponDiv.innerHTML = `
                     <h3>🎉 Bem-Vindo(a), ${firstName}!</h3>
@@ -543,10 +558,13 @@
             function handleBackToLogin() {
                 recoveryFormDiv.classList.add('hidden');
                 passwordFormDiv.classList.remove('hidden');
-                document.getElementById('login-feedback-message').classList.add('hidden');
+                // Garante que o feedback de login seja limpo ao voltar
+                const loginFeedback = document.getElementById('login-feedback-message');
+                if (loginFeedback) loginFeedback.classList.add('hidden');
+                
+                cardDiv.classList.add('hidden'); // Esconde o cartão de dados
             }
 
-            // Anexo do evento Voltar do recovery
             backToLoginLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 handleBackToLogin();
@@ -560,6 +578,7 @@
                 const feedbackMessage = document.getElementById('login-feedback-message');
                 const enteredPassword = passwordInput.value;
                 const clientData = getClientData();
+                const clientCoupon = getClientCoupon();
                 
                 feedbackMessage.classList.add('hidden');
                 cardDiv.classList.add('hidden');
@@ -578,11 +597,15 @@
                     const cardName = document.getElementById('card-name');
                     const cardEmail = document.getElementById('card-email');
                     const cardCpf = document.getElementById('card-cpf');
+                    const cardCoupon = document.getElementById('card-coupon-value');
                     const expiryTimeSpan = document.getElementById('expiry-time');
 
+                    // Preenche os dados
                     cardName.textContent = clientData.name;
                     cardEmail.textContent = clientData.email;
                     cardCpf.textContent = clientData.cpf || 'Não Informado'; 
+                    cardCoupon.textContent = clientCoupon; // Exibe o cupom!
+                    
                     const expiryDate = new Date(clientData.expiry);
                     expiryTimeSpan.textContent = expiryDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + 
                                            ' de ' + expiryDate.toLocaleDateString('pt-BR');
@@ -645,13 +668,17 @@
                     }
                 }
                 
+                submitButton.textContent = 'Gerando Cupom...';
+                
+                // --- AQUI GERAMOS E SALVAMOS O CUPOM NO LOCALSTORAGE ---
+                const newCoupon = getNextCoupon();
+                saveClientData(name, email, newPassword, rawCpf, newCoupon);
+                
                 submitButton.textContent = 'Enviando...';
 
-                saveClientData(name, email, newPassword, rawCpf);
-                
                 await sendToGoogleForms(name, email, rawCpf);
                 
-                displayCoupon(name);
+                displayCoupon(name, newCoupon);
 
                 formMessage.textContent = 'Cadastro e envio de dados concluídos. Aproveite seu cupom!';
                 formMessage.className = 'message success';
@@ -664,7 +691,7 @@
             function initializeCouponSystem() {
                 let shuffledCoupons = localStorage.getItem(SHUFFLED_COUPONS_KEY);
                 
-                if (BASE_COUPONS.length !== 32) { // 32 cupons na lista
+                if (BASE_COUPONS.length !== 32) {
                     console.error("ERRO GRAVE: A lista BASE_COUPONS DEVE CONTER EXATAMENTE 32 ITENS.");
                 }
 
@@ -676,7 +703,7 @@
             }
 
 
-            // 3. Inicialização Principal (Ajustado para o posicionamento do botão e re-anexo de eventos)
+            // 3. Inicialização Principal
             function initialize() {
                 initializeCouponSystem(); 
                 
@@ -687,7 +714,7 @@
                     
                     const firstName = clientData.name.split(' ')[0];
 
-                    // **INJEÇÃO DO HTML CORRIGIDA**
+                    // INJEÇÃO DO HTML
                     passwordFormDiv.innerHTML = `
                         <h3>Acesso Rápido</h3>
                         <div class="message success" style="margin-top: 0;">
@@ -705,7 +732,7 @@
                         <div id="login-feedback-message" class="message hidden"></div>
                     `;
 
-                    // **RE-ANEXO DOS EVENTOS INJETADOS**
+                    // RE-ANEXO DOS EVENTOS INJETADOS
                     document.getElementById('access-button').addEventListener('click', handleAccessCard);
                     document.getElementById('forgot-password-link').addEventListener('click', handleForgotPassword);
                     
@@ -721,3 +748,4 @@
     </script>
 </body>
 </html>
+
