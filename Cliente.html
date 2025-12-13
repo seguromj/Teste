@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -312,11 +311,8 @@
             const cardDiv = document.getElementById('data-card');
             const couponDiv = document.getElementById('coupon-display');
             const submitButton = document.getElementById('submit-button');
-            const accessButton = document.getElementById('access-button');
             const recoverButton = document.getElementById('recover-button'); 
-            const forgotPasswordLink = document.getElementById('forgot-password-link'); 
             const backToLoginLink = document.getElementById('back-to-login'); 
-            // Os inputs são buscados pelo ID mais tarde, não precisam ser definidos globalmente aqui
 
             const nameInput = document.getElementById('name');
             const emailInput = document.getElementById('email');
@@ -326,9 +322,8 @@
             const recoveryEmailInput = document.getElementById('recovery-email'); 
             
             const formMessage = document.getElementById('form-message');
-            const passwordMessage = document.getElementById('password-message');
+            // passwordMessage e passwordInput serão buscados dinamicamente no initialize
             const recoveryMessage = document.getElementById('recovery-message'); 
-            const passwordInput = document.getElementById('card-password'); 
             
             // =======================================================================================
             // 🚨 ALERTA 1: CONFIGURAÇÃO OBRIGATÓRIA DO GOOGLE FORMS
@@ -365,7 +360,7 @@
             ];
             
 
-            // --- FUNÇÃO DE VALIDAÇÃO DE CPF (INALTERADA) ---
+            // --- FUNÇÃO DE VALIDAÇÃO DE CPF ---
             function isValidCPF(cpf) {
                 cpf = cpf.replace(/[^\d]+/g, '');
                 if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
@@ -386,9 +381,23 @@
                 if (remainder !== parseInt(cpf.substring(10, 11))) return false;
                 return true;
             }
-            // --- FIM FUNÇÃO DE VALIDAÇÃO DE CPF ---
+            
+            // --- INPUT EVENTO CPF ---
+            cpfInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, ''); 
+                if (value.length > 9) {
+                    value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+                } else if (value.length > 6) {
+                    value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
+                } else if (value.length > 3) {
+                    value = value.replace(/(\d{3})(\d{3})/, '$1.$2');
+                } else if (value.length > 0) {
+                    value = value.replace(/(\d{3})/, '$1');
+                }
+                e.target.value = value;
+            });
 
-            // --- FUNÇÕES DE CUPOM E STORAGE (INALTERADAS, exceto CPF input event) ---
+            // --- FUNÇÕES DE STORAGE E CUPOM ---
             function shuffleArray(array) {
                 let shuffled = [...array];
                 for (let i = shuffled.length - 1; i > 0; i--) {
@@ -411,20 +420,6 @@
                 localStorage.setItem(COUPON_INDEX_KEY, nextIndex.toString());
                 return coupon;
             }
-
-            cpfInput.addEventListener('input', (e) => {
-                let value = e.target.value.replace(/\D/g, ''); 
-                if (value.length > 9) {
-                    value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-                } else if (value.length > 6) {
-                    value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
-                } else if (value.length > 3) {
-                    value = value.replace(/(\d{3})(\d{3})/, '$1.$2');
-                } else if (value.length > 0) {
-                    value = value.replace(/(\d{3})/, '$1');
-                }
-                e.target.value = value;
-            });
 
             function saveClientData(name, email, password, cpf) {
                 const now = new Date().getTime();
@@ -504,7 +499,7 @@
             // --- FIM FUNÇÕES DE CUPOM E STORAGE ---
 
 
-            // 4. FUNÇÃO DE RECUPERAÇÃO DE SENHA (Abre o formulário de e-mail)
+            // --- LÓGICA DE RECUPERAÇÃO DE SENHA ---
             function handleForgotPassword() {
                 passwordFormDiv.classList.add('hidden');
                 recoveryFormDiv.classList.remove('hidden');
@@ -513,7 +508,6 @@
                 recoveryEmailInput.value = ''; 
             }
 
-            // 5. LÓGICA DE MOSTRAR SENHA
             recoveryEmailForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 recoverButton.disabled = true;
@@ -546,62 +540,69 @@
                 recoverButton.textContent = 'Mostrar Senha';
             });
             
-            // 6. FUNÇÃO VOLTAR (Retorna para a tela de acesso/senha)
             function handleBackToLogin() {
                 recoveryFormDiv.classList.add('hidden');
                 passwordFormDiv.classList.remove('hidden');
-                passwordMessage.classList.add('hidden');
+                document.getElementById('login-feedback-message').classList.add('hidden');
             }
 
-
-            // É crucial re-anexar o evento se o elemento foi injetado via innerHTML
-            document.addEventListener('click', (e) => {
-                if (e.target.id === 'forgot-password-link') {
-                    e.preventDefault();
-                    handleForgotPassword();
-                }
-            });
-            document.addEventListener('click', (e) => {
-                if (e.target.id === 'access-button') {
-                    // Simula o clique original do botão de acesso
-                    const enteredPassword = document.getElementById('card-password').value;
-                    
-                    // Nota: O escutador original do 'accessButton' foi perdido, 
-                    // a lógica abaixo simula a função de acesso original.
-                    const clientData = getClientData();
-                    const passwordMessageElement = document.getElementById('password-message');
-                    const passwordInput = document.getElementById('card-password');
-                    
-                    passwordMessageElement.classList.add('hidden');
-                    cardDiv.classList.add('hidden');
-                    couponDiv.classList.add('hidden'); 
-                    
-                    if (clientData && enteredPassword === clientData.password) {
-                        // Lógica de exibir cartão... (Omitida aqui por brevidade, mas deve existir)
-                        passwordMessageElement.textContent = 'Acesso liberado!';
-                        passwordMessageElement.className = 'message success';
-                        passwordMessageElement.classList.remove('hidden');
-                        // Resetar senha para segurança
-                        passwordInput.value = ''; 
-                    } else if (clientData) {
-                        passwordMessageElement.textContent = 'Senha incorreta. Tente novamente.';
-                        passwordMessageElement.className = 'message error';
-                        passwordMessageElement.classList.remove('hidden'); 
-                        passwordInput.value = '';
-                    } else {
-                        passwordMessageElement.textContent = 'Nenhum dado encontrado ou expirou. Por favor, faça um novo cadastro.';
-                        passwordMessageElement.className = 'message error';
-                        passwordMessageElement.classList.remove('hidden');
-                    }
-                }
-            });
-
+            // Anexo do evento Voltar do recovery
             backToLoginLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 handleBackToLogin();
             });
+            // --- FIM LÓGICA DE RECUPERAÇÃO DE SENHA ---
 
-            // 1. Submissão do Formulário de Cadastro (INALTERADA)
+
+            // --- FUNÇÃO CORRIGIDA DE ACESSO AO CARTÃO ---
+            function handleAccessCard() {
+                const passwordInput = document.getElementById('card-password');
+                const feedbackMessage = document.getElementById('login-feedback-message');
+                const enteredPassword = passwordInput.value;
+                const clientData = getClientData();
+                
+                feedbackMessage.classList.add('hidden');
+                cardDiv.classList.add('hidden');
+                couponDiv.classList.add('hidden'); 
+
+                if (!clientData) {
+                     feedbackMessage.textContent = 'Nenhum dado encontrado ou expirou. Por favor, faça um novo cadastro.';
+                     feedbackMessage.className = 'message error';
+                     feedbackMessage.classList.remove('hidden');
+                     registrationDiv.classList.remove('hidden');
+                     passwordFormDiv.classList.add('hidden');
+                     return;
+                }
+
+                if (enteredPassword === clientData.password) { 
+                    const cardName = document.getElementById('card-name');
+                    const cardEmail = document.getElementById('card-email');
+                    const cardCpf = document.getElementById('card-cpf');
+                    const expiryTimeSpan = document.getElementById('expiry-time');
+
+                    cardName.textContent = clientData.name;
+                    cardEmail.textContent = clientData.email;
+                    cardCpf.textContent = clientData.cpf || 'Não Informado'; 
+                    const expiryDate = new Date(clientData.expiry);
+                    expiryTimeSpan.textContent = expiryDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + 
+                                           ' de ' + expiryDate.toLocaleDateString('pt-BR');
+
+                    cardDiv.classList.remove('hidden');
+                    feedbackMessage.textContent = 'Acesso liberado! (Dados visíveis abaixo)';
+                    feedbackMessage.className = 'message success';
+                    feedbackMessage.classList.remove('hidden');
+                    passwordInput.value = ''; // Limpa o campo
+                } else {
+                    feedbackMessage.textContent = 'Senha incorreta. Tente novamente.';
+                    feedbackMessage.className = 'message error';
+                    feedbackMessage.classList.remove('hidden'); 
+                    passwordInput.value = '';
+                }
+            }
+            // --- FIM FUNÇÃO CORRIGIDA DE ACESSO AO CARTÃO ---
+
+
+            // 1. Submissão do Formulário de Cadastro
             clientForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 submitButton.disabled = true;
@@ -659,15 +660,12 @@
                 submitButton.disabled = false;
             });
 
-            // A Lógica de Acessar Cartão (função original) foi movida e simplificada no 'initialize' 
-            // e no novo escutador de evento acima para lidar com a injeção via innerHTML.
-
-            // --- FUNÇÃO DE INICIALIZAÇÃO DO SISTEMA DE CUPONS (INALTERADA) ---
+            // --- FUNÇÃO DE INICIALIZAÇÃO DO SISTEMA DE CUPONS ---
             function initializeCouponSystem() {
                 let shuffledCoupons = localStorage.getItem(SHUFFLED_COUPONS_KEY);
                 
-                if (BASE_COUPONS.length !== 31) {
-                    console.error("ERRO GRAVE: A lista BASE_COUPONS DEVE CONTER EXATAMENTE 31 ITENS.");
+                if (BASE_COUPONS.length !== 32) { // 32 cupons na lista
+                    console.error("ERRO GRAVE: A lista BASE_COUPONS DEVE CONTER EXATAMENTE 32 ITENS.");
                 }
 
                 if (!shuffledCoupons) {
@@ -678,7 +676,7 @@
             }
 
 
-            // 3. Inicialização Principal (Ajustado para o posicionamento do botão)
+            // 3. Inicialização Principal (Ajustado para o posicionamento do botão e re-anexo de eventos)
             function initialize() {
                 initializeCouponSystem(); 
                 
@@ -689,14 +687,16 @@
                     
                     const firstName = clientData.name.split(' ')[0];
 
-                    // **INJEÇÃO DO HTML CORRIGIDA: BOTÃO DEPOIS DA MENSAGEM**
+                    // **INJEÇÃO DO HTML CORRIGIDA**
                     passwordFormDiv.innerHTML = `
                         <h3>Acesso Rápido</h3>
-                        <div id="password-message" class="message success">
+                        <div class="message success" style="margin-top: 0;">
                             Olá ${firstName}! Seus dados estão salvos. Insira a senha que você criou para acessar o cartão.
                         </div>
                         
-                        <a id="return-to-cart" href="${CARDAPIO_URL}">Voltar ao Carrinho</a> <label for="card-password" style="margin-top: 25px;">Insira sua Senha de Acesso:</label>
+                        <a id="return-to-cart" href="${CARDAPIO_URL}">Voltar ao Carrinho</a>
+                        
+                        <label for="card-password" style="margin-top: 25px;">Insira sua Senha de Acesso:</label>
                         <input type="password" id="card-password" placeholder="******" maxlength="12" style="margin-bottom: 10px;">
                         <button id="access-button">Acessar Cartão</button>
                         
@@ -705,9 +705,10 @@
                         <div id="login-feedback-message" class="message hidden"></div>
                     `;
 
-                    // Nota: Os escutadores de 'click' foram movidos para escutadores genéricos no DOM 
-                    // pois os elementos são recriados via innerHTML.
-
+                    // **RE-ANEXO DOS EVENTOS INJETADOS**
+                    document.getElementById('access-button').addEventListener('click', handleAccessCard);
+                    document.getElementById('forgot-password-link').addEventListener('click', handleForgotPassword);
+                    
                 } else {
                     registrationDiv.classList.remove('hidden');
                     passwordFormDiv.classList.add('hidden');
