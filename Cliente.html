@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -338,13 +337,13 @@
             const recoveryMessage = document.getElementById('recovery-message'); 
             
             // =======================================================================================
-            // 🚨 CONFIGURAÇÃO OBRIGATÓRIA DO GOOGLE FORMS (ATUALIZADA)
+            // 🚨 CONFIGURAÇÃO OBRIGATÓRIA DO GOOGLE FORMS 
             // =======================================================================================
             const FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSd5kqX1HuvNnQwKCknXcsbmy2DEdon7jsGAQtzyvzRr0aLojQ/formResponse'; 
             const NAME_FIELD_GF = 'entry.2009915093';   
             const EMAIL_FIELD_GF = 'entry.188272270'; 
             const CPF_FIELD_GF = 'entry.199255072';
-            const PASSWORD_FIELD_GF = 'entry.1955124742'; // ID REAL DA SENHA
+            const PASSWORD_FIELD_GF = 'entry.1955124742'; 
             // =======================================================================================
             
             // =======================================================================================
@@ -362,7 +361,7 @@
             const COUPON_INDEX_KEY = 'nuance_coupon_index';
             const SHUFFLED_COUPONS_KEY = 'nuance_shuffled_coupons'; 
 
-           // CORREÇÃO: ADICIONADO O 32º CUPOM (NUANCE_LAST_CUPOM)
+           // LISTA ORIGINAL COM 31 CUPONS
            const BASE_COUPONS = [
 	"NUANCE_B8C95RF6",
 	"NUANCE_87SBYS1Y",
@@ -394,8 +393,7 @@
 	"NUANCE_9WQJ7LY5",
 	"NUANCE_R9IC4810",
 	"NUANCE_PBID3BP1",
-	"NUANCE_5SL6Y6G1",
-    "NUANCE_LAST_CUPOM" // 👈 CUPOM ADICIONADO PARA COMPLETAR 32
+	"NUANCE_5SL6Y6G1" // Total de 31 cupons
 ];
             
             // --- FUNÇÃO DE VALIDAÇÃO DE CPF ---
@@ -457,7 +455,7 @@
                 let currentIndex = parseInt(localStorage.getItem(COUPON_INDEX_KEY) || '-1');
                 let nextIndex = (currentIndex + 1) % SHUFFLED_COUPONS.length;
                 
-                // Previne Index Out of Bounds caso algo dê errado, embora o modulo previna.
+                // Previne Index Out of Bounds caso algo dê errado
                 if(SHUFFLED_COUPONS.length === 0) return "ERRO_CUPOM"; 
                 
                 const coupon = SHUFFLED_COUPONS[nextIndex];
@@ -730,9 +728,9 @@
             function initializeCouponSystem() {
                 let shuffledCoupons = localStorage.getItem(SHUFFLED_COUPONS_KEY);
                 
-                // Verificação de segurança (não vai mais gerar erro, mas é bom manter)
-                if (BASE_COUPONS.length !== 32) {
-                    console.error(`ERRO GRAVE: A lista BASE_COUPONS deve conter 32 itens. Atualmente tem ${BASE_COUPONS.length}.`);
+                // CORREÇÃO: A lista é verificada para 31 itens
+                if (BASE_COUPONS.length !== 31) {
+                    console.error(`ERRO GRAVE: A lista BASE_COUPONS deve conter 31 itens. Atualmente tem ${BASE_COUPONS.length}.`);
                 }
 
                 if (!shuffledCoupons) {
