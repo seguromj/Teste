@@ -1,5 +1,7 @@
 
 
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -220,6 +222,8 @@
             background-color: var(--cor-secundaria);
             padding: 2px 8px;
             border-radius: 4px;
+            /* Garante que o span se comporte como bloco para margens */
+            display: inline-block; 
         }
 
         #password-form {
@@ -306,7 +310,7 @@
             <p><span class="card-label">E-mail:</span> <span id="card-email"></span></p>
             <p><span class="card-label">CPF:</span> <span id="card-cpf"></span></p>
             <p><span class="card-label">Cupom:</span> <span id="card-coupon-value"></span></p>
-            <p style="font-size: 0.85em; margin-top: 15px;">* Estes dados expiram em <span id="expiry-time"></span>.</p>
+            <p style="font-size: 0.85em; margin-top: 15px;">* Estes dados expiram em <span id="expiry-time"></span><br>Depois desse Período, você poderá fazer um novo cadastro e ter um novo<strong>CUPOM</strong>.</p>
         </div>
 
     </div>
@@ -465,6 +469,7 @@
             }
 
             function getClientCoupon() {
+                // Recupera o cupom salvo
                 return localStorage.getItem(STORAGE_KEY_COUPON) || 'N/A';
             }
 
@@ -578,7 +583,7 @@
                 const feedbackMessage = document.getElementById('login-feedback-message');
                 const enteredPassword = passwordInput.value;
                 const clientData = getClientData();
-                const clientCoupon = getClientCoupon();
+                const clientCoupon = getClientCoupon(); // Obtém o cupom
                 
                 feedbackMessage.classList.add('hidden');
                 cardDiv.classList.add('hidden');
@@ -597,14 +602,14 @@
                     const cardName = document.getElementById('card-name');
                     const cardEmail = document.getElementById('card-email');
                     const cardCpf = document.getElementById('card-cpf');
-                    const cardCoupon = document.getElementById('card-coupon-value');
+                    const cardCoupon = document.getElementById('card-coupon-value'); // Busca o elemento do cupom
                     const expiryTimeSpan = document.getElementById('expiry-time');
 
                     // Preenche os dados
                     cardName.textContent = clientData.name;
                     cardEmail.textContent = clientData.email;
                     cardCpf.textContent = clientData.cpf || 'Não Informado'; 
-                    cardCoupon.textContent = clientCoupon; // Exibe o cupom!
+                    cardCoupon.textContent = clientCoupon; // <<< CORREÇÃO: Preenche o valor do cupom!
                     
                     const expiryDate = new Date(clientData.expiry);
                     expiryTimeSpan.textContent = expiryDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + 
@@ -748,4 +753,3 @@
     </script>
 </body>
 </html>
-
