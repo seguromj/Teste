@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -166,10 +168,10 @@
             color: #666;
         }
 
-        /* Estilo para o botão Voltar ao Carrinho */
+        /* Estilo para o botão Voltar ao Carrinho (Comum) */
         #return-to-cart {
             margin-top: 20px;
-            background-color: var(--cor-secundaria); /* Usa a cor secundária para destaque */
+            background-color: var(--cor-secundaria); 
             color: var(--cor-texto-claro);
             padding: 12px 20px;
             border: none;
@@ -177,13 +179,13 @@
             cursor: pointer;
             font-size: 1em;
             font-weight: 700;
-            text-decoration: none; /* Garante que não tenha sublinhado se for um âncora */
+            text-decoration: none; 
             display: inline-block;
             transition: background-color 0.3s;
         }
         
         #return-to-cart:hover {
-            background-color: #316d41; /* Um tom um pouco mais escuro */
+            background-color: #316d41; 
         }
         
         /* Estilos do Card de Dados (Exibição com senha) */
@@ -216,7 +218,7 @@
             border: 1px solid var(--cor-borda-input);
             border-radius: 8px;
         }
-
+        
         /* Estilo do link de recuperação */
         #forgot-password-link {
             display: block;
@@ -225,6 +227,15 @@
             color: var(--cor-secundaria);
             text-decoration: underline;
             cursor: pointer;
+        }
+        
+        /* Estilos do Formulário de Recuperação */
+        #recovery-form {
+             text-align: center;
+            margin-top: 20px;
+            padding: 25px;
+            border: 1px solid var(--cor-borda-input);
+            border-radius: 8px;
         }
 
     </style>
@@ -263,16 +274,20 @@
             </div>
 
         <div id="password-form" class="hidden">
-            <h3>Acesso Rápido</h3>
-            <label for="card-password">Insira sua Senha de Acesso:</label>
-            <input type="password" id="card-password" placeholder="******" maxlength="12" style="margin-bottom: 10px;">
-            <button id="access-button">Acessar Cartão</button>
-            
-            <span id="forgot-password-link">Esqueceu a senha? Clique aqui para refazer o cadastro.</span>
-            
-            <div id="password-message" class="message hidden"></div>
+            </div>
+        
+        <div id="recovery-form" class="hidden">
+            <h3>Recuperar Senha de Acesso</h3>
+            <form id="email-recovery-form">
+                <div class="form-group">
+                    <label for="recovery-email">E-mail de Cadastro:</label>
+                    <input type="email" id="recovery-email" required placeholder="Digite seu e-mail">
+                </div>
+                <button type="submit" id="recover-button">Mostrar Senha</button>
+            </form>
+            <div id="recovery-message" class="message hidden"></div>
+            <a href="#" id="back-to-login" style="display: block; margin-top: 15px; font-size: 0.9em; color: var(--cor-secundaria);">Voltar</a>
         </div>
-
         <div id="data-card" class="hidden">
             <h3>Dados do Visitante</h3>
             <p><span class="card-label">Nome:</span> <span id="card-name"></span></p>
@@ -289,37 +304,45 @@
             const clientForm = document.getElementById('client-form');
             const registrationDiv = document.getElementById('registration-form');
             const passwordFormDiv = document.getElementById('password-form');
+            const recoveryFormDiv = document.getElementById('recovery-form'); 
+            const recoveryEmailForm = document.getElementById('email-recovery-form'); 
             const cardDiv = document.getElementById('data-card');
             const couponDiv = document.getElementById('coupon-display');
             const submitButton = document.getElementById('submit-button');
             const accessButton = document.getElementById('access-button');
+            const recoverButton = document.getElementById('recover-button'); 
             const forgotPasswordLink = document.getElementById('forgot-password-link'); 
+            const backToLoginLink = document.getElementById('back-to-login'); 
+            // Os inputs são buscados pelo ID mais tarde, não precisam ser definidos globalmente aqui
 
             const nameInput = document.getElementById('name');
             const emailInput = document.getElementById('email');
             const newPasswordInput = document.getElementById('new-password'); 
             const cpfInput = document.getElementById('cpf');
             
+            const recoveryEmailInput = document.getElementById('recovery-email'); 
+            
             const formMessage = document.getElementById('form-message');
             const passwordMessage = document.getElementById('password-message');
+            const recoveryMessage = document.getElementById('recovery-message'); 
             const passwordInput = document.getElementById('card-password'); 
             
             // =======================================================================================
             // 🚨 ALERTA 1: CONFIGURAÇÃO OBRIGATÓRIA DO GOOGLE FORMS
             // Substitua os valores abaixo pelos seus dados EXATOS do Formulário Google.
             // =======================================================================================
-            const FORM_ACTION_URL = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSeQ_y-A81q0-gGqYjS8d-2/formResponse'; // 🚨 Substitua pela URL de ação do seu Forms
-            const NAME_FIELD_GF = 'entry.12345678';   // 🚨 Substitua pelo "name" do campo Nome
-            const EMAIL_FIELD_GF = 'entry.98765432'; // 🚨 Substitua pelo "name" do campo E-mail
-            const CPF_FIELD_GF = 'entry.11223344';   // 🚨 Substitua pelo "name" do campo CPF
+            const FORM_ACTION_URL = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSeQ_y-A81q0-gGqYjS8d-2/formResponse'; 
+            const NAME_FIELD_GF = 'entry.12345678';   
+            const EMAIL_FIELD_GF = 'entry.98765432'; 
+            const CPF_FIELD_GF = 'entry.11223344';   
             // =======================================================================================
             
             // =======================================================================================
             // 🚨 ALERTA 2: TEMPO DE EXPIRAÇÃO E URL DO CARDÁPIO
             // =======================================================================================
-            const EXPIRATION_DAYS = 0;    //👈 Quantos Dias
-            const EXPIRATION_HOURS = 0;   //👈 Quantas Horas 
-            const EXPIRATION_MINUTES = 2; //👈 Quantos Minutos 
+            const EXPIRATION_DAYS = 0;   
+            const EXPIRATION_HOURS = 0;   
+            const EXPIRATION_MINUTES = 3; 
             const CARDAPIO_URL = 'Cardapio-Nuance.html'; // 👈 URL DO CARDÁPIO
             // =======================================================================================
 
@@ -362,7 +385,7 @@
             }
             // --- FIM FUNÇÃO DE VALIDAÇÃO DE CPF ---
 
-            // --- FUNÇÕES DE CUPOM E STORAGE (INALTERADAS) ---
+            // --- FUNÇÕES DE CUPOM E STORAGE (INALTERADAS, exceto CPF input event) ---
             function shuffleArray(array) {
                 let shuffled = [...array];
                 for (let i = shuffled.length - 1; i > 0; i--) {
@@ -451,7 +474,6 @@
                 }
             }
             
-            // --- FUNÇÃO DE EXIBIÇÃO DE CUPOM (ADICIONANDO O BOTÃO) ---
             function displayCoupon(name) {
                 const firstName = name.split(' ')[0];
                 const couponCode = getNextCoupon(); 
@@ -467,31 +489,73 @@
                     <p id="coupon-info">
                         * Válido apenas no seu primeiro pedido.
                     </p>
-                    <a id="return-to-cart" href="${CARDAPIO_URL}">Voltar ao Carrinho</a> `;
+                    <a id="return-to-cart" href="${CARDAPIO_URL}">Voltar ao Carrinho</a>
+                `;
                 
                 registrationDiv.classList.add('hidden');
                 passwordFormDiv.classList.add('hidden');
+                recoveryFormDiv.classList.add('hidden'); 
                 cardDiv.classList.add('hidden');
                 couponDiv.classList.remove('hidden');
             }
-            // --- FIM FUNÇÃO DE EXIBIÇÃO DE CUPOM ---
+            // --- FIM FUNÇÕES DE CUPOM E STORAGE ---
 
-            // --- FUNÇÃO DE REDEFINIÇÃO DE SENHA LOCAL (INALTERADA) ---
+
+            // 4. FUNÇÃO DE RECUPERAÇÃO DE SENHA (Abre o formulário de e-mail)
             function handleForgotPassword() {
-                if (confirm('Atenção: Para redefinir a senha, seus dados salvos localmente serão perdidos, e você precisará se cadastrar novamente (mas receberá um novo cupom). Continuar?')) {
-                    localStorage.removeItem(STORAGE_KEY);
-                    clientForm.reset(); 
-                    formMessage.classList.add('hidden'); 
-                    registrationDiv.classList.remove('hidden');
-                    passwordFormDiv.classList.add('hidden');
-                    cardDiv.classList.add('hidden');
-                    couponDiv.classList.add('hidden');
-
-                    alert('Dados de acesso removidos. Por favor, preencha o formulário novamente para criar uma nova senha e receber o cupom atualizado.');
-                }
+                passwordFormDiv.classList.add('hidden');
+                recoveryFormDiv.classList.remove('hidden');
+                
+                recoveryMessage.classList.add('hidden'); 
+                recoveryEmailInput.value = ''; 
             }
+
+            // 5. LÓGICA DE MOSTRAR SENHA
+            recoveryEmailForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                recoverButton.disabled = true;
+                recoverButton.textContent = 'Buscando...';
+                recoveryMessage.classList.add('hidden'); 
+                
+                const enteredEmail = recoveryEmailInput.value.trim();
+                const clientData = getClientData();
+
+                if (!clientData) {
+                    recoveryMessage.textContent = 'Erro: Nenhum dado de cadastro ativo encontrado neste navegador.';
+                    recoveryMessage.className = 'message error';
+                    recoveryMessage.classList.remove('hidden');
+                } else if (enteredEmail.toLowerCase() === clientData.email.toLowerCase()) {
+                    recoveryMessage.innerHTML = `✅ Sua senha de acesso é: <strong>${clientData.password}</strong>.`;
+                    recoveryMessage.className = 'message success';
+                    recoveryMessage.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        handleBackToLogin();
+                    }, 5000);
+
+                } else {
+                    recoveryMessage.textContent = 'E-mail não corresponde ao cadastro ativo. Verifique e tente novamente.';
+                    recoveryMessage.className = 'message error';
+                    recoveryMessage.classList.remove('hidden');
+                }
+
+                recoverButton.disabled = false;
+                recoverButton.textContent = 'Mostrar Senha';
+            });
             
-            forgotPasswordLink.addEventListener('click', handleForgotPassword); 
+            // 6. FUNÇÃO VOLTAR (Retorna para a tela de acesso/senha)
+            function handleBackToLogin() {
+                recoveryFormDiv.classList.add('hidden');
+                passwordFormDiv.classList.remove('hidden');
+                passwordMessage.classList.add('hidden');
+            }
+
+
+            forgotPasswordLink.addEventListener('click', handleForgotPassword);
+            backToLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleBackToLogin();
+            });
 
             // 1. Submissão do Formulário de Cadastro (INALTERADA)
             clientForm.addEventListener('submit', async (e) => {
@@ -611,7 +675,7 @@
             }
 
 
-            // 3. Inicialização Principal
+            // 3. Inicialização Principal (MUDANÇA AQUI)
             function initialize() {
                 initializeCouponSystem(); 
                 
@@ -620,9 +684,27 @@
                     registrationDiv.classList.add('hidden');
                     passwordFormDiv.classList.remove('hidden');
                     
-                    passwordMessage.textContent = `Olá ${clientData.name.split(' ')[0]}! Seus dados estão salvos. Insira a senha que você criou para acessar o cartão.`;
-                    passwordMessage.className = 'message success';
-                    passwordMessage.classList.remove('hidden');
+                    const firstName = clientData.name.split(' ')[0];
+
+                    // **INJETA O BOTÃO "VOLTAR AO CARRINHO" NO FORMULÁRIO DE SENHA**
+                    passwordFormDiv.innerHTML = `
+                        <h3>Acesso Rápido</h3>
+                        <div id="password-message" class="message success">
+                            Olá ${firstName}! Seus dados estão salvos. Insira a senha que você criou para acessar o cartão.
+                        </div>
+                        <label for="card-password">Insira sua Senha de Acesso:</label>
+                        <input type="password" id="card-password" placeholder="******" maxlength="12" style="margin-bottom: 10px;">
+                        <button id="access-button">Acessar Cartão</button>
+                        
+                        <a id="return-to-cart" href="${CARDAPIO_URL}">Voltar ao Carrinho</a> <span id="forgot-password-link">Esqueceu a senha?</span>
+                        
+                        <div id="password-message" class="message hidden"></div>
+                    `;
+
+                    // RE-ADICIONA ESCUTADORES AOS NOVOS ELEMENTOS INJETADOS
+                    document.getElementById('access-button').addEventListener('click', accessButton.click);
+                    document.getElementById('forgot-password-link').addEventListener('click', handleForgotPassword);
+                    
                 } else {
                     registrationDiv.classList.remove('hidden');
                     passwordFormDiv.classList.add('hidden');
@@ -635,4 +717,3 @@
     </script>
 </body>
 </html>
-
