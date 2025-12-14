@@ -359,291 +359,96 @@
             const STORAGE_KEY = 'nuance_client_data';
             const STORAGE_KEY_COUPON = 'nuance_client_coupon'; 
             
-            // CHAVES DE STORAGE PARA CONTROLE DE BLOCO DE ROTAÇÃO
+            // CHAVES DE STORAGE PARA CONTROLE DE BLOCO DE ROTAÇÃO POR HORA FIXA
             const COUPON_INDEX_KEY = 'nuance_coupon_index';
             const SHUFFLED_COUPONS_KEY = 'nuance_shuffled_coupons_block'; 
             const ACTIVE_BLOCK_INDEX_KEY = 'nuance_active_block_index'; 
-            const BLOCK_ACTIVATION_TIME_KEY = 'nuance_block_activation_time'; 
-
-            // =======================================================================================
-            // 🚨 BLOCOS DE CUPONS COM ROTAÇÃO DE 12H (8 Blocos de 31 cupons)
-            // =======================================================================================
-//const EXPIRATION_DURATION_MS = 12 * 60 * 60 * 1000; // Duração da ativação de um bloco: 12 horas
-            
-            const EXPIRATION_DURATION_MS = 1 * 60 * 1000;   
-// Duração da ativação de um bloco: 1 minutos. Ex: 1 milhi seguntos vezes 60 segundos vezes 1000
+            // A chave BLOCK_ACTIVATION_TIME_KEY não é mais usada, mas será mantida para evitar erros.
+            // const BLOCK_ACTIVATION_TIME_KEY = 'nuance_block_activation_time'; 
 
             
             const EXPECTED_COUPON_COUNT = 31; 
-
-            // Função auxiliar para gerar cupons (apenas para preencher os blocos 1-7)
-            const generateCoupons = (prefix) => {
-                let coupons = [];
-                for (let i = 0; i < 31; i++) {
-                    // Gera um código de 12 caracteres único com base no prefixo e índice
-                    let code = `${prefix}${i.toString().padStart(2, '0')}${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-                    coupons.push(code);
-                }
-                return coupons;
-            };
             
             // ---------------------------------------------------------------------------------------
-            // BLOCO 0: SEU BLOCO ORIGINAL
+            // 🚨BLOCO 0: SEU BLOCO ORIGINAL (6:00 às 8:59)🚨
             // ---------------------------------------------------------------------------------------
             const BLOCK_0 = [
-                "AABBZ385G7SZ", "AABBDUD68GEO", "AABBVTGX1KLV", "AABB8GFRPB4O", "AABBE6M7465E", 
-                "AABBHX6EESAH", "AABBDGDIS1BJ", "AABB2IF42H09", "AABBNXTQCRCU", "AABBOK5WYDJC",
-                "AABB5C0V4KJG", "AABBI7519HH2", "AABB65Y54X9H", "AABB0KLDESN4", "AABBNFWUTAAM",
-                "AABBUOWXP4Z7", "AABB0I8J60S1", "AABBHUNBQYGK", "AABBW7A97EYQ", "AABB9RJ2HUEB",
-                "AABBFLOMKP2L", "AABBVN3VZL1D", "AABB6RAH5H4E", "AABBYMI35ZKN", "AABBW0XPF0UO",
-                "AABB611923BK", "AABB7YG7QAYV", "AABB017JK375", "AABB2IVZJ422", "AABBUK611B2S",
-                "AABBHVBCR6DU"
-            ];
-            
-            // ---------------------------------------------------------------------------------------
-            // ⚠️ BLOCOS 1 a 7: CUpons gerados para DEMONSTRAÇÃO (SUBSTITUA PELOS SEUS DADOS REAIS)
-            // ---------------------------------------------------------------------------------------
-            const BLOCK_1 = [
-	"MJ28ZR",
-	"MJH340",
-	"MJBVQG",
-	"MJLY64",
-	"MJC797",
-	"MJTMD0",
-	"MJ14JJ",
-	"MJ2W26",
-	"MJZLYQ",
-	"MJH6LZ",
-	"MJOBHY",
-	"MJTP8L",
-	"MJKVU9",
-	"MJ5KC1",
-	"MJJ8HQ",
-	"MJ5KCD",
-	"MJRXX7",
-	"MJEYAK",
-	"MJYVDF",
-	"MJPJPH",
-	"MJMGHE",
-	"MJ9FIH",
-	"MJNFE0",
-	"MJN1OU",
-	"MJCDIF",
-	"MJXKKR",
-	"MJOC5J",
-	"MJGMIB",
-	"MJV02C",
-	"MJWP7Y",
-	"MJKOHK"
+	"FRETE_B87H", "FRETE_NTC6", "FRETE_5S24", "FRETE_VVGG", "FRETE_UHL1", "FRETE_NIP5", "FRETE_KXSU", "FRETE_5PQU", 
+	"FRETE_JIGJ", "FRETE_FDTM", "FRETE_6HVK", "FRETE_ES8K", "FRETE_EWVG", "FRETE_897F", "FRETE_EGAQ", "FRETE_5F57", 
+	"FRETE_5OBZ", "FRETE_4FHU", "FRETE_C2QI", "FRETE_S3B0", "FRETE_P6FW", "FRETE_NMQ4", "FRETE_8ZWI", "FRETE_IT6G", 
+	"FRETE_PTLR", "FRETE_EVJS", "FRETE_EHVB", "FRETE_NRBO", "FRETE_050I", "FRETE_7Q9D", "FRETE_ILUP"
 ];
-            const BLOCK_2 = [
-	"DMJ9I3",
-	"DMO4A8",
-	"DMT07P",
-	"DMAJLC",
-	"DMUL76",
-	"DMZLNU",
-	"DM32MH",
-	"DMUB6A",
-	"DMAG7C",
-	"DMDF97",
-	"DMH7T6",
-	"DMSRLD",
-	"DMB2P5",
-	"DMHYY9",
-	"DM4YZV",
-	"DM86UM",
-	"DMOEM1",
-	"DM9FWB",
-	"DM0RNJ",
-	"DMZNOF",
-	"DMF6JL",
-	"DMM9V1",
-	"DM3CY0",
-	"DMQRN6",
-	"DMCN46",
-	"DMAEE6",
-	"DMDIRX",
-	"DML69P",
-	"DMFH0A",
-	"DMJ0DN",
-	"DM5V8L"
+
+// ---------------------------------------------------------------------------------------
+// 🚨BLOCO 1: (9:00 às 11:59)🚨
+// ---------------------------------------------------------------------------------------
+const BLOCK_1 = [
+	"FRETE_7OJF", "FRETE_MJSL", "FRETE_SBRS", "FRETE_CQQQ", "FRETE_FP2J", "FRETE_IUF7", "FRETE_MWBC", "FRETE_BTDO", 
+	"FRETE_WGK4", "FRETE_5966", "FRETE_3IIV", "FRETE_EEPA", "FRETE_ZFZZ", "FRETE_N3I3", "FRETE_GY5T", "FRETE_QVGX", 
+	"FRETE_PYA6", "FRETE_O8OF", "FRETE_ZIT2", "FRETE_B449", "FRETE_USV6", "FRETE_5KBL", "FRETE_I859", "FRETE_21KK", 
+	"FRETE_SZTC", "FRETE_4W8F", "FRETE_CZC1", "FRETE_T3U0", "FRETE_NCXN", "FRETE_0WAR", "FRETE_HIZS"
 ];
-            const BLOCK_3 = [
-	"DSD01SI",
-	"DSDISHG",
-	"DSDO5WZ",
-	"DSDU15B",
-	"DSD8EO1",
-	"DSD7GMR",
-	"DSDXFXS",
-	"DSDTXPQ",
-	"DSDS1C1",
-	"DSDG7X7",
-	"DSDWMGO",
-	"DSDL75A",
-	"DSDJFQY",
-	"DSDMYS8",
-	"DSDNWN4",
-	"DSDS5YK",
-	"DSDY5TF",
-	"DSDQGAG",
-	"DSDA34Z",
-	"DSDVSWY",
-	"DSDTI9R",
-	"DSDIBWU",
-	"DSDFLSJ",
-	"DSDI8TE",
-	"DSDFQEY",
-	"DSDO9ND",
-	"DSDDB33",
-	"DSDSE11",
-	"DSDTTU7",
-	"DSDYOPZ",
-	"DSDRW8L"
+
+// ---------------------------------------------------------------------------------------
+// 🚨BLOCO 2: (12:00 às 14:59)🚨
+// ---------------------------------------------------------------------------------------
+const BLOCK_2 = [
+	"FRETE_2J38", "FRETE_I0I0", "FRETE_RWKO", "FRETE_ER46", "FRETE_09R7", "FRETE_2T1E", "FRETE_2JXO", "FRETE_NMCM", 
+	"FRETE_WMN4", "FRETE_JNM8", "FRETE_X4QQ", "FRETE_3CXB", "FRETE_8IJV", "FRETE_QKVL", "FRETE_TA9Y", "FRETE_X91I", 
+	"FRETE_8J21", "FRETE_VP0N", "FRETE_LB6Y", "FRETE_CHZO", "FRETE_9RS3", "FRETE_ADG7", "FRETE_F37G", "FRETE_Q3A6", 
+	"FRETE_13H2", "FRETE_3ECV", "FRETE_N2Y4", "FRETE_L2N3", "FRETE_HUNZ", "FRETE_GQKE", "FRETE_2AIK"
 ];
-            const BLOCK_4 = [
-	"BEIJA2Z64",
-	"BEIJAWYZH",
-	"BEIJAPVOM",
-	"BEIJA8EF3",
-	"BEIJA4D36",
-	"BEIJA3D6P",
-	"BEIJAU19D",
-	"BEIJALQDE",
-	"BEIJAPMGY",
-	"BEIJAO1SV",
-	"BEIJA04GV",
-	"BEIJAJA77",
-	"BEIJAFZAM",
-	"BEIJAJYAQ",
-	"BEIJAERU5",
-	"BEIJAZ1FD",
-	"BEIJAOI5U",
-	"BEIJAMC4A",
-	"BEIJACU09",
-	"BEIJAYBTY",
-	"BEIJAQTZX",
-	"BEIJAVBRA",
-	"BEIJAPXY4",
-	"BEIJAQ4AA",
-	"BEIJAX11Y",
-	"BEIJAHDKY",
-	"BEIJAKYXG",
-	"BEIJAJJE3",
-	"BEIJAOTIP",
-	"BEIJAM8Y2",
-	"BEIJAS4P7"
+
+// ---------------------------------------------------------------------------------------
+// 🚨BLOCO 3: (15:00 às 17:59)🚨
+// ---------------------------------------------------------------------------------------
+const BLOCK_3 = [
+	"FRETE_39GO", "FRETE_40PF", "FRETE_T15K", "FRETE_MPI0", "FRETE_6OJ8", "FRETE_4OF8", "FRETE_M9N4", "FRETE_V4ZV", 
+	"FRETE_VFMH", "FRETE_BKJD", "FRETE_N8KG", "FRETE_6V6F", "FRETE_O5N8", "FRETE_BSG0", "FRETE_F3N2", "FRETE_JV80", 
+	"FRETE_1BZH", "FRETE_7ULB", "FRETE_22LM", "FRETE_GUCU", "FRETE_I60Z", "FRETE_P0DQ", "FRETE_GBQH", "FRETE_SI2L", 
+	"FRETE_74WW", "FRETE_ASJT", "FRETE_3PRF", "FRETE_3ZWV", "FRETE_L7VB", "FRETE_MILO", "FRETE_9RQF"
 ];
-            const BLOCK_5 = [
-	"DRINK2U6U",
-	"DRINK8IFS",
-	"DRINKM7H0",
-	"DRINK2AT6",
-	"DRINKPN7O",
-	"DRINKR8C5",
-	"DRINKIKCH",
-	"DRINKX1Q2",
-	"DRINKYBQ1",
-	"DRINKKWAX",
-	"DRINKJLLY",
-	"DRINKBCHJ",
-	"DRINKMAPN",
-	"DRINKWZSN",
-	"DRINKI6PB",
-	"DRINKXEZ9",
-	"DRINKJS03",
-	"DRINK1HEC",
-	"DRINKUH2B",
-	"DRINK0FQ2",
-	"DRINKMXFA",
-	"DRINKHEME",
-	"DRINKUWWB",
-	"DRINKUKT2",
-	"DRINK47VW",
-	"DRINKOD0K",
-	"DRINKDOIM",
-	"DRINKD2NF",
-	"DRINKLZ11",
-	"DRINKPTH3",
-	"DRINKT93L"
+
+// ---------------------------------------------------------------------------------------
+// 🚨BLOCO 4: (18:00 às 20:59)🚨
+// ---------------------------------------------------------------------------------------
+const BLOCK_4 = [
+	"FRETE_CKJV", "FRETE_CC4W", "FRETE_3DOP", "FRETE_HY62", "FRETE_LEAN", "FRETE_625H", "FRETE_RLW6", "FRETE_YCM0", 
+	"FRETE_ZHW5", "FRETE_OKK6", "FRETE_OF6R", "FRETE_411I", "FRETE_L7TO", "FRETE_R44C", "FRETE_AYS3", "FRETE_0WAZ", 
+	"FRETE_OVDL", "FRETE_4XM8", "FRETE_GPGH", "FRETE_OSSZ", "FRETE_TL44", "FRETE_BKOG", "FRETE_MUR2", "FRETE_VSCG", 
+	"FRETE_9V26", "FRETE_4JH4", "FRETE_4CLQ", "FRETE_SL4F", "FRETE_XCNX", "FRETE_0ZWD", "FRETE_9IWN"
 ];
-            const BLOCK_6 = [
-	"CAIP80SF",
-	"CAIPNCOG",
-	"CAIPG72W",
-	"CAIPDV1P",
-	"CAIPIEI8",
-	"CAIP1AQD",
-	"CAIPL0TU",
-	"CAIPRBY0",
-	"CAIP2897",
-	"CAIPL3SZ",
-	"CAIP2BT3",
-	"CAIPCIIO",
-	"CAIPWAX3",
-	"CAIPT5QC",
-	"CAIP22LW",
-	"CAIPPYGB",
-	"CAIPBEIF",
-	"CAIPX0QU",
-	"CAIPEFI2",
-	"CAIPTNPD",
-	"CAIPQGDS",
-	"CAIP17ID",
-	"CAIPGS7X",
-	"CAIPY34L",
-	"CAIPP5SR",
-	"CAIPA7CH",
-	"CAIPUPHI",
-	"CAIPJTOL",
-	"CAIPBYBW",
-	"CAIPZ91U",
-	"CAIPZN14"
+
+// ---------------------------------------------------------------------------------------
+// 🚨BLOCO 5: (21:00 às 23:59)🚨
+// ---------------------------------------------------------------------------------------
+const BLOCK_5 = [
+	"FRETE_9N6V", "FRETE_UTLS", "FRETE_3AIR", "FRETE_KGGN", "FRETE_P37D", "FRETE_WTT2", "FRETE_3IGI", "FRETE_J5FV", 
+	"FRETE_0DGE", "FRETE_IA9P", "FRETE_AX6D", "FRETE_XXED", "FRETE_WMKS", "FRETE_SJ3K", "FRETE_VF4K", "FRETE_MUSV", 
+	"FRETE_GQPQ", "FRETE_TTM2", "FRETE_FJ8F", "FRETE_3210", "FRETE_X3XL", "FRETE_INI1", "FRETE_RDTP", "FRETE_E3ME", 
+	"FRETE_PF6W", "FRETE_P9U9", "FRETE_TYN3", "FRETE_6ONF", "FRETE_SR3X", "FRETE_JJ1A", "FRETE_Q9AP"
 ];
-            const BLOCK_7 = [
-	"BARMANV50I",
-	"BARMANG2X1",
-	"BARMANNZBU",
-	"BARMAN0OIM",
-	"BARMANDIE2",
-	"BARMAN2BAU",
-	"BARMANGA84",
-	"BARMAN5PVM",
-	"BARMANORVV",
-	"BARMANX1WH",
-	"BARMANONQO",
-	"BARMANZRB5",
-	"BARMANLK1W",
-	"BARMAN4C1L",
-	"BARMANHLPV",
-	"BARMAN2GQQ",
-	"BARMAN69Y4",
-	"BARMANLE13",
-	"BARMAN1285",
-	"BARMAN6U7Z",
-	"BARMANQRR0",
-	"BARMANOKPI",
-	"BARMAN5YN3",
-	"BARMANQZ7W",
-	"BARMANCQJM",
-	"BARMANEM6U",
-	"BARMAN9JCW",
-	"BARMANC4XJ",
-	"BARMANGMXA",
-	"BARMANPQO6",
-	"BARMANOIRF"
+
+// ---------------------------------------------------------------------------------------
+// 🚨BLOCO 6: (00:00 às 02:59)🚨
+// ---------------------------------------------------------------------------------------
+const BLOCK_6 = [
+	"FRETE_15RA", "FRETE_U5QF", "FRETE_OT1Z", "FRETE_I54K", "FRETE_XRIT", "FRETE_VR7T", "FRETE_9SLR", "FRETE_7WLA", 
+	"FRETE_9JMO", "FRETE_V5UI", "FRETE_6S7P", "FRETE_0E94", "FRETE_6G87", "FRETE_LMPT", "FRETE_OHYA", "FRETE_H5DG", 
+	"FRETE_3K6R", "FRETE_X2QS", "FRETE_EJEY", "FRETE_DKKO", "FRETE_UOZB", "FRETE_X5NQ", "FRETE_E9B1", "FRETE_G307", 
+	"FRETE_GL0P", "FRETE_NVH3", "FRETE_F3Y4", "FRETE_ABHE", "FRETE_15F4", "FRETE_NTTC", "FRETE_PFAO"
 ];
-            
-            /* * MODO CORRETO DE SUBSTITUIR:
-             * * Exemplo para o BLOCK_1 (remova a linha acima e use este formato):
-             * const BLOCK_1 = [
-             * "MEUCUPOMREAL1111", "MEUCUPOMREAL2222", "MEUCUPOMREAL3333", // ... e mais 28
-             * "MEUCUPOMREAL3131"
-             * ];
-             *
-             * Repita o processo para os blocos 2, 3, 4, 5, 6 e 7.
-            */
+
+// ---------------------------------------------------------------------------------------
+// 🚨BLOCO 7: (03:00 às 05:59)🚨
+// ---------------------------------------------------------------------------------------
+const BLOCK_7 = [
+	"FRETE_53IM", "FRETE_3WAB", "FRETE_1WX2", "FRETE_7ZBT", "FRETE_MMH5", "FRETE_OI5W", "FRETE_38CD", "FRETE_AOQA", 
+	"FRETE_EVAF", "FRETE_15LA", "FRETE_WLRU", "FRETE_SNDG", "FRETE_9A7K", "FRETE_ZJGU", "FRETE_GQ4X", "FRETE_TVI9", 
+	"FRETE_74PC", "FRETE_IC0D", "FRETE_Q9QD", "FRETE_5RDB", "FRETE_K7KC", "FRETE_9ARO", "FRETE_7JCU", "FRETE_6N4D", 
+	"FRETE_4M2A", "FRETE_Z91M", "FRETE_UT1P", "FRETE_PV5G", "FRETE_W7ZI", "FRETE_3A7G", "FRETE_6QFD"
+];
+
 
             const BLOCKS_OF_COUPONS = [
                 BLOCK_0, BLOCK_1, BLOCK_2, BLOCK_3, BLOCK_4, BLOCK_5, BLOCK_6, BLOCK_7
@@ -689,7 +494,7 @@
                 e.target.value = value;
             });
 
-            // --- FUNÇÕES DE STORAGE E CUPOM COM ROTAÇÃO DE 12H ---
+            // --- FUNÇÕES DE STORAGE E CUPOM COM ROTAÇÃO POR HORA FIXA ---
             
             // Embaralha um array
             function shuffleArray(array) {
@@ -701,69 +506,75 @@
                 return shuffled;
             }
 
-            // --- FUNÇÃO DE INICIALIZAÇÃO E CONTROLE DO SISTEMA DE CUPONS ---
-            function initializeCouponSystem(force = false) {
-                let blockIndex = parseInt(localStorage.getItem(ACTIVE_BLOCK_INDEX_KEY) || '0');
-                let activationTime = parseInt(localStorage.getItem(BLOCK_ACTIVATION_TIME_KEY) || '0');
-                const now = new Date().getTime();
-                let shouldActivateNextBlock = false;
-
-                // 1. Verifica se precisa avançar o bloco (se o tempo expirou - 12h)
-                if (activationTime === 0 || now > activationTime + EXPIRATION_DURATION_MS) {
-                    shouldActivateNextBlock = true;
+            // NOVO: Calcula o índice do bloco ativo (0 a 7) baseado na hora atual (0 a 23).
+            // A rotação ocorre a cada 3 horas, começando o Bloco 0 às 6h da manhã.
+            function getDailyActiveBlockIndex() {
+                const now = new Date();
+                const hour = now.getHours(); // Hora do dia (0 a 23)
+                
+                // 1. Normaliza o ciclo para começar às 6h (6h -> 0, 9h -> 3, 0h -> 18, 3h -> 21)
+                let normalizedHour = hour - 6;
+                if (normalizedHour < 0) {
+                    normalizedHour += 24; 
                 }
                 
-                // 2. Se for forçado OU se o bloco expirou: Ativa o próximo bloco
-                if (force || shouldActivateNextBlock) {
-                    
-                    // Se for para avançar, mas não for forçado, incrementa o índice (ou volta ao 0)
-                    if (shouldActivateNextBlock && activationTime !== 0) {
-                        blockIndex = (blockIndex + 1) % TOTAL_BLOCKS;
+                // 2. Divide pela duração da janela (3 horas) para obter o índice do bloco (0 a 7).
+                const blockIndex = Math.floor(normalizedHour / 3); 
+                
+                return blockIndex % TOTAL_BLOCKS; 
+            }
+
+            // --- FUNÇÃO DE INICIALIZAÇÃO E CONTROLE DO SISTEMA DE CUPONS (ATUALIZADA) ---
+            function initializeCouponSystem() {
+                
+                // 1. Determina o bloco que DEVERIA estar ativo agora com base na hora do dia.
+                const requiredBlockIndex = getDailyActiveBlockIndex();
+                
+                // 2. Obtém o estado atual salvo no localStorage.
+                let currentBlockIndex = parseInt(localStorage.getItem(ACTIVE_BLOCK_INDEX_KEY) || '-1');
+                const shuffledCouponsString = localStorage.getItem(SHUFFLED_COUPONS_KEY);
+                let currentShuffledList = null;
+                
+                if (shuffledCouponsString) {
+                    try {
+                        currentShuffledList = JSON.parse(shuffledCouponsString);
+                    } catch (e) {
+                        currentShuffledList = null;
                     }
+                }
+                
+                // 3. Verifica se precisa ATIVAR/RECONFIGURAR o bloco (se o bloco mudou ou lista está ruim)
+                if (currentBlockIndex !== requiredBlockIndex || 
+                    !currentShuffledList || 
+                    currentShuffledList.length !== EXPECTED_COUPON_COUNT) {
                     
-                    // Sanity check
-                    if (blockIndex >= TOTAL_BLOCKS) {
-                        blockIndex = 0; 
-                    }
+                    console.log(`🚨 Ativação de Bloco: Bloco Anterior ${currentBlockIndex} | Bloco Requerido ${requiredBlockIndex}`);
                     
-                    const activeBlockList = BLOCKS_OF_COUPONS[blockIndex];
+                    // Ativa o novo bloco
+                    const activeBlockList = BLOCKS_OF_COUPONS[requiredBlockIndex];
+                    
                     if (activeBlockList.length !== EXPECTED_COUPON_COUNT) {
-                        console.error(`ERRO: Bloco ${blockIndex} tem ${activeBlockList.length} cupons, esperado ${EXPECTED_COUPON_COUNT}. Usando Bloco 0 como fallback.`);
-                        blockIndex = 0;
+                        console.error(`ERRO: Bloco ${requiredBlockIndex} tem ${activeBlockList.length} cupons, esperado ${EXPECTED_COUPON_COUNT}. Usando Bloco 0 como fallback.`);
+                        
+                        // Em caso de erro de configuração nos BLOCKS_OF_COUPONS
                         const fallbackBlock = BLOCKS_OF_COUPONS[0];
                         localStorage.setItem(SHUFFLED_COUPONS_KEY, JSON.stringify(shuffleArray(fallbackBlock)));
+                        localStorage.setItem(ACTIVE_BLOCK_INDEX_KEY, '0');
+                        
                     } else {
                         // Embaralha a nova lista do bloco e salva no storage
                         const newShuffledList = shuffleArray(activeBlockList);
                         localStorage.setItem(SHUFFLED_COUPONS_KEY, JSON.stringify(newShuffledList));
+                        localStorage.setItem(ACTIVE_BLOCK_INDEX_KEY, requiredBlockIndex.toString());
                     }
                     
-                    // Define novos valores de controle
-                    localStorage.setItem(ACTIVE_BLOCK_INDEX_KEY, blockIndex.toString());
-                    localStorage.setItem(BLOCK_ACTIVATION_TIME_KEY, now.toString()); // Nova ativação é AGORA
-                    localStorage.setItem(COUPON_INDEX_KEY, '-1'); // Reinicia o índice para o novo bloco
+                    // Reinicia o índice para o novo bloco ou lista reconfigurada.
+                    localStorage.setItem(COUPON_INDEX_KEY, '-1'); 
                     
-                    console.log(`Sistema de cupons atualizado: Bloco Ativo é o Índice ${blockIndex}`);
+                    console.log(`Sistema de cupons atualizado para: Bloco Índice ${requiredBlockIndex}`);
 
                 } else {
-                     // Bloco ativo (sem expirar). 
-                     // Garante que a lista embaralhada exista e tenha o tamanho correto, se não, re-embaralha o bloco atual.
-                    const shuffledCouponsString = localStorage.getItem(SHUFFLED_COUPONS_KEY);
-                    let currentShuffledList = null;
-                    if (shuffledCouponsString) {
-                        try {
-                            currentShuffledList = JSON.parse(shuffledCouponsString);
-                        } catch (e) {
-                            currentShuffledList = null;
-                        }
-                    }
-                    
-                    if (!currentShuffledList || currentShuffledList.length !== EXPECTED_COUPON_COUNT) {
-                        console.warn(`Aviso: Lista salva corrompida. Re-embaralhando Bloco ${blockIndex}.`);
-                        const activeBlockList = BLOCKS_OF_COUPONS[blockIndex];
-                        localStorage.setItem(SHUFFLED_COUPONS_KEY, JSON.stringify(shuffleArray(activeBlockList)));
-                        localStorage.setItem(COUPON_INDEX_KEY, '-1');
-                    }
+                    console.log(`✅ Bloco ${requiredBlockIndex} ativo e válido.`);
                 }
             }
 
@@ -1055,7 +866,7 @@
 
             // 3. Inicialização Principal
             function initialize() {
-                // Ativa o bloco de cupons correto (avança se necessário - 12h)
+                // Ativa o bloco de cupons correto baseado na hora do dia (6h -> Bloco 0, 9h -> Bloco 1, etc.)
                 initializeCouponSystem(); 
                 
                 const clientData = getClientData();
