@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -134,22 +135,23 @@
     <div class="container">
         <h1>✨ Gerador de Cupons✨</h1>
         
-         <p>Escreva o prefixo para o site criar os CUPONS</p>
+         <p>Escreva a palavra que será o **PREFIXO FIXO** para o site criar os CUPONS.</p>
+         <p>**O sufixo aleatório será gerado com 4 caracteres para garantir a exclusividade.**</p>
         
-        <input type="text" id="prefixoInput" placeholder="Ex: FRETEGRATIS, NUANCE...">
+        <input type="text" id="prefixoInput" placeholder="Ex: FRETEGRATIS, NUANCE. (Este será o Prefixo)">
         <button onclick="gerarCupons()">Gerar 31 Cupons</button>
         
         <hr>
 
         <h3><span style="color: var(--secondary-color);">①</span> CUPONS da Loja</h3>
-        <p>🏷️</p>
+        <p>🏷️ Formato Objeto JSON Completo. Idêntico aos cupons do Campo 2.</p>
         <div class="copy-group">
             <button class="copy-btn" onclick="copiarTexto('resultadoObjeto')" id="copiarObjetoBtn" style="display: none;">Copiar</button>
         </div>
         <pre id="resultadoObjeto"></pre>
 
         <h3><span style="color: var(--secondary-color);">②</span> CUPONS dos Cadastros</h3>
-        <p>🏷️</p>
+        <p>🏷️ Formato de Lista Array (`const BLOCK_1 = [...]`). Idêntico aos cupons do Campo 1.</p>
         <div class="copy-group">
             <button class="copy-btn" onclick="copiarTexto('resultadoArray')" id="copiarArrayBtn" style="display: none;">Copiar</button>
         </div>
@@ -157,7 +159,7 @@
     </div>
     
     <script>
-        /* --- JAVASCRIPT Integrado (Funcionalidade Mantida) --- */
+        /* --- JAVASCRIPT Integrado (Lógica Padrão de Prefixo + Sufixo Aleatório) --- */
 
         // Constante base para a estrutura interna de cada cupom
         const CUPOM_BASE = { 
@@ -167,11 +169,11 @@
             message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total." 
         };
 
-        const TOTAL_CUPONS = 31;
-        const SUFIXO_LENGTH = 4; // Mantenha este valor ou altere-o se necessário
+        const TOTAL_CUPONS = 31; // Quantidade de cupons em BLOCK_1
+        const SUFIXO_LENGTH = 4; // Tamanho do sufixo aleatório (como solicitado anteriormente)
 
         /**
-         * Gera uma string aleatória de letras e números (sempre em MAIÚSCULAS para o sufixo).
+         * Gera uma string aleatória de letras e números (sempre em MAIÚSCULAS).
          */
         function gerarSufixoAleatorio(length) {
             const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -183,16 +185,16 @@
         }
 
         function gerarCupons() {
-            // Mantém a capitalização exata (case-sensitive)
-            const prefixo = document.getElementById('prefixoInput').value.trim(); 
+            // O valor digitado AGORA é o PREFIXO FIXO
+            const prefixoFixo = document.getElementById('prefixoInput').value.trim(); 
             
             const resultadoObjetoDiv = document.getElementById('resultadoObjeto');
             const resultadoArrayDiv = document.getElementById('resultadoArray');
             const copiarObjetoBtn = document.getElementById('copiarObjetoBtn');
             const copiarArrayBtn = document.getElementById('copiarArrayBtn');
 
-            if (!prefixo) {
-                resultadoObjetoDiv.textContent = "⚠️ Por favor, digite um prefixo válido.";
+            if (!prefixoFixo) {
+                resultadoObjetoDiv.textContent = "⚠️ Por favor, digite o prefixo fixo.";
                 resultadoArrayDiv.textContent = "";
                 copiarObjetoBtn.style.display = 'none';
                 copiarArrayBtn.style.display = 'none';
@@ -200,39 +202,60 @@
             }
 
             const todasAsChaves = [];
-            let cuponsGeradosObjeto = "{\n";
-
-            // 1. Geração das Chaves e do Objeto Completo
+            
+            // 1. Geração das Chaves Únicas (Prefixo Fixo + Sufixo Aleatório)
             for (let i = 0; i < TOTAL_CUPONS; i++) {
                 
                 const sufixoAleatorio = gerarSufixoAleatorio(SUFIXO_LENGTH);
-                const novaChave = prefixo + sufixoAleatorio; 
+                
+                // Combinação: PREFIXO FIXO + SUFIXO ALEATÓRIO
+                const novaChave = prefixoFixo + sufixoAleatorio; 
                 
                 todasAsChaves.push(novaChave); 
-                
-                const minPurchaseFormatado = CUPOM_BASE.minPurchase.toFixed(2);
-                
-                // Formato Objeto
-                cuponsGeradosObjeto += `\t"${novaChave}": { type: "${CUPOM_BASE.type}", value: ${CUPOM_BASE.value}, minPurchase: ${minPurchaseFormatado}, message: "${CUPOM_BASE.message}"\n\t}${i === TOTAL_CUPONS - 1 ? '' : ','}\n`;
             }
 
+            // --- 2. Formato CUPONS da Loja (Objeto JSON completo) ---
+            let cuponsGeradosObjeto = "{\n";
+            const minPurchaseFormatado = CUPOM_BASE.minPurchase.toFixed(2);
+
+            todasAsChaves.forEach((chave, index) => {
+                // Formato Objeto
+                // O último item não recebe vírgula para manter o formato JSON válido
+                cuponsGeradosObjeto += `\t"${chave}": { type: "${CUPOM_BASE.type}", value: ${CUPOM_BASE.value}, minPurchase: ${minPurchaseFormatado}, message: "${CUPOM_BASE.message}"\n\t}${index === TOTAL_CUPONS - 1 ? '' : ','}\n`;
+            });
             cuponsGeradosObjeto += "}";
 
-            // 2. Geração do Formato Array
-            let cuponsGeradosArray = "const BASE_COUPONS = [\n";
+
+            // --- 3. Formato CUPONS dos Cadastros (Novo Formato Array de Blocos) ---
+            // O BLOCK_1 recebe os cupons reais
+            let cuponsGeradosArray = `const BLOCK_1 = [\n`;
             
             todasAsChaves.forEach((chave, index) => {
-                cuponsGeradosArray += `\t"${chave}"${index === todasAsChaves.length - 1 ? '' : ','}\n`;
+                cuponsGeradosArray += `\t"${chave}"${index === TOTAL_CUPONS - 1 ? '' : ','}\n`;
             });
 
-            cuponsGeradosArray += "];";
+            cuponsGeradosArray += "];\n";
+            cuponsGeradosArray += "\n// ---------------------------------------------------------------------------------------\n";
+            cuponsGeradosArray += "// ⚠️ BLOCOS 2 a 7: CUpons gerados para DEMONSTRAÇÃO (SUBSTITUA PELOS SEUS DADOS REAIS)\n";
+            cuponsGeradosArray += "// ---------------------------------------------------------------------------------------\n";
+            
+            // Adicionando blocos de exemplo com 31 itens fictícios para manter a estrutura
+            for(let i = 2; i <= 7; i++) {
+                cuponsGeradosArray += `const BLOCK_${i} = [\n`;
+                for(let j = 0; j < TOTAL_CUPONS; j++) {
+                     // Gera um cupom fictício para preenchimento
+                    const chaveFicticia = gerarSufixoAleatorio(SUFIXO_LENGTH) + "FICT"; 
+                    cuponsGeradosArray += `\t"${chaveFicticia}"${j === TOTAL_CUPONS - 1 ? '' : ','}\n`;
+                }
+                cuponsGeradosArray += `];\n`;
+            }
 
 
-            // 3. Exibe os resultados
+            // 4. Exibe os resultados
             resultadoObjetoDiv.textContent = cuponsGeradosObjeto;
             resultadoArrayDiv.textContent = cuponsGeradosArray;
 
-            // 4. Mostra os botões de copiar
+            // 5. Mostra os botões de copiar
             copiarObjetoBtn.style.display = 'block';
             copiarArrayBtn.style.display = 'block';
         }
