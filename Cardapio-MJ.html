@@ -1564,19 +1564,18 @@
     <div id="mensagem-conteudo" class="atencao-body">
         </div>
   </div>
-         
-<script>
-  
-        // =======================
-        // === JAVASCRIPT (Lógica) ===
-        // =======================
+
+
+
+    <script>
         
-        // 🚨 NOVO: Item do carrinho agora pode ter uma 'observacao'
-        let carrinho = []; // Ex: [{ nome: 'Moscow Mule', preco: 20.00, quantidade: 1, observacao: '' }]
+        let carrinho = [];
         let etapaAtual = 1; 
-        let cupomAplicado = null; 
-        let descontoValor = 0;    
-        let obsItemIndex = -1; // Índice do item que está sendo editado no modal de observação
+        let cupomAplicado = null; // Armazena o cupom ativo
+        let descontoValor = 0;    // Armazena o valor do desconto calculado
+        
+        // 🚨 NOVO: VALOR DO FRETE FIXO 🚨
+        const FRETE_VALOR_FIXO = 5.00;
         
         // Dados do Cliente
         const form = {
@@ -1592,44 +1591,612 @@
         
         // =================================================================
         // 🚨__Adicionar os links de pagamento aqui__🚨
+        //🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
         // =================================================================
         const linksDePagamentoFixos = {
             // A chave é o valor total formatado como string "XX.XX"
             "8.00": "https://mpago.li/2fbY9KG", 
             "16.00": "https://mpago.la/1N84Gia",
-            "9.99": "https://mpago.la/1wfhtfi",
+            "13.00": "https://mpago.la/247gSmK",
             "10.00": "https://mpago.li/31rBFxx",
+            "18.00": "https://mpago.la/19vEZUV",
             
             // Adicione os seus outros links fixos aqui
         };
 
         // =================================================================
-        // 🚨 OBJETO DE CUPOM🚨
+        // ✅ NOVO: MAPEAMENTO DOS HORÁRIOS DOS BLOCOS (Simples e Direto) ✅
+        // Este é o único ponto que define os horários dos seus 8 blocos.
+        // Chave: Nome do Bloco | Valor: [Hora de Início (0-23), Duração (em horas)]
+        const blocoHorarios = {
+            "BLOCK_0": [6, 3],  // 06:00 a 08:59
+            "BLOCK_1": [9, 3],  // 09:00 a 11:59
+            "BLOCK_2": [12, 3], // 12:00 a 14:59
+            "BLOCK_3": [15, 3], // 15:00 a 17:59
+            "BLOCK_4": [18, 3], // 18:00 a 20:59
+            "BLOCK_5": [21, 3], // 21:00 a 23:59 (Cruza a meia-noite)
+            "BLOCK_6": [0, 3],  // 00:00 a 02:59
+            "BLOCK_7": [3, 3]   // 03:00 a 05:59
+        };
+
         // =================================================================
-   
-        // Catálogo de cupons válidos
-        const cuponsValidos = {
-            "CINCO": { type: "flat", value: 5.00, minPurchase: 0.00, message: "R$5,00 de desconto aplicado!" },                   
-            "FRETEGRATIS": {                                                                                                       
-                type: "note",  
-                value: 0, 
-                minPurchase: 10.00, 
-                message: "Frete Grátis a ser aplicado na finalização da entrega/balcão." 
-            },
+        // 🚨 FUNÇÃO DE VALIDAÇÃO DE TEMPO DO CUPOM (ATUALIZADA) 🚨
+        // Verifica se o cupom está ativo na hora atual.
+        function isCupomAtivo(cupomCode) {
             
-            "NUANCE10": { type: "percent", value: 0.10, minPurchase: 50.00, message: "10% OFF em pedidos acima de R$50!" },          
-            "MEGA20": { type: "flat", value: 20.00, minPurchase: 100.00, message: "R$20,00 de desconto!" }                          
+            // Se não for um cupom FRETE_X, ele está sempre ativo (CINCO, MEGA20, etc.)
+            if (!cupomCode.startsWith("FRETE_")) {
+                return true;
+            }
+
+            // 1. Identificar o Bloco (Lendo a propriedade 'bloco' que será adicionada)
+            const cupomInfo = cuponsValidos[cupomCode];
+            if (!cupomInfo || !cupomInfo.bloco) {
+                // Cupom FRETE_X sem bloco definido
+                return false; 
+            }
+
+            const blocoKey = cupomInfo.bloco; // Ex: "BLOCK_0"
+            const [horaInicio, duracao] = blocoHorarios[blocoKey];
+
+            if (horaInicio === undefined) {
+                 // Bloco não mapeado na lista de horários
+                return false; 
+            }
+
+            const agora = new Date();
+            const horaAtual = agora.getHours(); // 0 a 23
+            const horaFim = (horaInicio + duracao) % 24; // Fim com duração de 3h, circular
+
+            // Lógica de intervalo de tempo (inclusive a hora de início, exclusiva a hora de fim)
+            if (horaInicio < horaFim) {
+                // Intervalo normal (Ex: 9h a 11:59h)
+                return horaAtual >= horaInicio && horaAtual < horaFim;
+            } else {
+                // Intervalo que cruza a meia-noite (Ex: 21h a 23:59h E 00:00h a 02:59h)
+                return horaAtual >= horaInicio || horaAtual < horaFim;
+            }
+        }
+
+        // =================================================================
+        // 🚨 OBJETO DE CUPOM (ATUALIZADO COM A PROPRIEDADE 'bloco') 🚨
+        // AGORA É ESSENCIAL ADICIONAR A PROPRIEDADE 'bloco' EM CADA CUPOM FRETE_
+        // =================================================================
+        const cuponsValidos = {
+            // CUPOM DE R$5,00 (Exemplo que ABATE o valor)
+            "CINCO": { type: "flat", value: 5.00, minPurchase: 0.00, message: "R$5,00 de desconto aplicado!" },                   // ---CINCO---
+
+            // 🚨CUPONS FRETEGRATIS🚨
+			
+	// --- INÍCIO DO BLOCK_0 --- (6:00 - 8:59)
+	"FRETE_B87H": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_NTC6": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_5S24": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_VVGG": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_UHL1": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_NIP5": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_KXSU": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_5PQU": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_JIGJ": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_FDTM": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_6HVK": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_ES8K": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_EWVG": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_897F": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_EGAQ": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_5F57": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_5OBZ": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_4FHU": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_C2QI": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_S3B0": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_P6FW": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_NMQ4": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_8ZWI": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_IT6G": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_PTLR": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_EVJS": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_EHVB": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_NRBO": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_050I": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_7Q9D": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+	"FRETE_ILUP": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_0"
+	},
+
+	// --- INÍCIO DO BLOCK_1 --- (9:00 - 11:59)
+	"FRETE_7OJF": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_MJSL": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_SBRS": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_CQQQ": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_FP2J": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_IUF7": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_MWBC": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_BTDO": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_WGK4": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_5966": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_3IIV": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_EEPA": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_ZFZZ": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_N3I3": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_GY5T": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_QVGX": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_PYA6": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_O8OF": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_ZIT2": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_B449": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_USV6": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_5KBL": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_I859": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_21KK": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_SZTC": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_4W8F": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_CZC1": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_T3U0": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_NCXN": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_0WAR": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+	"FRETE_HIZS": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_1"
+	},
+
+	// --- INÍCIO DO BLOCK_2 --- (12:00 - 14:59)
+	"FRETE_2J38": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_I0I0": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_RWKO": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_ER46": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_09R7": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_2T1E": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_2JXO": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_NMCM": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_WMN4": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_JNM8": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_X4QQ": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_3CXB": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_8IJV": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_QKVL": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_TA9Y": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_X91I": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_8J21": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_VP0N": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_LB6Y": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_CHZO": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_9RS3": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_ADG7": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_F37G": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_Q3A6": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_13H2": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_3ECV": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_N2Y4": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_L2N3": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_HUNZ": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_GQKE": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+	"FRETE_2AIK": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_2"
+	},
+
+	// --- INÍCIO DO BLOCK_3 --- (15:00 - 17:59)
+	"FRETE_39GO": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_40PF": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_T15K": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_MPI0": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_6OJ8": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_4OF8": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_M9N4": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_V4ZV": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_VFMH": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_BKJD": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_N8KG": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_6V6F": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_O5N8": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_BSG0": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_F3N2": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_JV80": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_1BZH": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_7ULB": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_22LM": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_GUCU": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_I60Z": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_P0DQ": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_GBQH": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_SI2L": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_74WW": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_ASJT": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_3PRF": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_3ZWV": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_L7VB": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_MILO": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+	"FRETE_9RQF": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_3"
+	},
+
+	// --- INÍCIO DO BLOCK_4 --- (18:00 - 20:59)
+	"FRETE_CKJV": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_CC4W": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_3DOP": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_HY62": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_LEAN": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_625H": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_RLW6": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_YCM0": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_ZHW5": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_OKK6": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_OF6R": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_411I": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_L7TO": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_R44C": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_AYS3": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_0WAZ": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_OVDL": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_4XM8": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_GPGH": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_OSSZ": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_TL44": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_BKOG": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_MUR2": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_VSCG": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_9V26": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_4JH4": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_4CLQ": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_SL4F": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_XCNX": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_0ZWD": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+	"FRETE_9IWN": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_4"
+	},
+
+	// --- INÍCIO DO BLOCK_5 --- (21:00 - 23:59)
+	"FRETE_9N6V": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_UTLS": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_3AIR": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_KGGN": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_P37D": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_WTT2": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_3IGI": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_J5FV": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_0DGE": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_IA9P": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_AX6D": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_XXED": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_WMKS": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_SJ3K": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_VF4K": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_MUSV": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_GQPQ": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_TTM2": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_FJ8F": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_3210": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_X3XL": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_INI1": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_RDTP": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_E3ME": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_PF6W": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_P9U9": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_TYN3": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_6ONF": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_SR3X": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_JJ1A": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+	"FRETE_Q9AP": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_5"
+	},
+
+	// --- INÍCIO DO BLOCK_6 --- (00:00 - 02:59)
+	"FRETE_15RA": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_U5QF": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_OT1Z": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_I54K": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_XRIT": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_VR7T": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_9SLR": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_7WLA": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_9JMO": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_V5UI": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_6S7P": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_0E94": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_6G87": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_LMPT": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_OHYA": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_H5DG": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_3K6R": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_X2QS": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_EJEY": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_DKKO": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_UOZB": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_X5NQ": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_E9B1": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_G307": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_GL0P": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_NVH3": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_F3Y4": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_ABHE": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_15F4": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_NTTC": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+	"FRETE_PFAO": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_6"
+	},
+
+	// --- INÍCIO DO BLOCK_7 --- (3:00 - 5:59)
+	"FRETE_53IM": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_3WAB": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_1WX2": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_7ZBT": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_MMH5": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_OI5W": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_38CD": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_AOQA": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_EVAF": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_15LA": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_WLRU": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_SNDG": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_9A7K": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_ZJGU": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_GQ4X": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_TVI9": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_74PC": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_IC0D": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_Q9QD": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_5RDB": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_K7KC": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_9ARO": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_7JCU": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_6N4D": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_4M2A": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_Z91M": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_UT1P": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_PV5G": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_W7ZI": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_3A7G": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+	"FRETE_6QFD": { type: "frete", value: FRETE_VALOR_FIXO, minPurchase: 6.00, message: "🎉 Frete Grátis aplicado! O valor de R$5,00 foi removido do total.", bloco: "BLOCK_7"
+	},
+
+            
+            "NUANCE10": { type: "percent", value: 0.10, minPurchase: 50.00, message: "10% OFF em pedidos acima de R$50!" },            // --- NUANCE10 ---
+            "FRETEGRATIS2": { type: "flat", value: 5.00, minPurchase: 6.00, message: "R$5,00 de desconto!" }, // Cupom Fixo que abate o valor do frete
+            "MEGA20": { type: "flat", value: 20.00, minPurchase: 100.00, message: "R$20,00 de desconto!" }                          // --- MEGA20 ---
         }; 
         
         // =================================================================
-        // 💾 FUNÇÕES DE LOCAL STORAGE - MANTIDO
+        // 🚨 FUNÇÃO mapCouponsToBlocks REMOVIDA
+        // A alocação de blocos foi feita diretamente no objeto cuponsValidos acima!
         // =================================================================
 
         function salvarCarrinho() {
             try {
-                // Incluindo a observação no JSON salvo
+                // Converte o array de objetos para uma string JSON e armazena
                 localStorage.setItem('carrinhoNuance', JSON.stringify(carrinho));
                 
+                // Salva também o cupom (para que ele continue aplicado após o F5)
                 if (cupomAplicado) {
                     localStorage.setItem('cupomNuance', JSON.stringify(cupomAplicado));
                 } else {
@@ -1640,25 +2207,24 @@
             }
         }
 
+        /**
+         * Carrega o carrinho e o cupom do localStorage ao iniciar a página.
+         */
         function carregarCarrinho() {
             try {
                 const carrinhoSalvo = localStorage.getItem('carrinhoNuance');
                 const cupomSalvo = localStorage.getItem('cupomNuance');
 
                 if (carrinhoSalvo) {
+                    // Converte a string JSON de volta para um array de objetos
                     carrinho = JSON.parse(carrinhoSalvo);
-                    // Garante que todos os itens tenham a propriedade 'observacao' para evitar erros
-                    carrinho.forEach(item => {
-                        if (typeof item.observacao === 'undefined') {
-                            item.observacao = '';
-                        }
-                    });
                 } else {
                     carrinho = [];
                 }
                 
                 if (cupomSalvo) {
                     cupomAplicado = JSON.parse(cupomSalvo);
+                    // Garante que o input mostre o código do cupom
                     document.getElementById('coupon-input').value = cupomAplicado.codigo;
                 } else {
                     cupomAplicado = null;
@@ -1666,47 +2232,25 @@
                 
             } catch (e) {
                 console.error("Erro ao carregar o carrinho do localStorage:", e);
-                carrinho = []; 
+                carrinho = []; // Garante que a aplicação não quebre se o storage estiver corrompido
                 cupomAplicado = null;
             }
         }
-
-        // --- FUNÇÕES DE FORMATAÇÃO E VALIDAÇÃO ---
-        function formatarTelefone(input) {
-            let value = input.value.replace(/\D/g, ''); 
-            let formatted = '';
-
-            if (value.length > 0) {
-                formatted = '(' + value.substring(0, 2);
+         
+        function atualizarObservacao(index, textarea) {
+            if (carrinho[index]) {
+                carrinho[index].observacao = textarea.value.trim();
+                salvarCarrinho();
             }
-            if (value.length > 2) {
-                formatted += ') ' + value.substring(2, 7);
-            }
-            if (value.length > 7) {
-                formatted += '-' + value.substring(7, 11);
-            }
-            input.value = formatted;
         }
-
-        function formatarCEP(input) {
-            let value = input.value.replace(/\D/g, ''); 
-            let formatted = '';
-
-            if (value.length > 0) {
-                formatted = value.substring(0, 5);
-            }
-            if (value.length > 5) {
-                formatted += '-' + value.substring(5, 8);
-            }
-            input.value = formatted;
-        }
-
-        // --- LÓGICA DE EXIBIÇÃO DE CAMPOS CONDICIONAIS ---
+        
+// --- LÓGICA DE EXIBIÇÃO DE CAMPOS CONDICIONAIS ---
         document.getElementById('local').addEventListener('change', function() {
             const local = this.value;
             const campoMesa = document.getElementById('campo-mesa');
             const camposEndereco = document.getElementById('campos-endereco');
             
+            // Lógica de reset e exibição
             campoMesa.style.display = 'none';
             camposEndereco.style.display = 'none';
             
@@ -1715,6 +2259,7 @@
             document.getElementById('rua').removeAttribute('required');
             document.getElementById('numero').removeAttribute('required');
 
+            // Limpa os valores ao mudar de opção (boa prática)
             document.getElementById('mesa').value = '';
             document.getElementById('cep').value = '';
             document.getElementById('rua').value = '';
@@ -1730,12 +2275,9 @@
                 document.getElementById('rua').setAttribute('required', 'required');
                 document.getElementById('numero').setAttribute('required', 'required');
             }
+            // A atualização do valor do frete está agora dentro de atualizarListaCarrinhoModal,
+            // que é chamada sempre que o modal é aberto ou há mudanças.
         });
-
-
-        // ===================================
-        // === CONTROLE DE ETAPAS DO MODAL ===
-        // ===================================
 
         function showEtapa(etapa) {
             document.querySelectorAll('.modal-card').forEach(card => card.style.display = 'none');
@@ -1780,59 +2322,51 @@
             }
         }
 
-        // ===================================
-        // === LÓGICA DO CARRINHO ===
-        // ===================================
+            function atualizarCarrinhoFlutuante() {
+            const badge = document.getElementById('carrinho-badge');
+            
+            // Soma a quantidade de TODOS os itens no carrinho
+            const totalItems = carrinho.reduce((sum, item) => sum + item.quantidade, 0); 
+            
+            badge.textContent = totalItems;
+            
+            // Exibe ou esconde o badge
+            badge.style.display = totalItems > 0 ? 'flex' : 'none'; 
+        }
 
+        // 🚨 OBS: Esta função foi substituída pela lógica mais completa em 'atualizarListaCarrinhoModal'
+        // para garantir que o frete e o desconto estejam sempre sincronizados.
+        /*
         function calcularTotalDoCarrinho() {
             let totalValor = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
             
-            let totalDescontoParaBotao = 0;
-            if (cupomAplicado && cupomAplicado.type !== 'note') {
-                if (cupomAplicado.type === 'percent') {
-                    totalDescontoParaBotao = totalValor * cupomAplicado.value;
-                } else if (cupomAplicado.type === 'flat') {
-                    totalDescontoParaBotao = cupomAplicado.value;
-                }
-                totalDescontoParaBotao = Math.min(totalDescontoParaBotao, totalValor);
-            }
+            // ... (lógica anterior de desconto)
             
             return totalValor - totalDescontoParaBotao;
         }
+        */
 
-        function atualizarCarrinhoFlutuante() {
-            const totalItens = carrinho.reduce((sum, item) => sum + item.quantidade, 0);
-            const carrinhoFlutuante = document.getElementById('carrinho-flutuante');
-            const badge = document.getElementById('carrinho-badge');
-            
-            if (totalItens > 0) {
-                carrinhoFlutuante.style.display = 'flex'; 
-                badge.style.display = 'flex'; 
-                badge.textContent = totalItens;
-            } else {
-                carrinhoFlutuante.style.display = 'flex'; 
-                badge.style.display = 'none'; 
-                badge.textContent = '0';
-            }
-            
-            // 🚨 NOVO: Atualiza a seção de sugestões
-            updateSuggestions();
-        }
-
-        // 🚨 FUNÇÃO MODIFICADA: Adicionada a observacao = '' por padrão
+        // 🚨 FUNÇÃO ATUALIZADA: Agora busca o caminho da imagem no data-img 🚨
         function adicionarAoCarrinho(nome, preco, buttonElement) {
             const precoFloat = parseFloat(String(preco).replace(',', '.'));
-
+            
+            // Busca o elemento pai .card para pegar o caminho da imagem
+            const cardElement = buttonElement.closest('.card');
+            // 🚨 NOVO: Obtém a URL da imagem do atributo data-img 🚨
+            const imagemUrl = cardElement ? cardElement.getAttribute('data-img') : 'img-produtos/placeholder.png'; 
+            
             const itemExistente = carrinho.find(item => item.nome === nome);
             if (itemExistente) {
                 itemExistente.quantidade++;
             } else {
-                // 🚨 NOVO: Incluindo 'observacao' vazia
-                carrinho.push({ nome, preco: precoFloat, quantidade: 1, observacao: '' });
+                // 🚨 NOVO: Adiciona a imagem e a observação (vazia) 🚨
+                carrinho.push({ nome, preco: precoFloat, quantidade: 1, imagem: imagemUrl, observacao: '' });
             }
             
+            // 💾 Salva no localStorage 
             salvarCarrinho();
             
+            // Feedback visual
             if (buttonElement) {
                 const originalText = buttonElement.textContent;
                 buttonElement.textContent = '✅ Adicionado!';
@@ -1847,79 +2381,78 @@
             }
             
             atualizarCarrinhoFlutuante();
-            aplicarCupom(true); 
+            aplicarCupom(true); // Tenta reaplicar o cupom (silencioso)
         }
 
-        // 🚨 FUNÇÃO MODIFICADA: Adicionada a observacao = '' por padrão
-        function adicionarCaipifrutaSabor(nomeCompleto, preco, buttonElement) {
+        // 🚨 FUNÇÃO ATUALIZADA: Agora recebe o caminho da imagem diretamente 🚨
+        function adicionarCaipifrutaSabor(nomeCompleto, preco, imagemUrl) {
             const precoFloat = parseFloat(String(preco).replace(',', '.'));
-            
             
             const itemExistente = carrinho.find(item => item.nome === nomeCompleto);
 
             if (itemExistente) {
                 itemExistente.quantidade++;
             } else {
-                // 🚨 NOVO: Incluindo 'observacao' vazia
-                carrinho.push({ nome: nomeCompleto, preco: precoFloat, quantidade: 1, observacao: '' });
+                // 🚨 NOVO: Adiciona a imagem e a observação (vazia) 🚨
+                carrinho.push({ nome: nomeCompleto, preco: precoFloat, quantidade: 1, imagem: imagemUrl, observacao: '' });
             }
             
+            // 💾 Salva no localStorage
             salvarCarrinho();
             
-            if (buttonElement) {
-                const menu = buttonElement.closest('.sabores-menu');
-                if (menu) {
-                     menu.style.display = 'none';
-                }
-            }
-            
             atualizarCarrinhoFlutuante();
-            aplicarCupom(true); 
-
-            alert(`✅ ${nomeCompleto} adicionado ao carrinho!`);
+            aplicarCupom(true); // Tenta reaplicar o cupom (silencioso)
         }
+        
+        // 🚨 NOVO: Função para fechar o dropdown pelo ID 🚨
+        function fecharDropdown(id) {
+            const menu = document.getElementById(id);
+            if (menu) {
+                menu.style.display = 'none';
+            }
+        }
+        window.fecharDropdown = fecharDropdown; // Torna global
 
 
+        /** * 🚨 FUNÇÃO CORRIGIDA: Adiciona chamada para redesenhar a lista.
+         */
         function removerItemCarrinho(index) {
             carrinho.splice(index, 1); 
             
+            // 💾 Salva no localStorage
             salvarCarrinho();
             
             atualizarCarrinhoFlutuante();
+            aplicarCupom(true); // Tenta reaplicar o cupom (silencioso)
+            
+            // 🚨 CORREÇÃO ESSENCIAL: Redesenha a lista do carrinho no modal para sumir com o item.
+            atualizarListaCarrinhoModal(); 
+        }
+
+        // 🚨 NOVO: Funções de alterarQuantidade (não estava no código anterior, mas é essencial para o render)
+        function alterarQuantidade(index, action) {
+            if (!carrinho[index]) return;
+
+            if (action === 'aumentar') {
+                carrinho[index].quantidade++;
+            } else if (action === 'diminuir') {
+                if (carrinho[index].quantidade > 1) {
+                    carrinho[index].quantidade--;
+                } else {
+                    // Se for 1 e diminuir, remove o item
+                    removerItemCarrinho(index);
+                    return; // Sai da função para evitar o salvamento duplicado
+                }
+            }
+            
+            salvarCarrinho();
             aplicarCupom(true); 
             atualizarListaCarrinhoModal(); 
         }
+        window.alterarQuantidade = alterarQuantidade; // Torna acessível no HTML
         
-        // ===========================================
-        // === 🚨 NOVO: LÓGICA DE OBSERVAÇÃO DO ITEM 🚨 ===
-        // ===========================================
-
-        function abrirObsModal(index) {
-            obsItemIndex = index;
-            const item = carrinho[index];
-            
-            document.getElementById('obs-item-title').textContent = `Observação para: ${item.nome}`;
-            document.getElementById('obs-text').value = item.observacao || ''; // Carrega a observação existente
-            document.getElementById('obs-modal').style.display = 'block';
-        }
-
-        function fecharObsModal() {
-            document.getElementById('obs-modal').style.display = 'none';
-            obsItemIndex = -1;
-        }
-
-        function salvarObservacao() {
-            if (obsItemIndex >= 0 && obsItemIndex < carrinho.length) {
-                const obsText = document.getElementById('obs-text').value.trim();
-                carrinho[obsItemIndex].observacao = obsText;
-                salvarCarrinho();
-                atualizarListaCarrinhoModal(); 
-            }
-            fecharObsModal();
-        }
-
         // ===================================
-        // === LÓGICA DO CUPOM - MANTIDO
+        // === LÓGICA DO CUPOM ===
         // ===================================
 
         function removerCupom() {
@@ -1930,6 +2463,7 @@
             document.getElementById('coupon-message').style.color = 'gray';
             document.getElementById('remove-coupon-btn').style.display = 'none';
 
+            // 💾 Salva no localStorage
             salvarCarrinho();
 
             atualizarListaCarrinhoModal();
@@ -1942,6 +2476,7 @@
             const removeBtn = document.getElementById('remove-coupon-btn');
             const codigoCupom = input.value.trim().toUpperCase();
             
+            // Se for silencioso e não houver cupom no input, usa o que já está aplicado
             const cupomParaTestar = codigoCupom.length > 0 ? codigoCupom : (cupomAplicado ? cupomAplicado.codigo : null);
 
             let novoCupomAplicado = null;
@@ -1964,8 +2499,18 @@
             if (cuponsValidos[cupomParaTestar]) {
                 const cupom = cuponsValidos[cupomParaTestar];
 
+                // 🚨 NOVA VALIDAÇÃO DE TEMPO 🚨
+                // Se for um cupom FRETE_, verifica o horário.
+                if (!isCupomAtivo(cupomParaTestar)) {
+                    if (!isSilent) {
+                        messageDisplay.textContent = '🚫 Este cupom de frete não está ativo neste momento. Tente novamente no próximo bloco de horário.';
+                    }
+                    atualizarListaCarrinhoModal();
+                    return;
+                }
+                
                 if (totalItens >= cupom.minPurchase) {
-                    novoCupomAplicado = { ...cupom, codigo: cupomParaTestar };
+                    novoCupomAplicado = { ...cupom, codigo: cupomParaTestar }; // Armazena o código também
                     
                     if (!isSilent) {
                         messageDisplay.textContent = `✅ ${cupom.message}`;
@@ -1975,24 +2520,28 @@
                     input.value = cupomParaTestar;
 
                 } else {
-                    if (codigoCupom.length > 0) {
+                    // Limpa o cupom se a condição mínima não for atendida
+                    if (codigoCupom.length > 0) { // Se o usuário digitou
                         input.value = '';
                         if (!isSilent) {
                             messageDisplay.textContent = `🚫 Pedido mínimo de R$${cupom.minPurchase.toFixed(2).replace('.', ',')} necessário.`;
                         }
                     }
+                    // Se a chamada foi silenciosa, apenas deixa novoCupomAplicado como null
                 }
             } else if (codigoCupom.length > 0 && !isSilent) {
                 messageDisplay.textContent = '🚫 Cupom inválido ou expirado.';
             }
 
+            // Atualiza o cupom principal e salva.
             cupomAplicado = novoCupomAplicado;
             salvarCarrinho();
 
             atualizarListaCarrinhoModal(); 
         }
 
-        // 🚨 FUNÇÃO MODIFICADA: Adicionado o botão de observação e a exibição da observação
+
+        // 🚨 FUNÇÃO MAIS MODIFICADA: Atualização Visual do Carrinho no Modal 🚨
         function atualizarListaCarrinhoModal() {
             const lista = document.getElementById('lista-carrinho');
             const totalDisplay = document.getElementById('carrinho-total');
@@ -2000,83 +2549,151 @@
             const input = document.getElementById('coupon-input');
             const messageDisplay = document.getElementById('coupon-message');
             const removeBtn = document.getElementById('remove-coupon-btn');
+            const freteValorDisplay = document.getElementById('frete-valor'); // 🚨 NOVO: Elemento do Frete
             
             lista.innerHTML = '';
             
-            let totalGeral = 0;
+            let totalItens = 0;
             let totalDesconto = 0;
+            let freteAplicado = FRETE_VALOR_FIXO; // 🚨 NOVO: Frete começa em R$5,00
 
             if (carrinho.length === 0) {
                  lista.innerHTML = '<li>Seu carrinho está vazio.</li>';
                  discountDisplay.style.display = 'none';
+                 // Limpa o cupom se o carrinho esvaziar
                  cupomAplicado = null;
                  descontoValor = 0;
                  messageDisplay.textContent = ''; 
                  removeBtn.style.display = 'none';
                  input.value = ''; 
-                 salvarCarrinho(); 
+                 salvarCarrinho(); // 💾 Salva o carrinho vazio
             }
 
+            // 1. Calcular o subtotal dos itens
             carrinho.forEach((item, index) => {
                 const li = document.createElement('li');
                 const subtotal = item.preco * item.quantidade;
-                totalGeral += subtotal;
+                totalItens += subtotal;
                 
-                const precoFormatado = item.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                const subtotalFormatado = subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                const precoFormatado = item.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 });
+                const subtotalFormatado = subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 });
 
-                // 🚨 NOVO: Incluindo o botão de lápis (observação)
+                // Lógica para esconder o campo de observação se estiver vazio
+                const obsDisplay = item.observacao ? 'block' : 'none';
+                
                 li.innerHTML = `
-                    <div class="item-details">
-                        <span style="max-width: 80%;">
-                            ${item.nome} (${item.quantidade}x ${precoFormatado})
-                            <button class="btn-obs-item" onclick="abrirObsModal(${index})" title="Adicionar/Editar Observação">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button>
-                        </span>
-                        <span style="text-align: right; display: flex; align-items: center;">
-                            ${subtotalFormatado}
-                            <button class="btn-remover" onclick="removerItemCarrinho(${index})" title="Remover Item">❌</button>
-                        </span>
+                    <div class="item-main-details">
+                        <div class="item-thumbnail" style="background-image: url('${item.imagem}');"></div>
+                        <div class="item-info">
+                            <p class="item-title">${item.nome}</p>
+                            <p class="item-sub-info">${item.quantidade}x ${precoFormatado}</p>
+                        </div>
+                        <div class="item-actions">
+                            <div class="price-and-action-group">
+                                <span class="item-price-total">${subtotalFormatado}</span>
+                                 <button class="btn-obs" title="Adicionar Observação" onclick="toggleObservationInput(${index}, this)">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                                <button class="btn-remover" title="Remover Item" onclick="removerItemCarrinho(${index})">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                             <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="alterarQuantidade(${index}, 'diminuir')">-</button>
+                                <span class="item-quantity-display">${item.quantidade}</span>
+                                <button class="quantity-btn" onclick="alterarQuantidade(${index}, 'aumentar')">+</button>
+                            </div>
+                        </div>
                     </div>
-                    ${item.observacao ? `<div class="item-obs">Obs: ${item.observacao}</div>` : ''}
+                    <div class="item-observation-container" style="display: ${obsDisplay};" id="obs-container-${index}">
+                        <textarea 
+                            placeholder="Ex: Sem gelo, com pouco açúcar, etc." 
+                            oninput="atualizarObservacao(${index}, this)"
+                        >${item.observacao}</textarea>
+                    </div>
                 `;
                 lista.appendChild(li);
             });
+            
+            // 🚨 NOVO: Função auxiliar para alternar a exibição da observação 🚨
+            function toggleObservationInput(index, button) {
+                const container = document.getElementById(`obs-container-${index}`);
+                const isVisible = container.style.display === 'block';
+                
+                // Toggle
+                container.style.display = isVisible ? 'none' : 'block';
+            }
+            window.toggleObservationInput = toggleObservationInput; // Torna a função acessível globalmente (do HTML)
 
-            // 2. Calcular o desconto
+
+            // 2. Lógica do Frete e Desconto (Baseado no total dos itens)
+            
+            // O total para aplicação de desconto (Exceto FreteGrátis) é apenas o total dos itens.
+            const totalParaDescontoConvencional = totalItens; 
+            
             if (cupomAplicado) {
+                // 🚨 NOVA VALIDAÇÃO DE TEMPO para cupons persistidos 🚨
+                if (!isCupomAtivo(cupomAplicado.codigo)) {
+                    cupomAplicado = null; // Invalida se o horário expirou
+                    descontoValor = 0;
+                    messageDisplay.textContent = '🚫 O cupom aplicado expirou (limite de tempo).';
+                    messageDisplay.style.color = 'red';
+                    input.value = '';
+                    salvarCarrinho();
+                    // Recalcula sem o cupom
+                    atualizarListaCarrinhoModal();
+                    return;
+                }
+
                 if (cupomAplicado.type === 'percent') {
-                    totalDesconto = totalGeral * cupomAplicado.value;
+                    totalDesconto = totalParaDescontoConvencional * cupomAplicado.value;
                 } else if (cupomAplicado.type === 'flat') {
                     totalDesconto = cupomAplicado.value;
-                } else if (cupomAplicado.type === 'note') {
-                    totalDesconto = 0; 
-                }
+                } else if (cupomAplicado.type === 'frete') {
+                    // 🚨 NOVO: CUPOM DE FRETE 🚨
+                    freteAplicado = 0.00; 
+                    // Nota: totalDesconto continua 0, pois o Frete Grátis não é um "desconto de valor" no subtotal.
+                } 
                 
-                totalDesconto = Math.min(totalDesconto, totalGeral); 
+                // Garante que o desconto não exceda o total dos itens
+                totalDesconto = Math.min(totalDesconto, totalParaDescontoConvencional); 
             }
             
             descontoValor = totalDesconto; 
+            
+            // 3. Exibir Frete
+            const freteFormatado = freteAplicado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 });
+            freteValorDisplay.textContent = freteFormatado;
+            
+            if (freteAplicado === 0.00) {
+                 freteValorDisplay.classList.add('gratis');
+                 freteValorDisplay.textContent = 'GRÁTIS';
+            } else {
+                 freteValorDisplay.classList.remove('gratis');
+            }
 
-            // 3. Exibir Desconto (Tratamento para cupons de valor e cupons de nota)
+
+            // 4. Exibir Desconto (Tratamento para cupons de valor e cupons de frete)
             if (descontoValor > 0) {
-                const descontoFormatado = descontoValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                const descontoFormatado = descontoValor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 });
                 discountDisplay.textContent = `Desconto (${cupomAplicado.codigo}): - ${descontoFormatado}`;
                 discountDisplay.style.display = 'block';
                 discountDisplay.style.color = '#4CAF50';
                 
+                // Garante que a mensagem de sucesso e o botão apareçam
                 if (messageDisplay.textContent === '') {
                      messageDisplay.textContent = `✅ Cupom ${cupomAplicado.codigo} aplicado!`;
                      messageDisplay.style.color = '#4CAF50';
                 }
                 removeBtn.style.display = 'inline-block';
 
-            } else if (cupomAplicado && cupomAplicado.type === 'note') {
-                discountDisplay.textContent = `✅ Cupom ${cupomAplicado.codigo} aplicado (Sem abatimento em valor).`;
+            } else if (cupomAplicado && cupomAplicado.type === 'frete') {
+                 // Exibe a nota/observação de Frete Grátis
+                discountDisplay.textContent = `Cupom ${cupomAplicado.codigo} aplicado.`;
                 discountDisplay.style.display = 'block';
-                discountDisplay.style.color = '#00bcd4'; 
+                discountDisplay.style.color = '#00bcd4'; // Cor diferente para nota (azul)
 
+                 // Garante que a mensagem de sucesso e o botão apareçam
                 if (messageDisplay.textContent === '') {
                      messageDisplay.textContent = `✅ ${cupomAplicado.message}`;
                      messageDisplay.style.color = '#00bcd4';
@@ -2084,27 +2701,28 @@
                 removeBtn.style.display = 'inline-block';
             } else {
                 discountDisplay.style.display = 'none';
-                removeBtn.style.display = 'none'; 
+                removeBtn.style.display = 'none'; // Esconde se não houver cupom ativo
                 
-                if (input.value === '') { 
+                // Se o input tem valor mas não há cupom aplicado (Ex: não atingiu o mínimo), não limpa a mensagem de erro
+                if (input.value === '' && messageDisplay.textContent.startsWith('🚫') === false) { 
                     messageDisplay.textContent = ''; 
                 }
             }
 
-            // 4. Calcular e exibir o Total Final
-            const totalFinal = totalGeral - descontoValor;
-            totalDisplay.textContent = totalFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            // 5. Calcular e exibir o Total Final
+            const totalGeralComFrete = totalItens + freteAplicado; // Itens + Frete
+            const totalFinal = totalGeralComFrete - descontoValor; // (Itens + Frete) - Desconto (só de valor)
+            
+            totalDisplay.textContent = totalFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 });
 
             if (carrinho.length === 0 && document.getElementById('myModal').style.display === 'block') {
+                // Se o carrinho esvaziar dentro do modal, fecha o modal.
                 fecharModal();
             }
             
+            // Atualiza o botão flutuante
             atualizarCarrinhoFlutuante();
         }
-        
-        // ===================================
-        // === VALIDAÇÃO E ENVIO ===
-        // ===================================
 
         function validarFormulario() {
             let isValid = true;
@@ -2118,6 +2736,7 @@
             const numero = document.getElementById('numero');
             const complemento = document.getElementById('complemento');
 
+            // Limpa mensagens de erro
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
             
             if (nome.value.trim() === '') {
@@ -2144,6 +2763,7 @@
                  const cepRegex = /^\d{5}-\d{3}$/;
                  if (!cepRegex.test(cep.value.trim())) {
                     isValid = false; 
+                    // Se o CEP é inválido, marca como false
                  }
 
                  if (rua.value.trim() === '' || numero.value.trim() === '') {
@@ -2151,6 +2771,7 @@
                  }
             }
 
+            // Armazena os dados se for válido
             if (isValid) {
                 form.nome = nome.value.trim();
                 form.telefone = telefone.value.trim();
@@ -2169,22 +2790,31 @@
             
             return isValid;
         }
-
-// ==================================================================================
-// =========🚨 FUNÇÃO MODIFICADA PARA INCLUIR OBSERVAÇÕES E LINK CONDICIONAL 🚨=========
-// ==================================================================================
-        function gerarMensagemPedido() {
+           function gerarMensagemPedido() {
             let mensagemPedido = '';
             let totalItens = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
-            let totalFinal = totalItens - descontoValor;
             
+            // Calcula o frete a ser aplicado na mensagem
+            let freteAplicado = FRETE_VALOR_FIXO;
+            if (cupomAplicado && cupomAplicado.type === 'frete') {
+                 freteAplicado = 0.00;
+            }
+            
+            // Calcula o total final
+            const totalGeralComFrete = totalItens + freteAplicado; 
+            const totalFinal = totalGeralComFrete - descontoValor;
+            
+            // Garante que o valor final tenha exatamente duas casas decimais para busca
             const totalFinalParaBusca = totalFinal.toFixed(2); 
             
+            // TENTA ENCONTRAR O LINK DE PAGAMENTO
             const linkParaPagamento = linksDePagamentoFixos[totalFinalParaBusca] || null;
 
             const totalItensFormatado = totalItens.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
             const totalFinalFormatado = totalFinal.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
             const descontoFormatado = descontoValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            const freteFormatado = freteAplicado.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
 
             // 1. Dados do Cliente
             mensagemPedido += `*📋 NOVO PEDIDO - NUANCE 📋*\n`;
@@ -2206,32 +2836,35 @@
 
             mensagemPedido += `\n*🛒 ITENS DO PEDIDO 🛒*\n`;
 
-            // 2. Itens do Carrinho
+            // 2. Itens do Carrinho (AGORA COM OBSERVAÇÕES)
             carrinho.forEach(item => {
                 const precoUnitarioFormatado = item.preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-                mensagemPedido += `• ${item.quantidade}x ${item.nome} (R$ ${precoUnitarioFormatado})`;
+                mensagemPedido += `• ${item.quantidade}x ${item.nome} (R$ ${precoUnitarioFormatado})\n`;
                 
-                // 🚨 NOVO: Incluindo observação
-                if (item.observacao) {
-                    // Substitui quebras de linha por espaço ou um separador para o WhatsApp
-                    const obsFormatada = item.observacao.replace(/\n/g, ' / '); 
-                    mensagemPedido += `\n  _Obs: ${obsFormatada}_`;
+                if (item.observacao && item.observacao.length > 0) {
+                     mensagemPedido += `  _Obs: ${item.observacao}_\n`;
                 }
-                mensagemPedido += `\n`; // Adiciona quebra de linha após o item
             });
 
-            // 3. Total e Finalização (Com Desconto)
+            // 3. Total e Finalização (Com Frete e Desconto)
             mensagemPedido += `\n*🧾 RESUMO DO PEDIDO 🧾*\n`;
             mensagemPedido += `Subtotal dos Itens: R$ ${totalItensFormatado}\n`;
-
-            if (cupomAplicado) {
+            
+            // Exibir frete
+            if (freteAplicado > 0) {
+                 mensagemPedido += `Frete: R$ ${freteFormatado}\n`;
+            } else {
+                 mensagemPedido += `Frete: *GRÁTIS* (Cupom ${cupomAplicado.codigo} aplicado)\n`;
+            }
+            
+            if (cupomAplicado && cupomAplicado.type !== 'frete') {
                 const codigoCupom = cupomAplicado.codigo;
 
                 if (cupomAplicado.type === 'note') {
                     mensagemPedido += `\n*🏷️ CUPOM DE OBSERVAÇÃO APLICADO: ${codigoCupom}*\n`;
                     mensagemPedido += `*OBS:* ${cupomAplicado.message}\n`;
                 } else {
-                    mensagemPedido += `🏷️ Cupom ${codigoCupom} (Desconto de Valor): - R$ ${descontoFormatado}\n`;
+                    mensagemPedido += `🏷️ Desconto ${codigoCupom}: - R$ ${descontoFormatado}\n`;
                 }
             }
 
@@ -2239,11 +2872,13 @@
 
             // 4. LÓGICA CONDICIONAL DO LINK DE PAGAMENTO SOLICITADA PELO CLIENTE
             if (linkParaPagamento) {
+                // SE EXISTE O LINK FIXO (Valor Exato Encontrado, Ex: R$8.00)
                 mensagemPedido += `👇*FAÇA O SEU PAGAMENTO*👇\n`;
                 mensagemPedido += `🔗 ${linkParaPagamento} \n\n`;
                 mensagemPedido += `🤗 *Não* esqueça de nos enviar o *Comprovante*: 📃`
             }
             else {
+                // SE O LINK FIXO NÃO EXISTE (Valor Diferente de R$8.00, ou não mapeado)
                 mensagemPedido += `_Vamos criar o seu *link* de pagamento agora. *Só um estant*e._`;
             }
 
@@ -2261,29 +2896,28 @@
                 alert('Por favor, preencha todos os campos obrigatórios de contato e local corretamente.');
                 return; 
             }
-
             const { mensagem } = gerarMensagemPedido();
 
-            const numeroWhatsapp = '5562995679219'; 
+
+           const numeroWhatsapp = '5562995679219'; 
+            // ==🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨====
+           
             const url = `https://api.whatsapp.com/send?phone=${numeroWhatsapp}&text=${encodeURIComponent(mensagem)}`;
             
             window.open(url, '_blank');
             fecharModal(); 
             
+            // Opcional: Esvaziar o carrinho após o envio
             carrinho = [];
-            cupomAplicado = null; 
+            cupomAplicado = null; // Limpa o cupom após o envio
             document.getElementById('coupon-input').value = '';
             document.getElementById('coupon-message').textContent = '';
             
+            // 💾 Salva o carrinho vazio após o envio
             salvarCarrinho();
             
             atualizarCarrinhoFlutuante();
         }
-
-        // ===================================
-        // LÓGICA DE FILTRAGEM (MANTIDA)
-        // ===================================
-
         function removerAcentos(text) {
             return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         }
@@ -2301,6 +2935,7 @@
             searchResultsContainer.innerHTML = '';
             let resultsFound = 0;
 
+            // 1. Lógica de Restauração
             if (filter.length === 0) {
                 originalSections.style.display = 'block';
                 searchResultsContainer.style.display = 'none';
@@ -2309,38 +2944,39 @@
                 return;
             }
             
+            // 2. Prepara a Busca
             originalSections.style.display = 'none'; 
             searchResultsTitle.style.display = 'block';
             searchResultsTitle.textContent = `Resultados da Busca por "${input.value}"`;
             
+            // Reúne TODOS os cards de todas as seções
             const allOriginalCards = document.querySelectorAll('.product-grid .card');
 
+            // 3. Filtragem (Estilo Mercado Livre: Contém a palavra-chave)
             allOriginalCards.forEach(card => {
                 const name = removerAcentos(card.getAttribute('data-name') || '').toLowerCase();
                 const section = removerAcentos(card.getAttribute('data-section') || '').toLowerCase();
                 
+                // Extrai o texto completo do card para uma busca mais abrangente
                 const cardText = removerAcentos(card.textContent || '').toLowerCase();
 
+                // Verifica se o filtro está em qualquer parte do nome, seção ou conteúdo do card
                 if (name.includes(filter) || section.includes(filter) || cardText.includes(filter)) {
                     
                     const clone = card.cloneNode(true);
-                    
-                    // Remove IDs para evitar duplicação no DOM (especialmente os de dropdown)
-                    clone.removeAttribute('id');
-                    clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
-                    
-                    searchResultsContainer.appendChild(clone);
+                      searchResultsContainer.appendChild(clone);
                     resultsFound++;
                 }
             });
 
+            // 4. Exibição dos Resultados
             if (resultsFound > 0) {
-                searchResultsContainer.style.display = 'block'; 
+                searchResultsContainer.style.display = 'block'; // Mostra o carrossel de resultados
                 noResults.style.display = 'none';
             } else {
                 searchResultsContainer.style.display = 'none';
                 noResults.style.display = 'block';
-                searchResultsTitle.style.display = 'none'; 
+                searchResultsTitle.style.display = 'none'; // Esconde o título se não houver resultados
             }
         }
         
@@ -2360,18 +2996,9 @@
         
         window.onclick = function(event) {
             const modal = document.getElementById('myModal');
-            const obsModal = document.getElementById('obs-modal'); // 🚨 NOVO
-
-            // Fecha o modal principal
             if (event.target == modal) {
                 fecharModal();
             }
-            // Fecha o modal de observação
-            if (event.target == obsModal) {
-                fecharObsModal();
-            }
-            
-            // Fechar dropdowns ao clicar fora (mantido)
             document.querySelectorAll('.sabores-menu').forEach(menu => {
                 const dropdownContainer = menu.closest('.dropdown-container');
                 const dropdownButton = dropdownContainer ? dropdownContainer.querySelector('.btn-sabores') : null;
@@ -2380,175 +3007,48 @@
                     event.target !== menu && !menu.contains(event.target) && 
                     dropdownButton && event.target !== dropdownButton && !dropdownButton.contains(event.target)) {
                     
-                    menu.style.display = 'none';
+                    // Removido: O fechamento automático ao clicar no botão de sabor agora é feito via função fecharDropdown()
+                    // Adicionado na função fecharDropdown (linha ~840) para resolver o problema.
                 }
             });
         }
-        
         document.addEventListener('DOMContentLoaded', () => {
              carregarCarrinho();
-             
-             if (!cupomAplicado) {
+              if (!cupomAplicado) {
                  document.getElementById('coupon-input').value = '';
              }
-
-             atualizarCarrinhoFlutuante();
-             aplicarCupom(true);
+              atualizarCarrinhoFlutuante();
+              aplicarCupom(true);
         });
-
-// ===========================================
-// === 🚨 NOVO: LÓGICA DE SUGESTÃO (CROSS-SELLING) 🚨 ===
-// ===========================================
-
-const SUGGESTION_MAP = {
-    // Se o cliente pediu:             // Sugira estes data-id:
-    'moscow-mule': ['abacaxi-hortela', 'cha-tropical'], // Drink alcoolico sugere sem alcool
-    'jack-limoned': ['mocktail', 'grape-fresh'],        // Drink alcoolico sugere sem alcool
-    'copao-pitu': ['abacaxi-hortela'],                  // Copão sugere um refri/acompanhamento
-    'copao-rum': ['mocktail'],
-    'copao-51': ['cha-tropical'],
-    'caipifrutas-base': ['gins-base', 'soda-italiana-base'], // Caipi sugere Gin ou Soda
-    'Caipfruta de Morango 🍓': ['gin-red-fruts', 'soda-red-frits'], // Morango sugere Red Frits
-};
-
-/**
- * Verifica o carrinho e injeta sugestões relevantes (produtos que o usuário AINDA NÃO TEM).
- */
-function updateSuggestions() {
-    const container = document.getElementById('suggestion-section-content');
-    const title = document.getElementById('suggestion-title');
-    container.innerHTML = ''; // Limpa as sugestões anteriores
-    
-    if (carrinho.length === 0) {
-        container.style.display = 'none';
-        title.style.display = 'none';
-        return;
-    }
-    
-    // Conjunto de IDs de produtos que JÁ estão no carrinho (ou são muito semelhantes)
-    const currentItemIds = new Set(carrinho.map(item => {
-        // Tenta encontrar o data-id do produto no carrinho
-        const nameCleaned = removerAcentos(item.nome.toLowerCase()).trim();
-        if (nameCleaned.includes('caipfruta de morango')) return 'Caipfruta de Morango 🍓';
-        if (nameCleaned.includes('moscow mule')) return 'moscow-mule';
-        // Adicione mais mapeamentos de volta para o data-id original conforme necessário
-        return document.querySelector(`[data-name="${item.nome.split(' ')[0]}"]`)?.getAttribute('data-id') || item.nome;
-    }));
-    
-    // Lista para armazenar os IDs únicos das sugestões
-    let suggestionsToAdd = new Set();
-    
-    // 1. Coleta sugestões baseadas no que está no carrinho
-    carrinho.forEach(item => {
-        // Tenta mapear o item do carrinho para uma chave no SUGGESTION_MAP
-        const itemKey = item.nome.includes('Caipfruta de Morango') ? 'Caipfruta de Morango 🍓' : 
-                        document.querySelector(`[data-name="${item.nome.split(' ')[0]}"]`)?.getAttribute('data-id');
-        
-        if (SUGGESTION_MAP[itemKey]) {
-            SUGGESTION_MAP[itemKey].forEach(suggestedId => {
-                // Adiciona apenas se o ID sugerido AINDA NÃO estiver no carrinho
-                if (!currentItemIds.has(suggestedId)) {
-                    suggestionsToAdd.add(suggestedId);
-                }
-            });
-        }
-    });
-
-    // 2. Injeta os cards das sugestões
-    suggestionsToAdd.forEach(suggestionId => {
-        const originalCard = document.querySelector(`[data-id="${suggestionId}"]`);
-        
-        // Se for um item com sabor específico (como 'gin-red-fruts'), precisa de tratamento especial
-        let cardToClone = originalCard;
-        if (!originalCard && suggestionId.includes('-')) {
-             // Tenta encontrar o card base (ex: 'gins-base' para 'gin-red-fruts')
-             cardToClone = document.querySelector(`[data-id="${suggestionId.split('-')[0]}"]`);
-        }
-        
-        if (cardToClone) {
-            const clone = cardToClone.cloneNode(true);
-            
-            // Ajustes para o clone na seção de sugestões:
-            clone.style.minWidth = '180px'; 
-            clone.style.marginRight = '20px';
-            clone.style.display = 'inline-block';
-            
-            // Garante que o dropdown só funcione na busca/original (opcional)
-            clone.querySelectorAll('.dropdown-container').forEach(el => el.remove()); 
-
-            // Se for um item de sabor específico, substitui o botão por um direto de adicionar
-            if (suggestionId === 'gin-red-fruts') {
-                clone.querySelector('.card-content h3').textContent = 'Gin Red-Fruts';
-                // Encontra o preço correto (aqui é o preço base de Gin)
-                const priceMatch = clone.querySelector('.price-real').textContent.replace('R$', '').trim().replace(',', '.');
-                const priceFloat = parseFloat(priceMatch) || 20.00;
-                
-                clone.querySelector('.btn-add')?.remove(); // Remove o botão base se existir
-                
-                const newButton = document.createElement('button');
-                newButton.className = 'btn-add';
-                newButton.textContent = 'Adicionar Gin Red-Fruts';
-                newButton.setAttribute('onclick', `adicionarAoCarrinho('Gin Red-Fruts', ${priceFloat}, this)`);
-                clone.querySelector('.card-content').appendChild(newButton);
-            }
-             if (suggestionId === 'soda-red-frits') {
-                clone.querySelector('.card-content h3').textContent = 'Soda Red Frits';
-                const priceMatch = clone.querySelector('.price-real').textContent.replace('R$', '').trim().replace(',', '.');
-                const priceFloat = parseFloat(priceMatch) || 8.00;
-                
-                clone.querySelector('.btn-add')?.remove(); 
-                
-                const newButton = document.createElement('button');
-                newButton.className = 'btn-add';
-                newButton.textContent = 'Adicionar Soda Red Frits';
-                newButton.setAttribute('onclick', `adicionarAoCarrinho('Soda Italiana sabir Red Frits', ${priceFloat}, this)`);
-                clone.querySelector('.card-content').appendChild(newButton);
-            }
-
-            container.appendChild(clone);
-        }
-    });
-
-    // 3. Exibe a seção se houver sugestões
-    if (suggestionsToAdd.size > 0) {
-        container.style.display = 'block';
-        title.style.display = 'block';
-    } else {
-        container.style.display = 'none';
-        title.style.display = 'none';
-    }
-}
-
-
-/**
- * Rola o carrossel (product-grid) na direção especificada. (MANTIDA)
- */
 function scrollCarousel(elementId, direction) {
     const carousel = document.getElementById(elementId);
     if (!carousel) return;
 
+    // Define a distância do scroll.
+    // Usamos a largura do próprio carrossel (clientWidth) para mover uma "página" de itens por vez.
     const scrollDistance = carousel.clientWidth;
 
     if (direction === 'next') {
+        // Rola para a direita
         carousel.scrollBy({
             left: scrollDistance,
             behavior: 'smooth'
         });
     } else if (direction === 'prev') {
+        // Rola para a esquerda
         carousel.scrollBy({
             left: -scrollDistance,
             behavior: 'smooth'
         });
     }
 }
-
 //================================
-//==Botão: Faça seu Copão========= (MANTIDA)
+//==Botão: Faça seu Copão=========
 
-const button = document.getElementById('myButton');
+         const button = document.getElementById('myButton');
 const textToType = "Cliqui aqui para Fazer seu Copão"; 
 const typingSpeed = 120; 
-const repeatInterval = 6000; 
+const repeatInterval = 6000; // 6 segundos
 
 let charIndex = 0;
 let typingTimeout; 
@@ -2562,110 +3062,98 @@ function typeWriter() {
         button.classList.add('typing-complete');
     }
 }
-
 function startTypingEffect() {
     button.textContent = ''; 
     charIndex = 0;
     button.classList.remove('typing-complete');
-    
     clearTimeout(typingTimeout); 
-    
     typeWriter();
 }
-
 startTypingEffect();
-
+// Repete o efeito a cada 6 segundos
 setInterval(startTypingEffect, repeatInterval);
 
 
-//-----------------------------------------
-//---__Mensagens de Atenção__-------------- (AJUSTADA PARA SER DINÂMICA)
 
-// 🚨 NOVO: Mensagens de Venda/Demanda Simulado e Tempo de Preparo
-const mensagensFixas = [
-    // Mensagens de Venda/Demanda Simulado (Índice 0-3)
-    (carrinho) => {
-        const item = ['Moscow Mule', 'CaipiFrutas', 'Gin Tônica'][Math.floor(Math.random() * 3)];
-        const count = Math.floor(Math.random() * (7 - 3 + 1)) + 3; // 3 a 7
-        return `**${count} drinks ${item}** foram vendidos na última hora!`;
-    },
-    (carrinho) => {
-        const section = ['Copões', 'Drinks com Álcool', 'Drinks Sem Álcool'][Math.floor(Math.random() * 3)];
-        return `Nossa seção de **${section}** está com alta demanda neste momento.`;
-    },
-    (carrinho) => {
-        const count = Math.floor(Math.random() * (5 - 2 + 1)) + 2; // 2 a 5
-        return `**${count}** pessoas estão montando seus pedidos agora! Não perca tempo.`;
-    },
-    // Mensagem de Cupom (Índice 3)
-    (carrinho) => `**Fernando** acabou de usar o **Cupom** de 5 reais de desconto adquirido no Instagram.`,
-    // Mensagem de Tempo de Preparo (Índice 4)
-    (carrinho) => {
-        if (carrinho.length > 0) {
-            const minTime = 15;
-            const maxTime = 25;
-            const time = Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
-            return `O tempo de preparo estimado para *seu* pedido é de **${time} minutos**!`;
-        }
-        return `O Drink **Caipfruta** de morango foi o mais pedido hoje!`; // Padrão se o carrinho estiver vazio
-    }
-];
+    
+// 1. Mensagem de Boas-Vindas/Primeira Mensagem (Ser sempre a primeira vez)
+const primeiraMensagem = "O Drink **CaipFrutas** foi o mais pedido hoje!";
 
-// O array que será embaralhado
-let mensagensAlternadas_Dynamic = [...mensagensFixas];
+// 2. Array com as mensagens que irão ALTERNAR
+const mensagensAlternadas = [
+    "**5 pessoas** hoje fizeram seus próprios **Copões**!",
+    "**Victor** acabou de usar o **Cupom** de Frete Grátis.",
+    "Há **3 usuários** navegando e montando seus pedidos neste momento.",
+    "**Fernando** acabou de usar o **Cupom** de 5 reais de desconto adquirido no Instagram **Nuance**.",
+    "O tempo das entregas pode subir devido ao alto volume de pedidos!"
+    ];
 
-
-let currentIndex_Msg = 0; 
-const boxElement_Msg = document.getElementById('atencao-box');
-const conteudoElement_Msg = document.getElementById('mensagem-conteudo');
-
-const tempoExibicao_Msg = 9000; 
-const tempoIntervalo_Msg = 20000; 
-const tempoEspera_Msg = tempoIntervalo_Msg - tempoExibicao_Msg; 
-
+// Função para embaralhar um array (algoritmo Fisher-Yates)
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
+        
     }
     return array;
 }
 
+// Verifica se o usuário já visitou o site
+const isFirstVisit = localStorage.getItem('hasVisited') === null;
+localStorage.setItem('hasVisited', 'true'); // Marca a visita para a próxima vez
+
+let mensagensParaExibir = [];
+
+if (isFirstVisit) {
+    // Na primeira visita, exibe a primeira mensagem, e depois o resto embaralhado
+    mensagensParaExibir.push(primeiraMensagem);
+    mensagensParaExibir = mensagensParaExibir.concat(shuffleArray([...mensagensAlternadas]));
+} else {
+    // Em visitas subsequentes, embaralha todas as mensagens, incluindo a "Negroni"
+    mensagensParaExibir = shuffleArray([primeiraMensagem, ...mensagensAlternadas]);
+}
+
+
+let currentIndex = 0; // Índice inicial da mensagem
+const boxElement = document.getElementById('atencao-box');
+const conteudoElement = document.getElementById('mensagem-conteudo');
+
+// Configurações de tempo
+const tempoExibicao = 9000; // Tempo que a mensagem fica VISÍVEL (9 segundos)
+const tempoIntervalo = 20000; // Tempo TOTAL do ciclo (20 segundos)
+const tempoEspera = tempoIntervalo - tempoExibicao; // Tempo que fica invisível (21 segundos)
+
 function showNextMessage() {
-    // Re-embaralha o array (exceto na primeira visita)
-    if (currentIndex_Msg === 0) {
-        shuffleArray(mensagensAlternadas_Dynamic);
-    }
-    
-    // Pega a função da mensagem e a executa, passando o carrinho
-    const messageFunc = mensagensAlternadas_Dynamic[currentIndex_Msg];
-    let message = messageFunc(carrinho); 
+    // Pega a mensagem atual
+    // O array 'mensagensParaExibir' está agora com a ordem definida (ou embaralhada)
+    let message = mensagensParaExibir[currentIndex];
 
     // Insere o conteúdo, convertendo **texto** para <strong>texto</strong> (negrito)
-    // E *texto* para <em>texto</em> (itálico)
-    message = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    message = message.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
-    conteudoElement_Msg.innerHTML = message;
+    conteudoElement.innerHTML = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
     // 1. Exibe a caixa (Display ON)
-    boxElement_Msg.style.display = 'flex';
+    boxElement.style.display = 'flex';
 
     // 2. Agenda para esconder a caixa após o tempo de exibição
     setTimeout(() => {
-        boxElement_Msg.style.display = 'none';
+        boxElement.style.display = 'none';
 
-        // 3. Agenda a próxima exibição após o tempo de espera
-        setTimeout(showNextMessage, tempoEspera_Msg);
-    }, tempoExibicao_Msg);
+        // 3. Agenda a próxima exibição após o tempo de espera (21 segundos)
+        setTimeout(showNextMessage, tempoEspera);
+    }, tempoExibicao);
 
     // Atualiza o índice para a próxima mensagem (circular)
-    currentIndex_Msg = (currentIndex_Msg + 1) % mensagensAlternadas_Dynamic.length;
+    currentIndex = (currentIndex + 1) % mensagensParaExibir.length;
 }
 
 // Inicia o ciclo de mensagens após um atraso de 2 segundos (2000 ms)
-setTimeout(showNextMessage, 1800);    
-    </script>
+setTimeout(showNextMessage, 2000);
+</script>
+
+         
+                    
+
+
 </body>
 </html>
 
