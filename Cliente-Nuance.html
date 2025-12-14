@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -271,14 +270,14 @@
                     <input type="email" id="email" required>
                 </div>
                 <div class="form-group">
-                    <label for="new-password">Criar Senha de Acesso (Mín. 4 dígitos):</label>
-                    <input type="password" id="new-password" required maxlength="12" placeholder="****">
+                    <label for="new-password">Criar Senha de Acesso (Mín. 8 dígitos):</label>
+                    <input type="password" id="new-password" required maxlength="12" placeholder="********">
                 </div>
                 <div class="form-group">
                     <label for="cpf">CPF (Para Nota Fiscal, Opcional):</label>
                     <input type="text" id="cpf" maxlength="14" placeholder="000.000.000-00">
                 </div>
-                <button type="submit" id="submit-button">Cadastrar e Receber Frete Grátis</button>
+                <button type="submit" id="submit-button">Cadastrar e Receber Meu CUPOM</button>
             </form>
             <div id="form-message" class="message hidden"></div>
         </div>
@@ -338,40 +337,321 @@
             const recoveryMessage = document.getElementById('recovery-message'); 
             
             // =======================================================================================
-            // 🚨 ALERTA 1: CONFIGURAÇÃO OBRIGATÓRIA DO GOOGLE FORMS
-            // Substitua os valores abaixo pelos seus dados EXATOS do Formulário Google.
+            // 🚨 CONFIGURAÇÃO OBRIGATÓRIA DO GOOGLE FORMS 
             // =======================================================================================
-            const FORM_ACTION_URL = 'https://docs.google.com/forms/u/0/d/e/1FAIpQLSeQ_y-A81q0-gGqYjS8d-2/formResponse'; 
-            const NAME_FIELD_GF = 'entry.12345678';   
-            const EMAIL_FIELD_GF = 'entry.98765432'; 
-            const CPF_FIELD_GF = 'entry.11223344';   
+            const FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSd5kqX1HuvNnQwKCknXcsbmy2DEdon7jsGAQtzyvzRr0aLojQ/formResponse'; 
+            const NAME_FIELD_GF = 'entry.2009915093';   
+            const EMAIL_FIELD_GF = 'entry.188272270'; 
+            const CPF_FIELD_GF = 'entry.199255072';
+            const PASSWORD_FIELD_GF = 'entry.1955124742'; 
             // =======================================================================================
             
             // =======================================================================================
             // 🚨 ALERTA 2: TEMPO DE EXPIRAÇÃO E URL DO CARDÁPIO
+            // EXPIRATION_MINUTES: TEMPO DE EXPIRAÇÃO DO DADO DO CLIENTE (não do bloco de cupons)
             // =======================================================================================
             const EXPIRATION_DAYS = 0;   
             const EXPIRATION_HOURS = 0;   
-            const EXPIRATION_MINUTES = 3; 
+            const EXPIRATION_MINUTES = 2; // Tempo de expiração do DADO do cliente (2 minutos para teste)
             const CARDAPIO_URL = 'Cardapio-Nuance.html'; // 👈 URL DO CARDÁPIO
             // =======================================================================================
 
             const STORAGE_KEY = 'nuance_client_data';
-            const STORAGE_KEY_COUPON = 'nuance_client_coupon'; // Chave para salvar o cupom
+            const STORAGE_KEY_COUPON = 'nuance_client_coupon'; 
             
+            // CHAVES DE STORAGE PARA CONTROLE DE BLOCO DE ROTAÇÃO
             const COUPON_INDEX_KEY = 'nuance_coupon_index';
-            const SHUFFLED_COUPONS_KEY = 'nuance_shuffled_coupons'; 
+            const SHUFFLED_COUPONS_KEY = 'nuance_shuffled_coupons_block'; 
+            const ACTIVE_BLOCK_INDEX_KEY = 'nuance_active_block_index'; 
+            const BLOCK_ACTIVATION_TIME_KEY = 'nuance_block_activation_time'; 
 
-            const BASE_COUPONS = [
-                "NUANCE_MAR24_A", "NUANCE_MAR24_B", "NUANCE_MAR24_C", "NUANCE_MAR24_D", "NUANCE_MAR24_E", 
-                "NUANCE_MAR24_F", "NUANCE_MAR24_G", "NUANCE_MAR24_H", "NUANCE_MAR24_I", "NUANCE_MAR24_J", 
-                "NUANCE_MAR24_K", "NUANCE_MAR24_L", "NUANCE_MAR24_M", "NUANCE_MAR24_N", "NUANCE_MAR24_O", 
-                "NUANCE_MAR24_P", "NUANCE_MAR24_Q", "NUANCE_MAR24_R", "NUANCE_MAR24_S", "NUANCE_MAR24_T", 
-                "NUANCE_MAR24_U", "NUANCE_MAR24_V", "NUANCE_MAR24_W", "NUANCE_MAR24_X", "NUANCE_MAR24_Y", 
-                "NUANCE_MAR24_Z1", "NUANCE_MAR24_Z2", "NUANCE_MAR24_Z3", "NUANCE_MAR24_Z4", "NUANCE_MAR24_Z5", 
-                "NUANCE_MAR24_Z6", "NUANCE_MAR24_Z7"
+            // =======================================================================================
+            // 🚨 BLOCOS DE CUPONS COM ROTAÇÃO DE 12H (8 Blocos de 31 cupons)
+            // =======================================================================================
+//const EXPIRATION_DURATION_MS = 12 * 60 * 60 * 1000; // Duração da ativação de um bloco: 12 horas
+            
+            const EXPIRATION_DURATION_MS = 1 * 60 * 1000;   
+// Duração da ativação de um bloco: 1 minutos. Ex: 1 milhi seguntos vezes 60 segundos vezes 1000
+
+            
+            const EXPECTED_COUPON_COUNT = 31; 
+
+            // Função auxiliar para gerar cupons (apenas para preencher os blocos 1-7)
+            const generateCoupons = (prefix) => {
+                let coupons = [];
+                for (let i = 0; i < 31; i++) {
+                    // Gera um código de 12 caracteres único com base no prefixo e índice
+                    let code = `${prefix}${i.toString().padStart(2, '0')}${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+                    coupons.push(code);
+                }
+                return coupons;
+            };
+            
+            // ---------------------------------------------------------------------------------------
+            // BLOCO 0: SEU BLOCO ORIGINAL
+            // ---------------------------------------------------------------------------------------
+            const BLOCK_0 = [
+                "AABBZ385G7SZ", "AABBDUD68GEO", "AABBVTGX1KLV", "AABB8GFRPB4O", "AABBE6M7465E", 
+                "AABBHX6EESAH", "AABBDGDIS1BJ", "AABB2IF42H09", "AABBNXTQCRCU", "AABBOK5WYDJC",
+                "AABB5C0V4KJG", "AABBI7519HH2", "AABB65Y54X9H", "AABB0KLDESN4", "AABBNFWUTAAM",
+                "AABBUOWXP4Z7", "AABB0I8J60S1", "AABBHUNBQYGK", "AABBW7A97EYQ", "AABB9RJ2HUEB",
+                "AABBFLOMKP2L", "AABBVN3VZL1D", "AABB6RAH5H4E", "AABBYMI35ZKN", "AABBW0XPF0UO",
+                "AABB611923BK", "AABB7YG7QAYV", "AABB017JK375", "AABB2IVZJ422", "AABBUK611B2S",
+                "AABBHVBCR6DU"
             ];
             
+            // ---------------------------------------------------------------------------------------
+            // ⚠️ BLOCOS 1 a 7: CUpons gerados para DEMONSTRAÇÃO (SUBSTITUA PELOS SEUS DADOS REAIS)
+            // ---------------------------------------------------------------------------------------
+            const BLOCK_1 = [
+	"MJ28ZR",
+	"MJH340",
+	"MJBVQG",
+	"MJLY64",
+	"MJC797",
+	"MJTMD0",
+	"MJ14JJ",
+	"MJ2W26",
+	"MJZLYQ",
+	"MJH6LZ",
+	"MJOBHY",
+	"MJTP8L",
+	"MJKVU9",
+	"MJ5KC1",
+	"MJJ8HQ",
+	"MJ5KCD",
+	"MJRXX7",
+	"MJEYAK",
+	"MJYVDF",
+	"MJPJPH",
+	"MJMGHE",
+	"MJ9FIH",
+	"MJNFE0",
+	"MJN1OU",
+	"MJCDIF",
+	"MJXKKR",
+	"MJOC5J",
+	"MJGMIB",
+	"MJV02C",
+	"MJWP7Y",
+	"MJKOHK"
+];
+            const BLOCK_2 = [
+	"DMJ9I3",
+	"DMO4A8",
+	"DMT07P",
+	"DMAJLC",
+	"DMUL76",
+	"DMZLNU",
+	"DM32MH",
+	"DMUB6A",
+	"DMAG7C",
+	"DMDF97",
+	"DMH7T6",
+	"DMSRLD",
+	"DMB2P5",
+	"DMHYY9",
+	"DM4YZV",
+	"DM86UM",
+	"DMOEM1",
+	"DM9FWB",
+	"DM0RNJ",
+	"DMZNOF",
+	"DMF6JL",
+	"DMM9V1",
+	"DM3CY0",
+	"DMQRN6",
+	"DMCN46",
+	"DMAEE6",
+	"DMDIRX",
+	"DML69P",
+	"DMFH0A",
+	"DMJ0DN",
+	"DM5V8L"
+];
+            const BLOCK_3 = [
+	"DSD01SI",
+	"DSDISHG",
+	"DSDO5WZ",
+	"DSDU15B",
+	"DSD8EO1",
+	"DSD7GMR",
+	"DSDXFXS",
+	"DSDTXPQ",
+	"DSDS1C1",
+	"DSDG7X7",
+	"DSDWMGO",
+	"DSDL75A",
+	"DSDJFQY",
+	"DSDMYS8",
+	"DSDNWN4",
+	"DSDS5YK",
+	"DSDY5TF",
+	"DSDQGAG",
+	"DSDA34Z",
+	"DSDVSWY",
+	"DSDTI9R",
+	"DSDIBWU",
+	"DSDFLSJ",
+	"DSDI8TE",
+	"DSDFQEY",
+	"DSDO9ND",
+	"DSDDB33",
+	"DSDSE11",
+	"DSDTTU7",
+	"DSDYOPZ",
+	"DSDRW8L"
+];
+            const BLOCK_4 = [
+	"BEIJA2Z64",
+	"BEIJAWYZH",
+	"BEIJAPVOM",
+	"BEIJA8EF3",
+	"BEIJA4D36",
+	"BEIJA3D6P",
+	"BEIJAU19D",
+	"BEIJALQDE",
+	"BEIJAPMGY",
+	"BEIJAO1SV",
+	"BEIJA04GV",
+	"BEIJAJA77",
+	"BEIJAFZAM",
+	"BEIJAJYAQ",
+	"BEIJAERU5",
+	"BEIJAZ1FD",
+	"BEIJAOI5U",
+	"BEIJAMC4A",
+	"BEIJACU09",
+	"BEIJAYBTY",
+	"BEIJAQTZX",
+	"BEIJAVBRA",
+	"BEIJAPXY4",
+	"BEIJAQ4AA",
+	"BEIJAX11Y",
+	"BEIJAHDKY",
+	"BEIJAKYXG",
+	"BEIJAJJE3",
+	"BEIJAOTIP",
+	"BEIJAM8Y2",
+	"BEIJAS4P7"
+];
+            const BLOCK_5 = [
+	"DRINK2U6U",
+	"DRINK8IFS",
+	"DRINKM7H0",
+	"DRINK2AT6",
+	"DRINKPN7O",
+	"DRINKR8C5",
+	"DRINKIKCH",
+	"DRINKX1Q2",
+	"DRINKYBQ1",
+	"DRINKKWAX",
+	"DRINKJLLY",
+	"DRINKBCHJ",
+	"DRINKMAPN",
+	"DRINKWZSN",
+	"DRINKI6PB",
+	"DRINKXEZ9",
+	"DRINKJS03",
+	"DRINK1HEC",
+	"DRINKUH2B",
+	"DRINK0FQ2",
+	"DRINKMXFA",
+	"DRINKHEME",
+	"DRINKUWWB",
+	"DRINKUKT2",
+	"DRINK47VW",
+	"DRINKOD0K",
+	"DRINKDOIM",
+	"DRINKD2NF",
+	"DRINKLZ11",
+	"DRINKPTH3",
+	"DRINKT93L"
+];
+            const BLOCK_6 = [
+	"CAIP80SF",
+	"CAIPNCOG",
+	"CAIPG72W",
+	"CAIPDV1P",
+	"CAIPIEI8",
+	"CAIP1AQD",
+	"CAIPL0TU",
+	"CAIPRBY0",
+	"CAIP2897",
+	"CAIPL3SZ",
+	"CAIP2BT3",
+	"CAIPCIIO",
+	"CAIPWAX3",
+	"CAIPT5QC",
+	"CAIP22LW",
+	"CAIPPYGB",
+	"CAIPBEIF",
+	"CAIPX0QU",
+	"CAIPEFI2",
+	"CAIPTNPD",
+	"CAIPQGDS",
+	"CAIP17ID",
+	"CAIPGS7X",
+	"CAIPY34L",
+	"CAIPP5SR",
+	"CAIPA7CH",
+	"CAIPUPHI",
+	"CAIPJTOL",
+	"CAIPBYBW",
+	"CAIPZ91U",
+	"CAIPZN14"
+];
+            const BLOCK_7 = [
+	"BARMANV50I",
+	"BARMANG2X1",
+	"BARMANNZBU",
+	"BARMAN0OIM",
+	"BARMANDIE2",
+	"BARMAN2BAU",
+	"BARMANGA84",
+	"BARMAN5PVM",
+	"BARMANORVV",
+	"BARMANX1WH",
+	"BARMANONQO",
+	"BARMANZRB5",
+	"BARMANLK1W",
+	"BARMAN4C1L",
+	"BARMANHLPV",
+	"BARMAN2GQQ",
+	"BARMAN69Y4",
+	"BARMANLE13",
+	"BARMAN1285",
+	"BARMAN6U7Z",
+	"BARMANQRR0",
+	"BARMANOKPI",
+	"BARMAN5YN3",
+	"BARMANQZ7W",
+	"BARMANCQJM",
+	"BARMANEM6U",
+	"BARMAN9JCW",
+	"BARMANC4XJ",
+	"BARMANGMXA",
+	"BARMANPQO6",
+	"BARMANOIRF"
+];
+            
+            /* * MODO CORRETO DE SUBSTITUIR:
+             * * Exemplo para o BLOCK_1 (remova a linha acima e use este formato):
+             * const BLOCK_1 = [
+             * "MEUCUPOMREAL1111", "MEUCUPOMREAL2222", "MEUCUPOMREAL3333", // ... e mais 28
+             * "MEUCUPOMREAL3131"
+             * ];
+             *
+             * Repita o processo para os blocos 2, 3, 4, 5, 6 e 7.
+            */
+
+            const BLOCKS_OF_COUPONS = [
+                BLOCK_0, BLOCK_1, BLOCK_2, BLOCK_3, BLOCK_4, BLOCK_5, BLOCK_6, BLOCK_7
+            ];
+            const TOTAL_BLOCKS = BLOCKS_OF_COUPONS.length; 
+            // =======================================================================================
+
+
             // --- FUNÇÃO DE VALIDAÇÃO DE CPF ---
             function isValidCPF(cpf) {
                 cpf = cpf.replace(/[^\d]+/g, '');
@@ -409,7 +689,9 @@
                 e.target.value = value;
             });
 
-            // --- FUNÇÕES DE STORAGE E CUPOM ---
+            // --- FUNÇÕES DE STORAGE E CUPOM COM ROTAÇÃO DE 12H ---
+            
+            // Embaralha um array
             function shuffleArray(array) {
                 let shuffled = [...array];
                 for (let i = shuffled.length - 1; i > 0; i--) {
@@ -419,21 +701,101 @@
                 return shuffled;
             }
 
+            // --- FUNÇÃO DE INICIALIZAÇÃO E CONTROLE DO SISTEMA DE CUPONS ---
+            function initializeCouponSystem(force = false) {
+                let blockIndex = parseInt(localStorage.getItem(ACTIVE_BLOCK_INDEX_KEY) || '0');
+                let activationTime = parseInt(localStorage.getItem(BLOCK_ACTIVATION_TIME_KEY) || '0');
+                const now = new Date().getTime();
+                let shouldActivateNextBlock = false;
+
+                // 1. Verifica se precisa avançar o bloco (se o tempo expirou - 12h)
+                if (activationTime === 0 || now > activationTime + EXPIRATION_DURATION_MS) {
+                    shouldActivateNextBlock = true;
+                }
+                
+                // 2. Se for forçado OU se o bloco expirou: Ativa o próximo bloco
+                if (force || shouldActivateNextBlock) {
+                    
+                    // Se for para avançar, mas não for forçado, incrementa o índice (ou volta ao 0)
+                    if (shouldActivateNextBlock && activationTime !== 0) {
+                        blockIndex = (blockIndex + 1) % TOTAL_BLOCKS;
+                    }
+                    
+                    // Sanity check
+                    if (blockIndex >= TOTAL_BLOCKS) {
+                        blockIndex = 0; 
+                    }
+                    
+                    const activeBlockList = BLOCKS_OF_COUPONS[blockIndex];
+                    if (activeBlockList.length !== EXPECTED_COUPON_COUNT) {
+                        console.error(`ERRO: Bloco ${blockIndex} tem ${activeBlockList.length} cupons, esperado ${EXPECTED_COUPON_COUNT}. Usando Bloco 0 como fallback.`);
+                        blockIndex = 0;
+                        const fallbackBlock = BLOCKS_OF_COUPONS[0];
+                        localStorage.setItem(SHUFFLED_COUPONS_KEY, JSON.stringify(shuffleArray(fallbackBlock)));
+                    } else {
+                        // Embaralha a nova lista do bloco e salva no storage
+                        const newShuffledList = shuffleArray(activeBlockList);
+                        localStorage.setItem(SHUFFLED_COUPONS_KEY, JSON.stringify(newShuffledList));
+                    }
+                    
+                    // Define novos valores de controle
+                    localStorage.setItem(ACTIVE_BLOCK_INDEX_KEY, blockIndex.toString());
+                    localStorage.setItem(BLOCK_ACTIVATION_TIME_KEY, now.toString()); // Nova ativação é AGORA
+                    localStorage.setItem(COUPON_INDEX_KEY, '-1'); // Reinicia o índice para o novo bloco
+                    
+                    console.log(`Sistema de cupons atualizado: Bloco Ativo é o Índice ${blockIndex}`);
+
+                } else {
+                     // Bloco ativo (sem expirar). 
+                     // Garante que a lista embaralhada exista e tenha o tamanho correto, se não, re-embaralha o bloco atual.
+                    const shuffledCouponsString = localStorage.getItem(SHUFFLED_COUPONS_KEY);
+                    let currentShuffledList = null;
+                    if (shuffledCouponsString) {
+                        try {
+                            currentShuffledList = JSON.parse(shuffledCouponsString);
+                        } catch (e) {
+                            currentShuffledList = null;
+                        }
+                    }
+                    
+                    if (!currentShuffledList || currentShuffledList.length !== EXPECTED_COUPON_COUNT) {
+                        console.warn(`Aviso: Lista salva corrompida. Re-embaralhando Bloco ${blockIndex}.`);
+                        const activeBlockList = BLOCKS_OF_COUPONS[blockIndex];
+                        localStorage.setItem(SHUFFLED_COUPONS_KEY, JSON.stringify(shuffleArray(activeBlockList)));
+                        localStorage.setItem(COUPON_INDEX_KEY, '-1');
+                    }
+                }
+            }
+
+
+            // Seleciona o próximo cupom DISPONÍVEL no bloco ativo
             function getNextCoupon() {
                 const shuffledCouponsString = localStorage.getItem(SHUFFLED_COUPONS_KEY);
+                
                 if (!shuffledCouponsString) {
-                    initializeCouponSystem();
-                    return getNextCoupon(); 
+                    console.error("Erro: Lista de cupons embaralhados não encontrada.");
+                    return "ERRO_CUPOM_VAZIO"; 
                 }
+                
                 const SHUFFLED_COUPONS = JSON.parse(shuffledCouponsString);
+                
+                if(SHUFFLED_COUPONS.length === 0) return "ERRO_CUPOM_VAZIO"; 
+                
                 let currentIndex = parseInt(localStorage.getItem(COUPON_INDEX_KEY) || '-1');
-                let nextIndex = (currentIndex + 1) % SHUFFLED_COUPONS.length;
+                let nextIndex = (currentIndex + 1);
+                
+                // Rotação: Se o índice exceder o limite (31), volta ao 0 para reusar cupons do bloco atual.
+                if (nextIndex >= SHUFFLED_COUPONS.length) {
+                    console.warn("Aviso: Todos os 31 cupons do bloco atual foram usados. Voltando ao primeiro cupom (Pode haver repetição se o bloco não for trocado!).");
+                    nextIndex = 0; 
+                }
+                
                 const coupon = SHUFFLED_COUPONS[nextIndex];
                 localStorage.setItem(COUPON_INDEX_KEY, nextIndex.toString());
                 return coupon;
             }
 
-            function saveClientData(name, email, password, cpf, coupon) { // Recebe cupom
+            function saveClientData(name, email, password, cpf, coupon) { 
                 const now = new Date().getTime();
                 const daysInMs = EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
                 const hoursInMs = EXPIRATION_HOURS * 60 * 60 * 1000;
@@ -448,7 +810,7 @@
                     expiry: expirationTime
                 };
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(clientData));
-                localStorage.setItem(STORAGE_KEY_COUPON, coupon); // Salva o cupom
+                localStorage.setItem(STORAGE_KEY_COUPON, coupon); 
             }
 
             function getClientData() {
@@ -460,22 +822,23 @@
 
                 if (now > data.expiry) {
                     localStorage.removeItem(STORAGE_KEY); 
-                    localStorage.removeItem(STORAGE_KEY_COUPON); // Remove o cupom também
+                    localStorage.removeItem(STORAGE_KEY_COUPON); 
                     return null;
                 }
                 return data;
             }
 
             function getClientCoupon() {
-                // Recupera o cupom salvo
                 return localStorage.getItem(STORAGE_KEY_COUPON) || 'N/A';
             }
 
-            async function sendToGoogleForms(name, email, cpf) {
+            // --- FUNÇÃO DE ENVIO ---
+            async function sendToGoogleForms(name, email, cpf, password) { 
                 const formData = new FormData();
                 formData.append(NAME_FIELD_GF, name);
                 formData.append(EMAIL_FIELD_GF, email);
                 formData.append(CPF_FIELD_GF, cpf);
+                formData.append(PASSWORD_FIELD_GF, password); 
 
                 try {
                     const response = await fetch(FORM_ACTION_URL, {
@@ -491,7 +854,7 @@
                 }
             }
             
-            function displayCoupon(name, couponCode) { // Recebe o cupom para exibição
+            function displayCoupon(name, couponCode) { 
                 const firstName = name.split(' ')[0];
 
                 couponDiv.innerHTML = `
@@ -514,8 +877,6 @@
                 cardDiv.classList.add('hidden');
                 couponDiv.classList.remove('hidden');
             }
-            // --- FIM FUNÇÕES DE CUPOM E STORAGE ---
-
 
             // --- LÓGICA DE RECUPERAÇÃO DE SENHA ---
             function handleForgotPassword() {
@@ -561,11 +922,10 @@
             function handleBackToLogin() {
                 recoveryFormDiv.classList.add('hidden');
                 passwordFormDiv.classList.remove('hidden');
-                // Garante que o feedback de login seja limpo ao voltar
                 const loginFeedback = document.getElementById('login-feedback-message');
                 if (loginFeedback) loginFeedback.classList.add('hidden');
                 
-                cardDiv.classList.add('hidden'); // Esconde o cartão de dados
+                cardDiv.classList.add('hidden'); 
             }
 
             backToLoginLink.addEventListener('click', (e) => {
@@ -575,13 +935,13 @@
             // --- FIM LÓGICA DE RECUPERAÇÃO DE SENHA ---
 
 
-            // --- FUNÇÃO CORRIGIDA DE ACESSO AO CARTÃO ---
+            // --- FUNÇÃO DE ACESSO AO CARTÃO ---
             function handleAccessCard() {
                 const passwordInput = document.getElementById('card-password');
                 const feedbackMessage = document.getElementById('login-feedback-message');
                 const enteredPassword = passwordInput.value;
                 const clientData = getClientData();
-                const clientCoupon = getClientCoupon(); // Obtém o cupom
+                const clientCoupon = getClientCoupon(); 
                 
                 feedbackMessage.classList.add('hidden');
                 cardDiv.classList.add('hidden');
@@ -600,14 +960,14 @@
                     const cardName = document.getElementById('card-name');
                     const cardEmail = document.getElementById('card-email');
                     const cardCpf = document.getElementById('card-cpf');
-                    const cardCoupon = document.getElementById('card-coupon-value'); // Busca o elemento do cupom
+                    const cardCoupon = document.getElementById('card-coupon-value'); 
                     const expiryTimeSpan = document.getElementById('expiry-time');
 
                     // Preenche os dados
                     cardName.textContent = clientData.name;
                     cardEmail.textContent = clientData.email;
                     cardCpf.textContent = clientData.cpf || 'Não Informado'; 
-                    cardCoupon.textContent = clientCoupon; // <<< CORREÇÃO: Preenche o valor do cupom!
+                    cardCoupon.textContent = clientCoupon; 
                     
                     const expiryDate = new Date(clientData.expiry);
                     expiryTimeSpan.textContent = expiryDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + 
@@ -617,7 +977,7 @@
                     feedbackMessage.textContent = 'Acesso liberado! (Dados visíveis abaixo)';
                     feedbackMessage.className = 'message success';
                     feedbackMessage.classList.remove('hidden');
-                    passwordInput.value = ''; // Limpa o campo
+                    passwordInput.value = ''; 
                 } else {
                     feedbackMessage.textContent = 'Senha incorreta. Tente novamente.';
                     feedbackMessage.className = 'message error';
@@ -625,7 +985,7 @@
                     passwordInput.value = '';
                 }
             }
-            // --- FIM FUNÇÃO CORRIGIDA DE ACESSO AO CARTÃO ---
+            // --- FIM FUNÇÃO DE ACESSO AO CARTÃO ---
 
 
             // 1. Submissão do Formulário de Cadastro
@@ -647,16 +1007,16 @@
                     formMessage.className = 'message error';
                     formMessage.classList.remove('hidden');
                     submitButton.disabled = false;
-                    submitButton.textContent = 'Cadastrar e Receber Frete Grátis';
+                    submitButton.textContent = 'Cadastrar e Receber Meu CUPOM';
                     return;
                 }
 
-                if (newPassword.length < 4) {
-                    formMessage.textContent = 'A senha de acesso deve ter no mínimo 4 caracteres.';
+                if (newPassword.length < 8) {
+                    formMessage.textContent = 'A senha de acesso deve ter no mínimo 8 caracteres.';
                     formMessage.className = 'message error';
                     formMessage.classList.remove('hidden');
                     submitButton.disabled = false;
-                    submitButton.textContent = 'Cadastrar e Receber Frete Grátis';
+                    submitButton.textContent = 'Cadastrar e Receber Meu CUPOM';
                     return;
                 }
 
@@ -666,20 +1026,22 @@
                         formMessage.className = 'message error';
                         formMessage.classList.remove('hidden');
                         submitButton.disabled = false;
-                        submitButton.textContent = 'Cadastrar e Receber Frete Grátis';
+                        submitButton.textContent = 'Cadastrar e Receber Meu CUPOM';
                         return; 
                     }
                 }
                 
                 submitButton.textContent = 'Gerando Cupom...';
                 
-                // --- AQUI GERAMOS E SALVAMOS O CUPOM NO LOCALSTORAGE ---
+                // --- GARANTE O BLOCO ATIVO E SELECIONA O PRÓXIMO CUPOM ---
+                initializeCouponSystem(); 
                 const newCoupon = getNextCoupon();
+                
                 saveClientData(name, email, newPassword, rawCpf, newCoupon);
                 
-                submitButton.textContent = 'Enviando...';
+                submitButton.textContent = 'Enviando Dados...';
 
-                await sendToGoogleForms(name, email, rawCpf);
+                await sendToGoogleForms(name, email, rawCpf, newPassword);
                 
                 displayCoupon(name, newCoupon);
 
@@ -690,24 +1052,10 @@
                 submitButton.disabled = false;
             });
 
-            // --- FUNÇÃO DE INICIALIZAÇÃO DO SISTEMA DE CUPONS ---
-            function initializeCouponSystem() {
-                let shuffledCoupons = localStorage.getItem(SHUFFLED_COUPONS_KEY);
-                
-                if (BASE_COUPONS.length !== 32) {
-                    console.error("ERRO GRAVE: A lista BASE_COUPONS DEVE CONTER EXATAMENTE 32 ITENS.");
-                }
-
-                if (!shuffledCoupons) {
-                    const newShuffledList = shuffleArray(BASE_COUPONS);
-                    localStorage.setItem(SHUFFLED_COUPONS_KEY, JSON.stringify(newShuffledList));
-                    localStorage.setItem(COUPON_INDEX_KEY, '-1');
-                }
-            }
-
 
             // 3. Inicialização Principal
             function initialize() {
+                // Ativa o bloco de cupons correto (avança se necessário - 12h)
                 initializeCouponSystem(); 
                 
                 const clientData = getClientData();
@@ -751,4 +1099,3 @@
     </script>
 </body>
 </html>
-
