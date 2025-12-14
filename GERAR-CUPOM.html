@@ -144,7 +144,7 @@
         <hr>
 
         <h3><span style="color: var(--secondary-color);">①</span> CUPONS da Loja (Objeto JSON)</h3>
-        <p>🏷️ Contém **TODOS** os 248 cupons (BLOCK_0 a BLOCK_7) em formato Objeto.</p>
+        <p>🏷️ Contém **TODOS** os 248 cupons (BLOCK_0 a BLOCK_7) em formato Objeto, com comentários de separação.</p>
         <div class="copy-group">
             <button class="copy-btn" onclick="copiarTexto('resultadoObjeto')" id="copiarObjetoBtn" style="display: none;">Copiar</button>
         </div>
@@ -159,7 +159,7 @@
     </div>
     
     <script>
-        /* --- JAVASCRIPT Integrado (Geração de 248 Cupons Sincronizados) --- */
+        /* --- JAVASCRIPT Integrado (Geração de 248 Cupons Sincronizados com Comentários) --- */
 
         // Constante base para a estrutura interna de cada cupom
         const CUPOM_BASE = { 
@@ -222,6 +222,13 @@
             const minPurchaseFormatado = CUPOM_BASE.minPurchase.toFixed(2);
 
             todasAsChaves.forEach((chave, index) => {
+                
+                // PONTO CHAVE: Adiciona o comentário antes do primeiro item de cada bloco (a cada 31 itens)
+                if (index % COUPONS_PER_BLOCK === 0) {
+                    const blockNum = index / COUPONS_PER_BLOCK;
+                    cuponsGeradosObjeto += `\n\t// --- INÍCIO DO BLOCK_${blockNum} ---\n`;
+                }
+
                 // Formato Objeto
                 const isLastItem = index === TOTAL_COUPONS - 1;
                 // O último item (índice 247) não recebe vírgula para ser JSON válido
@@ -233,7 +240,7 @@
             // --- 3. Formato CUPONS dos Cadastros (Blocos Array com 248 cupons) ---
             let cuponsGeradosArray = "";
             
-            // O loop agora vai de 0 a 7, para criar BLOCK_0 até BLOCK_7
+            // O loop vai de 0 a 7, para criar BLOCK_0 até BLOCK_7
             for(let blockNum = 0; blockNum < TOTAL_BLOCKS; blockNum++) {
                 cuponsGeradosArray += `const BLOCK_${blockNum} = [\n`;
                 
@@ -293,3 +300,4 @@
     </script>
 </body>
 </html>
+
