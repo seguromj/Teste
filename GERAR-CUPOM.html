@@ -128,6 +128,11 @@
         .copy-btn:hover {
             background-color: #27ae60;
         }
+
+        /* Ajuste específico para o Campo 2 (Array) para colunas */
+        #resultadoArray {
+            white-space: pre; /* Garante que os espaços e tabs sejam respeitados */
+        }
         /* ---------------------- */
     </style>
 </head>
@@ -138,20 +143,20 @@
          <p>Escreva a palavra que será o **PREFIXO FIXO** para todos os cupons (Ex: MJ, DM, DSD).</p>
          <p>**O Sufixo Aleatório de 4 caracteres será gerado para garantir a exclusividade.**</p>
         
-        <input type="text" id="prefixoInput" placeholder="Ex: MJ">
+        <input type="text" id="prefixoInput" placeholder="Ex: FRETE_">
         <button onclick="gerarCupons()">Gerar 248 Cupons (8 Blocos x 31)</button>
         
         <hr>
 
         <h3><span style="color: var(--secondary-color);">①</span> CUPONS da Loja (Objeto JSON)</h3>
-        <p>🏷️ Contém **TODOS** os 248 cupons (BLOCK_0 a BLOCK_7) em formato Objeto, com comentários de separação.</p>
+        <p>🏷️ Contém **TODOS** os 248 cupons, com informação de bloco e faixa horária no comentário.</p>
         <div class="copy-group">
             <button class="copy-btn" onclick="copiarTexto('resultadoObjeto')" id="copiarObjetoBtn" style="display: none;">Copiar</button>
         </div>
         <pre id="resultadoObjeto"></pre>
 
         <h3><span style="color: var(--secondary-color);">②</span> CUPONS dos Cadastros (Blocos Array)</h3>
-        <p>🏷️ Contém os mesmos 248 cupons, divididos em **BLOCK_0** até **BLOCK_7**.</p>
+        <p>🏷️ Contém os mesmos 248 cupons, divididos em **BLOCK_0** até **BLOCK_7** (organizado em colunas).</p>
         <div class="copy-group">
             <button class="copy-btn" onclick="copiarTexto('resultadoArray')" id="copiarArrayBtn" style="display: none;">Copiar</button>
         </div>
@@ -159,7 +164,7 @@
     </div>
     
     <script>
-        /* --- JAVASCRIPT Integrado (Geração de 248 Cupons Sincronizados com Comentários) --- */
+        /* --- JAVASCRIPT Integrado (Geração de 248 Cupons Sincronizados) --- */
 
         // Constante base para a estrutura interna de cada cupom
         const CUPOM_BASE = { 
@@ -173,6 +178,20 @@
         const TOTAL_BLOCKS = 8;       // Total de blocos (BLOCK_0 a BLOCK_7)
         const SUFFIX_LENGTH = 4;      // Tamanho do sufixo aleatório
         const TOTAL_COUPONS = COUPONS_PER_BLOCK * TOTAL_BLOCKS; // 248 cupons no total
+        const COLUMNS_ARRAY = 5;      // Quantidade de colunas para o Campo 2 (Array)
+
+        // Mapeamento das faixas de horário para cada bloco
+        const BLOCK_TIMES = [
+            "(6:00 - 8:59)",   // BLOCK_0
+            "(9:00 - 11:59)",  // BLOCK_1
+            "(12:00 - 14:59)", // BLOCK_2
+            "(15:00 - 17:59)", // BLOCK_3
+            "(18:00 - 20:59)", // BLOCK_4
+            "(21:00 - 23:59)", // BLOCK_5
+            "(00:00 - 02:59)", // BLOCK_6
+            "(3:00 - 5:59)"    // BLOCK_7
+        ];
+
 
         /**
          * Gera uma string aleatória de letras e números (o sufixo).
@@ -207,13 +226,8 @@
             
             // 1. Geração de TODOS os 248 Cupons (Prefixo Fixo + Sufixo Aleatório)
             for (let i = 0; i < TOTAL_COUPONS; i++) {
-                
-                // Gera o sufixo com 4 caracteres
                 const sufixoAleatorio = gerarSufixoAleatorio(SUFFIX_LENGTH);
-                
-                // Combinação: PREFIXO FIXO (em MAIÚSCULAS) + SUFIXO ALEATÓRIO
                 const novaChave = prefixoFixo.toUpperCase() + sufixoAleatorio; 
-                
                 todasAsChaves.push(novaChave); 
             }
 
@@ -223,41 +237,63 @@
 
             todasAsChaves.forEach((chave, index) => {
                 
-                // PONTO CHAVE: Adiciona o comentário antes do primeiro item de cada bloco (a cada 31 itens)
+                const blockNum = Math.floor(index / COUPONS_PER_BLOCK);
+                
+                // Adiciona o comentário com o bloco e a faixa de horário
                 if (index % COUPONS_PER_BLOCK === 0) {
-                    const blockNum = index / COUPONS_PER_BLOCK;
-                    cuponsGeradosObjeto += `\n\t// --- INÍCIO DO BLOCK_${blockNum} ---\n`;
+                    const blockTime = BLOCK_TIMES[blockNum] || "";
+                    cuponsGeradosObjeto += `\n\t// --- INÍCIO DO BLOCK_${blockNum} --- ${blockTime}\n`;
                 }
 
                 // Formato Objeto
                 const isLastItem = index === TOTAL_COUPONS - 1;
-                // O último item (índice 247) não recebe vírgula para ser JSON válido
-                cuponsGeradosObjeto += `\t"${chave}": { type: "${CUPOM_BASE.type}", value: ${CUPOM_BASE.value}, minPurchase: ${minPurchaseFormatado}, message: "${CUPOM_BASE.message}"\n\t}${isLastItem ? '' : ','}\n`;
+                // Estrutura do objeto com o novo campo 'bloco'
+                cuponsGeradosObjeto += `\t"${chave}": { type: "${CUPOM_BASE.type}", value: ${CUPOM_BASE.value}, minPurchase: ${minPurchaseFormatado}, message: "${CUPOM_BASE.message}", bloco: "BLOCK_${blockNum}"\n\t}${isLastItem ? '' : ','}\n`;
             });
             cuponsGeradosObjeto += "}";
 
 
-            // --- 3. Formato CUPONS dos Cadastros (Blocos Array com 248 cupons) ---
+            // --- 3. Formato CUPONS dos Cadastros (Blocos Array com 248 cupons em Colunas) ---
             let cuponsGeradosArray = "";
             
-            // O loop vai de 0 a 7, para criar BLOCK_0 até BLOCK_7
+            // Largura mínima do texto do cupom para o alinhamento em colunas (PREFIXO + SUFIXO + 2 aspas + 1 vírgula = 7 a 15)
+            // Calcularemos dinamicamente a largura máxima de todas as strings de cupons
+            const maxKeyLength = todasAsChaves.reduce((max, key) => Math.max(max, key.length), 0);
+            const paddingSize = maxKeyLength + 5; // Adiciona margem para aspas e vírgulas
+
             for(let blockNum = 0; blockNum < TOTAL_BLOCKS; blockNum++) {
                 cuponsGeradosArray += `const BLOCK_${blockNum} = [\n`;
                 
-                // Calcula o índice de início e fim do bloco atual
                 const startIndex = blockNum * COUPONS_PER_BLOCK;
                 const endIndex = startIndex + COUPONS_PER_BLOCK;
+                
+                let line = "\t";
+                let countInBlock = 0;
 
                 for(let i = startIndex; i < endIndex; i++) {
                     const chave = todasAsChaves[i];
-                    // Garante que o último item DENTRO DO BLOCO não tenha vírgula
                     const isLastInBlock = i === endIndex - 1; 
-                    cuponsGeradosArray += `\t"${chave}"${isLastInBlock ? '' : ','}\n`;
+
+                    // Formata a string do cupom
+                    let cupomString = `"${chave}"${isLastInBlock ? '' : ','}`;
+
+                    // Aplica padding para alinhamento (apenas se não for o último item da linha)
+                    if ((countInBlock + 1) % COLUMNS_ARRAY !== 0) {
+                        cupomString = cupomString.padEnd(paddingSize, ' '); 
+                    }
+
+                    line += cupomString;
+                    countInBlock++;
+
+                    if (countInBlock % COLUMNS_ARRAY === 0 || isLastInBlock) {
+                        // Nova linha ou fim do bloco
+                        cuponsGeradosArray += line + '\n';
+                        line = "\t"; 
+                    }
                 }
                 
                 cuponsGeradosArray += `];\n`;
 
-                // Adiciona espaço extra entre blocos
                 if (blockNum < TOTAL_BLOCKS - 1) {
                     cuponsGeradosArray += "\n";
                 }
