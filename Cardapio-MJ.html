@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -15,10 +17,9 @@
             padding: 0;
             background-color: #f4f4f9;
             color: #333;
-            /* 🚨 AJUSTE DE PADDING: Deixa espaço para a barra FIXA */
+            
             padding-top: 70px; 
         }
-
         /* ----------------------------------------------------- */
         /* 🚨 NOVO: BARRA DE PESQUISA/CARRINHO (PARTE FIXA) 🚨 */
         /* ----------------------------------------------------- */
@@ -94,10 +95,6 @@
             /* Certifica-se de que o header não é fixo */
             position: relative;
         }
-        
-        /* ---------------------------------------------------------------------------------- */
-        /* 🚨 ALTERADO: BOTÃO DO CARRINHO (MANTIDO) 🚨 */
-        /* ---------------------------------------------------------------------------------- */
         #carrinho-flutuante {
             position: relative; 
             background-color: white; /*Cor de fundo carrinho*/
@@ -150,7 +147,7 @@
             /* CORREÇÃO DO ALINHAMENTO */
             display: none; 
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-            border: 2px solid #FF0000; 
+            border: 2px solid #175727; 
             z-index: 1000;
             
             /* 🚨 CORREÇÃO APLICADA: Centraliza o número perfeitamente */
@@ -219,27 +216,13 @@
             color: #EE5253; /* Destaque para a busca */
             display: none; 
         }
-        
-        /* === ESTILO: CARROSSEL HORIZONTAL (Product Grid) === */
-        /* Container da busca que será ativado/desativado */
-        #search-results-carousel-container,
-        #suggestion-section-content { /* 🚨 NOVO: Container de Sugestões */
+         #search-results-carousel-container {
              display: none; /* Começa escondido */
              overflow-x: auto; 
              scroll-snap-type: x mandatory; 
              padding: 10px 20px 25px 20px; 
              margin-bottom: 30px; 
              white-space: nowrap; 
-        }
-
-        /* 🚨 NOVO: Estilo da Seção de Sugestões */
-        #suggestion-section {
-            padding-top: 20px;
-            padding-bottom: 10px;
-        }
-        #suggestion-section .section-title {
-            color: #00bcd4; /* Destaque para a cor da sugestão */
-            font-size: 1.5rem;
         }
         
         .product-grid {
@@ -252,15 +235,15 @@
         }
 
         /* Esconder barra de rolagem (Chrome, Safari) */
-        .product-grid::-webkit-scrollbar, #search-results-carousel-container::-webkit-scrollbar, #suggestion-section-content::-webkit-scrollbar {
+        .product-grid::-webkit-scrollbar, #search-results-carousel-container::-webkit-scrollbar {
             height: 8px;
             background-color: #f1f1f1;
         }
-        .product-grid::-webkit-scrollbar-thumb, #search-results-carousel-container::-webkit-scrollbar-thumb, #suggestion-section-content::-webkit-scrollbar-thumb {
+        .product-grid::-webkit-scrollbar-thumb, #search-results-carousel-container::-webkit-scrollbar-thumb {
             background-color: #ccc;
             border-radius: 10px;
         }
-        .product-grid, #search-results-carousel-container, #suggestion-section-content {
+        .product-grid, #search-results-carousel-container {
             -ms-overflow-style: none; 
             scrollbar-width: none; 
         }
@@ -281,8 +264,7 @@
         }
         
         /* Cards menores na Busca/Resultados */
-        #search-results-carousel-container .card,
-        #suggestion-section-content .card { /* 🚨 NOVO: Estilo para sugestões */
+        #search-results-carousel-container .card {
             min-width: 180px; 
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); 
             display: inline-block; 
@@ -481,46 +463,100 @@
             padding: 0; 
         }
     
+        /* 🚨 NOVO: Estilo base para cada item do carrinho 🚨 */
         #lista-carrinho li { 
             padding: 10px 0; 
             border-bottom: 1px dashed #ccc; 
-            display: flex; 
-            flex-direction: column; /* Altera para coluna para melhor organização com observação */
-            justify-content: space-between; 
-            align-items: flex-start; /* Alinha os itens à esquerda */
         }
     
         #lista-carrinho li:last-child { 
             border-bottom: none; 
         }
         
-        .item-details {
+        /* 🚨 NOVO: Container do item principal (imagem, nome, preço) 🚨 */
+        .item-main-details {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            width: 100%; 
+            gap: 15px;
+            margin-bottom: 10px;
         }
-        
-        /* 🚨 NOVO: Estilo para a Observação do Item 🚨 */
-        .item-obs {
+
+        .item-thumbnail {
+            width: 60px;
+            height: 60px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            flex-shrink: 0; 
+        }
+
+        .item-info {
+            flex-grow: 1;
+        }
+
+        .item-title {
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+            font-size: 1.1em;
+        }
+
+        .item-sub-info {
             font-size: 0.9em;
-            color: #888;
-            margin-top: 5px;
-            padding-left: 10px;
-            width: 100%;
-            box-sizing: border-box;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0; 
+            flex-direction: column; /* Organiza os elementos verticalmente */
+            justify-content: center;
+            align-items: flex-end; /* Alinha a lixeira/preço à direita */
         }
         
-        /* Estilo do Botão de Excluir */
+        /* Contêiner de Preço e Ações */
+        .price-and-action-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .item-price-total {
+            font-weight: bold;
+            color: #4CAF50;
+            font-size: 1.1em;
+            white-space: nowrap; 
+        }
+
+        /* 🚨 NOVO: Estilo do Botão de Observação/Lápis 🚨 */
+        .btn-obs {
+            background: none;
+            border: none;
+            color: #00bcd4;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 1.1em;
+            transition: color 0.2s;
+        }
+        .btn-obs:hover {
+            color: #0096a7;
+            transform: scale(1.1);
+        }
+
+
+        /* Estilo do Botão de Excluir (Lixeira) */
         .btn-remover {
             background: none;
             border: none;
             color: #ff6b6b;
-            font-weight: bold;
-            font-size: 1.1em;
             cursor: pointer;
             padding: 5px;
-            margin-left: 10px;
+            font-size: 1.1em;
             transition: color 0.2s;
         }
 
@@ -529,19 +565,65 @@
             transform: scale(1.1);
         }
         
-        /* 🚨 NOVO: Botão de Observação do Item 🚨 */
-        .btn-obs-item {
-            background: none;
-            border: none;
-            color: #00bcd4;
-            font-size: 1.1em;
-            cursor: pointer;
-            padding: 5px;
-            margin-left: 5px;
-            transition: color 0.2s;
+        /* ---------------------------------------------------- */
+        /* 🚨 NOVO: Botões de Quantidade no Carrinho 🚨 */
+        /* ---------------------------------------------------- */
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 70px; /* Largura fixa para botões */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+            flex-shrink: 0;
         }
-        .btn-obs-item:hover {
-            color: #0096a7;
+
+        .quantity-btn {
+            background-color: #f4f4f9;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            transition: background-color 0.2s;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .quantity-btn:hover {
+            background-color: #ddd;
+        }
+        
+        .quantity-btn:active {
+            transform: scale(0.95);
+        }
+
+        .item-quantity-display {
+            padding: 5px 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: #4CAF50;
+            width: 25px; 
+            flex-grow: 1;
+        }
+        /* FIM: Botões de Quantidade */
+
+
+        /* 🚨 NOVO: Container de Observação (Campo de Texto) 🚨 */
+        .item-observation-container {
+            margin-top: 5px;
+            padding-left: 75px; /* Alinha o campo de obs com o nome do produto */
+        }
+        .item-observation-container textarea {
+            width: calc(100% - 10px);
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 30px;
         }
 
         /* === ESTILOS DO CUPOM === */
@@ -619,7 +701,24 @@
             text-align: right; 
             margin-top: 5px;
         }
-
+        
+        /* Estilo para a linha do Frete */
+        .frete-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 5px 0;
+            border-top: 1px dashed #ccc;
+            border-bottom: 1px dashed #ccc;
+            font-weight: 600;
+        }
+        .frete-value {
+            color: #ff6b6b;
+        }
+        .frete-value.gratis {
+            color: #4CAF50;
+        }
         /* FIM DOS ESTILOS DO CUPOM */
 
         /* === ESTILOS DO FORMULÁRIO DE DADOS (ETAPA 2) === */
@@ -716,8 +815,6 @@
             gap: 10px;
             margin-top: 15px;
         }
-
-/*=========================================*/
 /*=========================================*/
 /*===__Botões de seta para arrastar Produtos_====*/
 
@@ -786,8 +883,6 @@
 }
 
 
-/*=========================================*/
-/*=========================================*/
 /*==_Butão Faça seu Copão==================*/
 
         /* CONTAINER PARA CENTRALIZAR O BOTÃO ABAIXO DO H3 */
@@ -835,8 +930,6 @@
 }
 
 /*=====================================================================*/  
-
-
 /*------Mensagens de Atenção------------*/
 
 /* Estilo Base da Caixa de Atenção */
@@ -911,56 +1004,76 @@
             color: #6B6665;
         }
 
-        /* 🚨 NOVO: MODAL DE OBSERVAÇÃO 🚨 */
-        #obs-modal {
-            display: none;
-            position: fixed;
-            z-index: 1002; /* Maior que o modal principal */
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.6);
-        }
+/*=====================================================================
+/*=====================================================================
+/* 1. Estilo Básico do Botão Pegar CUPOM*/
+.wave-button {
+    text-decoration: none; /* Remove o sublinhado do link */
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff; /* Cor do texto */
+    background-color: #5b3d92; /* Cor de fundo (roxo/lilás) */
+    border: 2px solid #5b3d92;
+    border-radius: 8px;
+    overflow: hidden; 
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    white-space: nowrap; 
+}
 
-        #obs-modal .modal-content {
-            margin: 20% auto;
-            max-width: 400px;
-            padding: 20px;
-        }
+/* Efeito hover básico (opcional) */
+.wave-button:hover {
+    background-color: #432c6a;
+}
 
-        #obs-modal h3 {
-            margin-top: 0;
-            color: #175727;
-        }
+/* 2. Estilo e Posição das Letras (os <span>) */
+.wave-button .letter {
+    display: inline-block;
+    position: relative;
+    transform-origin: bottom; 
+    /* Aplica a animação: 1.5s de duração, rodando infinitamente, com suavidade na velocidade (ease-in-out) */
+    animation: wave 1.5s infinite ease-in-out; 
+}
 
-        #obs-text {
-            width: 100%;
-            height: 80px;
-            padding: 10px;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            resize: none;
-        }
+/* 3. Ajuste de Atraso para a Animação de Onda */
+/* O atraso é ajustado para as 11 letras do texto "PEGAR CUPOM" */
+.wave-button .letter:nth-child(1) { animation-delay: 0.0s; } /* P */
+.wave-button .letter:nth-child(2) { animation-delay: 0.1s; } /* E */
+.wave-button .letter:nth-child(3) { animation-delay: 0.2s; } /* G */
+.wave-button .letter:nth-child(4) { animation-delay: 0.3s; } /* A */
+.wave-button .letter:nth-child(5) { animation-delay: 0.4s; } /* R */
+.wave-button .letter:nth-child(6) { animation-delay: 0.5s; } /* ESPAÇO */
+.wave-button .letter:nth-child(7) { animation-delay: 0.6s; } /* C */
+.wave-button .letter:nth-child(8) { animation-delay: 0.7s; } /* U */
+.wave-button .letter:nth-child(9) { animation-delay: 0.8s; } /* P */
+.wave-button .letter:nth-child(10) { animation-delay: 0.9s; } /* O */
+.wave-button .letter:nth-child(11) { animation-delay: 1.0s; } /* M */
 
-        #save-obs-btn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            width: 100%;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
 
-        #save-obs-btn:hover {
-            background-color: #45a049;
-        }
+/* 4. Definição da Animação (Keyframes) */
+@keyframes wave {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg); /* Estado inicial e final */
+        color: #fff;
+    }
+    50% {
+        transform: translateY(-8px) rotate(-2deg); /* No meio, a letra sobe 8px e inclina 2 graus */
+        color: #ffcc00; /* Cor de destaque no pico da onda (opcional) */
+        filter: brightness(1.2);
+    }
+}
+
+
+.h1-Cardapio {
+    font-size: 12px;
+}
+.h3-pegar-cupom {
+    color: #123011;
+}
+
+    
     </style>
 </head>
 <body>
@@ -983,15 +1096,26 @@
     <header>
         <div class="top-bar-branding">
             <h1>🍸 NUANCE 🍸</h1>
-            <p>CARDÁPIO</p>
+            <h1 class="h1-Cardapio">CARDÁPIO</h1>
+            <hr>
+            <h3 class="h3-pegar-cupom">Faça seu cadastro e Peguei seu <strong>CUPOM</strong></h3>
+            <a href="Cliente-Nuance.html" class="wave-button">
+    <span class="letter">P</span>
+    <span class="letter">E</span>
+    <span class="letter">G</span>
+    <span class="letter">A</span>
+    <span class="letter">R</span>
+    <span class="letter">&nbsp;</span> <span class="letter">C</span>
+    <span class="letter">U</span>
+    <span class="letter">P</span>
+    <span class="letter">O</span>
+    <span class="letter">M</span>
+            </a>
+
+            
         </div>
     </header>
     
-    <div id="suggestion-section">
-        <h2 class="section-title" id="suggestion-title" style="display:none;">Você também pode gostar...</h2>
-        <div id="suggestion-section-content" class="product-grid">
-            </div>
-    </div>
     <p id="no-results">Nenhum produto encontrado com o termo digitado.</p>
     
     <h2 id="search-results-title">Resultados da Busca</h2>
@@ -1008,7 +1132,7 @@
         <div class="product-grid section-original-grid carousel-content" id="grid-1">
 
 
-             <div class="card" data-name="CaipiFrutas" data-price="10.00" data-section="Drinks com Álcool" data-id="caipifrutas-base">
+             <div class="card" data-name="CaipiFrutas" data-price="10.00" data-section="Drinks com Álcool" data-img="img-produtos/Drinks-c-alcool/caipifrutas.jpg">
                 <div class="product-image" style="background-image: url('img-produtos/Drinks-c-alcool/caipifrutas.jpg');"></div>
                 <div class="card-content">
                     <h3>CaipiFrutas</h3>
@@ -1024,16 +1148,16 @@
                             Selecione o Sabor
                         </button>
                         <div id="saboresCaipiFrutas" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Limão 🍋‍🟩', 10.00, this, 'limao')" data-sabor="limao">Limão 🍋‍🟩</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Morango 🍓', 10.00, this, 'morango')" data-sabor="morango">Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Maracujá 🥂', 10.00, this, 'maracuja')" data-sabor="maracuja">Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Manga 🥭', 10.00, this, 'manga')" data-sabor="manga">🥭 Manga 🥭</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Limão 🍋‍🟩', 10.00, 'img-produtos/Drinks-c-alcool/caipifrutas.jpg'); fecharDropdown('saboresCaipiFrutas');">Limão 🍋‍🟩</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Morango 🍓', 10.00, 'img-produtos/Drinks-c-alcool/caipifrutas.jpg'); fecharDropdown('saboresCaipiFrutas');">Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Maracujá 🥂', 10.00, 'img-produtos/Drinks-c-alcool/caipifrutas.jpg'); fecharDropdown('saboresCaipiFrutas');">Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Caipfruta de Manga 🥭', 10.00, 'img-produtos/Drinks-c-alcool/caipifrutas.jpg'); fecharDropdown('saboresCaipiFrutas');">🥭 Manga 🥭</button>
                         </div>
                     </div>
                 </div>
             </div>
 
- <div class="card" data-name="Gin's" data-price="20.00" data-section="Drinks com Álcool" data-id="gins-base">
+ <div class="card" data-name="Gin's" data-price="20.00" data-section="Drinks com Álcool" data-img="img-produtos/Drinks-c-alcool/Caipigins.jpg">
     <div class="product-image" style="background-image: url('img-produtos/Drinks-c-alcool/Caipigins.jpg');"></div>
     <div class="card-content">
         <h3>GIN's</h3>
@@ -1049,15 +1173,15 @@
                 Selecione o Sabor
             </button>
             <div id="saboresGin" class="sabores-menu"> 
-                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Tropical ', 20.00, this)">Gin Tropical</button>
-                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Tônica ', 20.00, this)">Gin Tônica</button>
-                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Red-Fruts ', 20.00, this)" data-id="gin-red-fruts">Gin Red-Fruts</button>
+                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Tropical ', 20.00, 'img-produtos/Drinks-c-alcool/Caipigins.jpg'); fecharDropdown('saboresGin');">Gin Tropical</button>
+                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Tônica ', 20.00, 'img-produtos/Drinks-c-alcool/Caipigins.jpg'); fecharDropdown('saboresGin');">Gin Tônica</button>
+                <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Gin Red-Fruts ', 20.00, 'img-produtos/Drinks-c-alcool/Caipigins.jpg'); fecharDropdown('saboresGin');">Gin Red-Fruts</button>
             </div>
         </div>
     </div>
 </div>
             
-           <div class="card" data-name="Mojito" data-price="15.00" data-section="Drinks com Álcool" data-id="mojito-base">
+           <div class="card" data-name="Mojito" data-price="15.00" data-section="Drinks com Álcool" data-img="img-produtos/Drinks-c-alcool/Mojitos.jpg">
                 <div class="product-image" style="background-image: url('img-produtos/Drinks-c-alcool/Mojitos.jpg');"></div>
                 <div class="card-content">
                     <h3>Mojito</h3>
@@ -1073,17 +1197,17 @@
                             Selecione o Sabor
                         </button>
                         <div id="saboresMogito" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Limão 🍋‍🟩', 15.00, this)">🍋‍🟩 Limão 🍋‍🟩</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Morango 🍓', 15.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Maracujá 🥂', 15.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Manga 🥭', 15.00, this)">🥭 Manga 🥭</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Limão 🍋‍🟩', 15.00, 'img-produtos/Drinks-c-alcool/Mojitos.jpg'); fecharDropdown('saboresMogito');">🍋‍🟩 Limão 🍋‍🟩</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Morango 🍓', 15.00, 'img-produtos/Drinks-c-alcool/Mojitos.jpg'); fecharDropdown('saboresMogito');">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Maracujá 🥂', 15.00, 'img-produtos/Drinks-c-alcool/Mojitos.jpg'); fecharDropdown('saboresMogito');">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Mojito Manga 🥭', 15.00, 'img-produtos/Drinks-c-alcool/Mojitos.jpg'); fecharDropdown('saboresMogito');">🥭 Manga 🥭</button>
                         </div>
                     </div>
                 </div>
             </div>
 
 
-    <div class="card" data-name="Moscow Mule" data-price="20.00" data-section="Drinks com Álcool" data-id="moscow-mule">
+    <div class="card" data-name="Moscow Mule" data-price="20.00" data-section="Drinks com Álcool" data-img="img-produtos/Drinks-c-alcool/Moscow-mule.jpg">
                 <div class="product-image" style="background-image: url('img-produtos/Drinks-c-alcool/Moscow-mule.jpg');"></div>
                 <div class="card-content">
                     <h3>Moscow Mule</h3>
@@ -1098,7 +1222,7 @@
                 </div>
             </div>
 
-            <div class="card" data-name="Jack limoned" data-price="25.00" data-section="Drinks com Álcool" data-id="jack-limoned">
+            <div class="card" data-name="Jack limoned" data-price="25.00" data-section="Drinks com Álcool" data-img="img-produtos/Drinks-c-alcool/Jack-limoned.jpg">
                 <div class="product-image" style="background-image: url('img-produtos/Drinks-c-alcool/Jack-limoned.jpg');"></div>
                 <div class="card-content">
                     <h3>Jack limoned</h3>
@@ -1113,7 +1237,7 @@
                 </div>
             </div>
             
-            <div class="card" data-name="Joge Amado" data-price="18.00" data-section="Drinks com Álcool" data-id="joge-amado">
+            <div class="card" data-name="Joge Amado" data-price="18.00" data-section="Drinks com Álcool" data-img="img-produtos/Drinks-c-alcool/Joge-amado.jpeg">
                 <div class="product-image" style="background-image: url('img-produtos/Drinks-c-alcool/Joge-amado.jpeg');"></div>
                 <div class="card-content">
                     <h3>Joge Amado</h3>
@@ -1128,7 +1252,7 @@
                 </div>
             </div>
 
-            <div class="card" data-name="Pina Colada" data-price="20.00" data-section="Drinks com Álcool" data-id="pina-colada">
+            <div class="card" data-name="Pina Colada" data-price="20.00" data-section="Drinks com Álcool" data-img="img-produtos/Drinks-c-alcool/Pina-colada.jpg">
                 <div class="product-image" style="background-image: url('img-produtos/Drinks-c-alcool/Pina-colada.jpg');"></div>
                 <div class="card-content">
                     <h3>Pina Colada</h3>
@@ -1157,7 +1281,7 @@
     <div class="product-grid section-original-grid carousel-content" id="grid-2">
 
         
-        <div class="card" data-name="Soda Italiana" data-price="8.00" data-section="Drinks Sem Álcool" data-id="soda-italiana-base">
+        <div class="card" data-name="Soda Italiana" data-price="8.00" data-section="Drinks Sem Álcool" data-img="img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg">
             <div class="product-image" style="background-image: url('img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg');"></div>
             <div class="card-content">
                 <h3>Soda Italiana</h3>
@@ -1173,17 +1297,17 @@
                         Selecione o Sabor
                     </button>
                     <div id="saboresSoda" class="sabores-menu">
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Limão Siciliano 🍋‍🟩', 8.00, this)">🍋‍🟩 Limão Siciliano 🍋‍🟩</button>
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Red Frits', 8.00, this)" data-id="soda-red-frits">🍎🍓 Red Frits 🍓🍎</button>
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Maracujá 🥂', 8.00, this)">🥂 Maracujá 🥂</button>
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Maçã Verde 🍏', 8.00, this)">🍏 Maçan Vrede 🍏</button>
-                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Abacaxi 🍍', 8.00, this)">🍍 Abacaxi 🍍</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Limão Siciliano 🍋‍🟩', 8.00, 'img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg'); fecharDropdown('saboresSoda');">🍋‍🟩 Limão Siciliano 🍋‍🟩</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Red Frits', 8.00, 'img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg'); fecharDropdown('saboresSoda');">🍎🍓 Red Frits 🍓🍎</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Maracujá 🥂', 8.00, 'img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg'); fecharDropdown('saboresSoda');">🥂 Maracujá 🥂</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Maçã Verde 🍏', 8.00, 'img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg'); fecharDropdown('saboresSoda');">🍏 Maçan Vrede 🍏</button>
+                        <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Soda Italiana sabir Abacaxi 🍍', 8.00, 'img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg'); fecharDropdown('saboresSoda');">🍍 Abacaxi 🍍</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card" data-name="Abacaxi Hortelã" data-price="6.00" data-section="Drinks Sem Álcool" data-id="abacaxi-hortela">
+        <div class="card" data-name="Mojito Virgem" data-price="6.00" data-section="Drinks Sem Álcool" data-img="img-produtos/Drinks-s-alcool/Abacixi-Hortelã.jpeg">
             <div class="product-image" style="background-image: url('img-produtos/Drinks-s-alcool/Abacixi-Hortelã.jpeg');"></div>
             <div class="card-content">
                 <h3>Abacixi Hortelã</h3>
@@ -1198,7 +1322,7 @@
             </div>
         </div>
         
-        <div class="card" data-name="Chá Tropical" data-price="10.00" data-section="Drinks Sem Álcool" data-id="cha-tropical">
+        <div class="card" data-name="Chá Tropical" data-price="10.00" data-section="Drinks Sem Álcool" data-img="img-produtos/Drinks-s-alcool/Cha-tropical.jpeg">
             <div class="product-image" style="background-image: url('img-produtos/Drinks-s-alcool/Cha-tropical.jpeg');"></div>
             <div class="card-content">
                 <h3>Chá Tropical</h3>
@@ -1213,7 +1337,7 @@
             </div>
         </div>
         
-        <div class="card" data-name="Grape Fresh" data-price="6.00" data-section="Drinks Sem Álcool" data-id="grape-fresh">
+        <div class="card" data-name="Grape Fresh" data-price="6.00" data-section="Drinks Sem Álcool" data-img="img-produtos/Drinks-s-alcool/Grape-Fresh.jpeg">
             <div class="product-image" style="background-image: url('img-produtos/Drinks-s-alcool/Grape-Fresh.jpeg');"></div>
             <div class="card-content">
                 <h3>Grape Fresh</h3>
@@ -1228,7 +1352,7 @@
             </div>
         </div>
         
-        <div class="card" data-name="Hibisco Spritz" data-price="10.00" data-section="Drinks Sem Álcool" data-id="hibisco-spritz">
+        <div class="card" data-name="Hibisco Spritz" data-price="10.00" data-section="Drinks Sem Álcool" data-img="img-produtos/Drinks-s-alcool/Hibisco-Spritz.jpeg">
             <div class="product-image" style="background-image: url('img-produtos/Drinks-s-alcool/Hibisco-Spritz.jpeg');"></div>
             <div class="card-content">
                 <h3>Hibisco Spritz</h3>
@@ -1243,7 +1367,7 @@
             </div>
         </div>
         
-        <div class="card" data-name="Mocktail" data-price="18.00" data-section="Drinks Sem Álcool" data-id="mocktail">
+        <div class="card" data-name="Mocktail" data-price="18.00" data-section="Drinks Sem Álcool" data-img="img-produtos/Drinks-s-alcool/Mocktail.jpeg">
             <div class="product-image" style="background-image: url('img-produtos/Drinks-s-alcool/Mocktail.jpeg');"></div>
             <div class="card-content">
                 <h3>Mocktail</h3>
@@ -1258,7 +1382,7 @@
             </div>
         </div>
         
-        <div class="card" data-name="Mongorango" data-price="8.00" data-section="Drinks Sem Álcool" data-id="mongorango">
+        <div class="card" data-name="Mongorango" data-price="8.00" data-section="Drinks Sem Álcool" data-img="img-produtos/Drinks-s-alcool/Mongorango.jpeg">
             <div class="product-image" style="background-image: url('img-produtos/Drinks-s-alcool/Mongorango.jpeg');"></div>
             <div class="card-content">
                 <h3>Mongorango</h3>
@@ -1299,7 +1423,7 @@
     <div class="product-grid section-original-grid carousel-content" id="grid-3">
 
         
-         <div class="card" data-name="Copão Pitu" data-price="27.00" data-section="Copão" data-id="copao-pitu">
+         <div class="card" data-name="Copão Pitu" data-price="27.00" data-section="Copão" data-img="img-produtos/img-Copoes/Img-Copoes.jpeg">
                 <div class="product-image" style="background-image: url('img-produtos/img-Copoes/Img-Copoes.jpeg');"></div>
                 <div class="card-content">
                     <h3>Pitu<strong class="Copao-ml">(Dose 100ml)</strong><br>+<br>Red Bull<strong class="Copao-ml">(350ml)</strong><br>+<br>Gelo Com Sabor</h3> <div class="caipifrutas-details">
@@ -1312,16 +1436,16 @@
                             Selecione Sabor do Gelo 
                         </button>
                         <div id="saboresCopaoPitu" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Água de Coco 🥥', 27.00, this)">🥥 Água de Coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Água de Coco 🥥', 27.00, 'img-produtos/img-Copoes/Img-Copoes.jpeg'); fecharDropdown('saboresCopaoPitu');">🥥 Água de Coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Morango 🍓', 27.00, 'img-produtos/img-Copoes/Img-Copoes.jpeg'); fecharDropdown('saboresCopaoPitu');">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Maracujá 🥂', 27.00, 'img-produtos/img-Copoes/Img-Copoes.jpeg'); fecharDropdown('saboresCopaoPitu');">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Pitu - Abacaxi 🍍', 27.00, 'img-produtos/img-Copoes/Img-Copoes.jpeg'); fecharDropdown('saboresCopaoPitu');">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-         <div class="card" data-name="Copão Rum Prata" data-price="27.00" data-section="Copão" data-id="copao-rum">
+         <div class="card" data-name="Copão Rum Prata" data-price="27.00" data-section="Copão" data-img="img-produtos/img-Copoes/Img-Copoes.jpeg">
                 <div class="product-image" style="background-image: url('img-produtos/img-Copoes/Img-Copoes.jpeg');"></div>
                 <div class="card-content">
                     <h3>Rum Prata<strong class="Copao-ml">(Dose 100ml)</strong><br>+<br>Red Bull<strong class="Copao-ml">(100ml)</strong><br>+<br>Gelo Com Sabor</h3> <div class="caipifrutas-details">
@@ -1334,16 +1458,16 @@
                             Selecione Sabor do Gelo 
                         </button>
                         <div id="saboresCopaoRum" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Água de Coco 🥥', 27.00, this)">🥥 Água de Coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Água de Coco 🥥', 27.00, 'img-produtos/img-Copoes/Img-Copoes.jpeg'); fecharDropdown('saboresCopaoRum');">🥥 Água de Coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Morango 🍓', 27.00, 'img-produtos/img-Copoes/Img-Copoes.jpeg'); fecharDropdown('saboresCopaoRum');">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Maracujá 🥂', 27.00, 'img-produtos/img-Copoes/Img-Copoes.jpeg'); fecharDropdown('saboresCopaoRum');">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão Rum Prata - Abacaxi 🍍', 27.00, 'img-produtos/img-Copoes/Img-Copoes.jpeg'); fecharDropdown('saboresCopaoRum');">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-        <div class="card" data-name="Copão 51" data-price="27.00" data-section="Copão" data-id="copao-51">
+        <div class="card" data-name="Copão 51" data-price="27.00" data-section="Copão" data-img="img-produtos/img-Copoes/Img-Copoes.jpeg">
                 <div class="product-image" style="background-image: url('img-produtos/img-Copoes/Img-Copoes.jpeg');"></div>
                 <div class="card-content">
                     <h3>51<strong class="Copao-ml">(Dose 100ml)</strong><br>+<br>Red Bull<strong class="Copao-ml">(100ml)</strong><br>+<br>Gelo Com Sabor</h3> <div class="caipifrutas-details">
@@ -1356,10 +1480,10 @@
                             Selecione Sabor do Gelo 
                         </button>
                         <div id="saboresCopao51" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Água de Coco 🥥', 27.00, this)">🥥 Água de Coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Água de Coco 🥥', 27.00, 'img-produtos/img-Copoes/Img-Copoes.jpeg'); fecharDropdown('saboresCopao51');">🥥 Água de Coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Morango 🍓', 27.00, 'img-produtos/img-Copoes/Img-Copoes.jpeg'); fecharDropdown('saboresCopao51');">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Maracujá 🥂', 27.00, 'img-produtos/img-Copoes/Img-Copoes.jpeg'); fecharDropdown('saboresCopao51');">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Copão 51 - Abacaxi 🍍', 27.00, 'img-produtos/img-Copoes/Img-Copoes.jpeg'); fecharDropdown('saboresCopao51');">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
@@ -1386,7 +1510,7 @@
         
 
 
-          <div class="card" data-name="Combo Copão 51" data-price="27.00" data-section="Combos" data-id="combo-51">
+          <div class="card" data-name="Combo Copão 51" data-price="27.00" data-section="Combos" data-img="img-produtos/Drinks-c-alcool/Mojitos.jpg">
                 <div class="product-image" style="background-image: url('img-produtos/Drinks-c-alcool/Mojitos.jpg');"></div>
                 <div class="card-content">
                     <h3>Copão| Dose 51 + Red Bull </h3> <div class="caipifrutas-details">
@@ -1399,16 +1523,16 @@
                             Selecione Sabor Gelo 
                         </button>
                         <div id="saboresCombo51" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Coco 🥥', 27.00, this)">🥥 coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Coco 🥥', 27.00, 'img-produtos/Drinks-c-alcool/Mojitos.jpg'); fecharDropdown('saboresCombo51');">🥥 coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Morango 🍓', 27.00, 'img-produtos/Drinks-c-alcool/Mojitos.jpg'); fecharDropdown('saboresCombo51');">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Maracujá 🥂', 27.00, 'img-produtos/Drinks-c-alcool/Mojitos.jpg'); fecharDropdown('saboresCombo51');">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo 51 - Abacaxi 🍍', 27.00, 'img-produtos/Drinks-c-alcool/Mojitos.jpg'); fecharDropdown('saboresCombo51');">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-         <div class="card" data-name="Combo Rum Prata" data-price="27.00" data-section="Combos" data-id="combo-rum">
+         <div class="card" data-name="Combo Rum Prata" data-price="27.00" data-section="Combos" data-img="img-produtos/Drinks-c-alcool/Mojitos.jpg">
                 <div class="product-image" style="background-image: url('img-produtos/Drinks-c-alcool/Mojitos.jpg');"></div>
                 <div class="card-content">
                     <h3>Copao| Dose Rum Prata+Red Bull+Gelo Com Sabor</h3> <div class="caipifrutas-details">
@@ -1421,10 +1545,10 @@
                             Selecione Sabor Gelo 
                         </button>
                         <div id="saboresComboRum" class="sabores-menu">
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Coco 🥥', 27.00, this)">🥥 coco 🥥</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Morango 🍓', 27.00, this)">🍓 Morango 🍓</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Maracujá 🥂', 27.00, this)">🥂 Maracujá 🥂</button>
-                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Abacaxi 🍍', 27.00, this)">🍍 Abacaxi 🍍</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Coco 🥥', 27.00, 'img-produtos/Drinks-c-alcool/Mojitos.jpg'); fecharDropdown('saboresComboRum');">🥥 coco 🥥</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Morango 🍓', 27.00, 'img-produtos/Drinks-c-alcool/Mojitos.jpg'); fecharDropdown('saboresComboRum');">🍓 Morango 🍓</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Maracujá 🥂', 27.00, 'img-produtos/Drinks-c-alcool/Mojitos.jpg'); fecharDropdown('saboresComboRum');">🥂 Maracujá 🥂</button>
+                            <button class="btn-sabor-item" onclick="adicionarCaipifrutaSabor('Combo Rum - Abacaxi 🍍', 27.00, 'img-produtos/Drinks-c-alcool/Mojitos.jpg'); fecharDropdown('saboresComboRum');">🍍 Abacaxi 🍍</button>
                         </div>
                     </div>
                 </div>
@@ -1448,9 +1572,11 @@
             <span class="close-btn" onclick="fecharModal()">&times;</span>
 
             <div id="card-resumo-pedido" class="modal-card">
-                <h2>Seu Pedido</h2>
-                <ul id="lista-carrinho">
-                    </ul>
+                
+                <h2>Seus Pedidos</h2>
+                <hr>
+                
+                <ul id="lista-carrinho"></ul>
                 
                 <div class="coupon-container">
                     <label for="coupon-input" style="color: #333; font-weight: bold; margin-bottom: 5px; display: block;">Cupom de Desconto:</label>
@@ -1466,7 +1592,14 @@
                     
                     <p id="discount-display" style="display:none;"></p>
                 </div>
+                
+                <div class="frete-row">
+                    <span>Frete:</span>
+                    <span id="frete-valor" class="frete-value">R$ 0,00</span>
+                </div>
+                
                 <hr style="border: none; border-top: 1px dashed #ccc; margin: 15px 0;">
+                
                 
                 <p><strong>Total: <span id="carrinho-total">R$ 0,00</span></strong></p>
                 
@@ -1513,8 +1646,8 @@
                                 <input type="text" id="cep" name="cep" placeholder="99999-999" oninput="formatarCEP(this)">
                             </div>
                             <div class="form-group">
-                                <label for="numero">Número:*</label>
-                                <input type="text" id="numero" name="numero" placeholder="Nº">
+                                <label for="numero">Número, Bloco, Casa, Q/Lote):*</label>
+                                <input type="text" id="numero" name="numero" placeholder="Ex: Nº (Bloco, Casa, Q/Lote):">
                             </div>
                         </div>
                         
@@ -1524,8 +1657,8 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="complemento">Complemento (Ex: Bloco, Casa, Q/Lote):</label>
-                            <input type="text" id="complemento" name="complemento" placeholder="Ex: Casa B, Q: 25 L: 10">
+                            <label for="complemento">Complemento</label>
+                            <input type="text" id="complemento" name="complemento" placeholder="Ex: Próximo da casa...">
                         </div>
                     </div>
                     </form>
@@ -1543,15 +1676,9 @@
         </div>
     </div>
 
-    <div id="obs-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="fecharObsModal()">&times;</span>
-            <h3 id="obs-item-title">Observação para:</h3>
-            <textarea id="obs-text" placeholder="Ex: Pouco gelo, mais limão, retirar hortelã..."></textarea>
-            <button id="save-obs-btn" onclick="salvarObservacao()">Salvar Observação</button>
-        </div>
-    </div>
-    <div id="atencao-box">
+
+
+<div id="atencao-box">
     <div class="atencao-header">
         <div class="atencao-checkmark">
             <svg viewBox="0 0 52 52">
@@ -1564,9 +1691,9 @@
     <div id="mensagem-conteudo" class="atencao-body">
         </div>
   </div>
+         
 
-
-<script>
+	<script>
         
         let carrinho = [];
         let etapaAtual = 1; 
@@ -3164,10 +3291,8 @@ function showNextMessage() {
 
 // Inicia o ciclo de mensagens após um atraso de 2 segundos (2000 ms)
 setTimeout(showNextMessage, 2000);
-				   </script>
-                    
-
-
+</script>
+	
 </body>
 </html>
 
