@@ -1566,8 +1566,7 @@
   </div>
 
 
-
-    <script>
+<script>
         
         let carrinho = [];
         let etapaAtual = 1; 
@@ -2724,6 +2723,9 @@
             atualizarCarrinhoFlutuante();
         }
 
+        // =========================================================================
+        // 🚀 FUNÇÃO 'validarFormulario' CORRIGIDA PARA TELEFONE FLEXÍVEL 🚀
+        // =========================================================================
         function validarFormulario() {
             let isValid = true;
             
@@ -2744,8 +2746,11 @@
                 isValid = false;
             }
 
-            const telefoneRegex = /^\(\d{2}\) \d{4,5}-\d{4}$/; 
-            if (!telefoneRegex.test(telefone.value.trim())) {
+            // 1. Limpa o telefone: remove tudo que não for dígito (ignora (), espaço, -)
+            const telefoneLimpo = telefone.value.trim().replace(/\D/g, '');
+            
+            // 2. Validação: verifica se o telefone limpo tem exatamente 11 dígitos (DDD + 9º dígito + 8 dígitos)
+            if (telefoneLimpo.length !== 11) {
                 document.getElementById('error-telefone').style.display = 'block';
                 isValid = false;
             }
@@ -2760,10 +2765,13 @@
             }
             
             if (local.value === 'Entrega') {
-                 const cepRegex = /^\d{5}-\d{3}$/;
-                 if (!cepRegex.test(cep.value.trim())) {
+                 // Limpa o CEP para validação
+                 const cepLimpo = cep.value.trim().replace(/\D/g, '');
+                 
+                 // Valida o CEP (espera 8 dígitos)
+                 if (cepLimpo.length !== 8) {
                     isValid = false; 
-                    // Se o CEP é inválido, marca como false
+                    // Nota: Aqui você pode adicionar um display de erro específico para o CEP se necessário
                  }
 
                  if (rua.value.trim() === '' || numero.value.trim() === '') {
@@ -2774,7 +2782,8 @@
             // Armazena os dados se for válido
             if (isValid) {
                 form.nome = nome.value.trim();
-                form.telefone = telefone.value.trim();
+                // Armazena o telefone na forma limpa (apenas dígitos)
+                form.telefone = telefoneLimpo; 
                 form.local = local.value;
                 form.mesa = local.value === 'Mesa' ? mesa.value.trim() : '';
                 
@@ -2790,6 +2799,8 @@
             
             return isValid;
         }
+        // =========================================================================
+        
            function gerarMensagemPedido() {
             let mensagemPedido = '';
             let totalItens = carrinho.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
@@ -2818,8 +2829,12 @@
 
             // 1. Dados do Cliente
             mensagemPedido += `*📋 NOVO PEDIDO - NUANCE 📋*\n`;
+            
+            // O telefone é pego do 'form.telefone', que já está limpo (apenas dígitos)
+            const telefoneFormatado = form.telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+            
             mensagemPedido += `Nome: ${form.nome}\n`;
-            mensagemPedido += `Telefone: ${form.telefone}\n`;
+            mensagemPedido += `Telefone: ${telefoneFormatado}\n`;
             
             if (form.local === 'Mesa' && form.mesa) {
                 mensagemPedido += `Local: Mesa ${form.mesa} (Consumo no Local)\n`;
@@ -2831,7 +2846,8 @@
                 if (form.complemento) {
                      mensagemPedido += `Comple.: ${form.complemento}\n`;
                 }
-                mensagemPedido += `CEP: ${form.cep}\n`;
+                // O CEP será enviado como a pessoa digitou, mas a validação exigiu 8 dígitos numéricos.
+                mensagemPedido += `CEP: ${form.cep}\n`; 
             }
 
             mensagemPedido += `\n*🛒 ITENS DO PEDIDO 🛒*\n`;
@@ -3148,9 +3164,7 @@ function showNextMessage() {
 
 // Inicia o ciclo de mensagens após um atraso de 2 segundos (2000 ms)
 setTimeout(showNextMessage, 2000);
-</script>
-
-         
+				   </script>
                     
 
 
