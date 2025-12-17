@@ -46,15 +46,53 @@
 
     <main class="container mx-auto px-6 py-12">
         <div class="flex items-center justify-between mb-8">
-            <h3 class="text-2xl font-bold brand-font text-stone-800 italic">Nosso Cardápio</h3>
+            <h3 class="text-2xl font-bold brand-font text-stone-800 italic">Os mais vendidos</h3>
             <div class="flex gap-2">
-                <button onclick="scrollBtn(-1)" class="w-10 h-10 rounded-full bg-white border flex items-center justify-center hover:bg-orange-50 transition"><i class="fa-solid fa-chevron-left"></i></button>
-                <button onclick="scrollBtn(1)" class="w-10 h-10 rounded-full bg-white border flex items-center justify-center hover:bg-orange-50 transition"><i class="fa-solid fa-chevron-right"></i></button>
+                <button onclick="scrollBtn(-1, 'carousel-1')" class="w-10 h-10 rounded-full bg-white border flex items-center justify-center hover:bg-orange-50 transition"><i class="fa-solid fa-chevron-left"></i></button>
+                <button onclick="scrollBtn(1, 'carousel-1')" class="w-10 h-10 rounded-full bg-white border flex items-center justify-center hover:bg-orange-50 transition"><i class="fa-solid fa-chevron-right"></i></button>
             </div>
         </div>
-
-        <div class="carousel-container" id="carousel-parent">
-            <div id="product-carousel" class="carousel-track"></div>
+        <div class="carousel-container" id="carousel-1">
+            <div class="carousel-track">
+                <div class="carousel-item bg-white rounded-3xl border p-4 shadow-sm text-center">
+                    <img src="https://images.unsplash.com/photo-1568901339351-63b1375e412f?w=400" class="h-40 w-full object-cover rounded-2xl mb-4">
+                    <h4 class="font-bold text-sm h-10">Premium Classic</h4>
+                    <p class="text-orange-600 font-bold mb-4">R$ 32,90</p>
+                    <button onclick="addToCart(this, 'Premium Classic', 32.90, 'https://images.unsplash.com/photo-1568901339351-63b1375e412f?w=400')" class="bg-stone-900 text-white w-full py-3 rounded-xl text-xs font-bold transition-all">Adicionar</button>
+                </div>
+                <div class="carousel-item bg-white rounded-3xl border p-4 shadow-sm text-center">
+                    <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=400" class="h-40 w-full object-cover rounded-2xl mb-4">
+                    <h4 class="font-bold text-sm h-10">Double Cheddar</h4>
+                    <p class="text-orange-600 font-bold mb-4">R$ 38,50</p>
+                    <button onclick="addToCart(this, 'Double Cheddar', 38.50, 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=400')" class="bg-stone-900 text-white w-full py-3 rounded-xl text-xs font-bold transition-all">Adicionar</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <main class="container mx-auto px-6 py-12">
+        <div class="flex items-center justify-between mb-8">
+            <h3 class="text-2xl font-bold brand-font text-stone-800 italic">Os mais vendidos</h3>
+            <div class="flex gap-2">
+                <button onclick="scrollBtn(-1, 'carousel-1')" class="w-10 h-10 rounded-full bg-white border flex items-center justify-center hover:bg-orange-50 transition"><i class="fa-solid fa-chevron-left"></i></button>
+                <button onclick="scrollBtn(1, 'carousel-1')" class="w-10 h-10 rounded-full bg-white border flex items-center justify-center hover:bg-orange-50 transition"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+        <div class="carousel-container" id="carousel-1">
+            <div class="carousel-track">
+                <div class="carousel-item bg-white rounded-3xl border p-4 shadow-sm text-center">
+                    <img src="https://images.unsplash.com/photo-1568901339351-63b1375e412f?w=400" class="h-40 w-full object-cover rounded-2xl mb-4">
+                    <h4 class="font-bold text-sm h-10">Premium Classic</h4>
+                    <p class="text-orange-600 font-bold mb-4">R$ 32,90</p>
+                    <button onclick="addToCart(this, 'Premium Classic', 32.90, 'https://images.unsplash.com/photo-1568901339351-63b1375e412f?w=400')" class="bg-stone-900 text-white w-full py-3 rounded-xl text-xs font-bold transition-all">Adicionar</button>
+                </div>
+                <div class="carousel-item bg-white rounded-3xl border p-4 shadow-sm text-center">
+                    <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?w=400" class="h-40 w-full object-cover rounded-2xl mb-4">
+                    <h4 class="font-bold text-sm h-10">Double Cheddar</h4>
+                    <p class="text-orange-600 font-bold mb-4">R$ 38,50</p>
+                    <button onclick="addToCart(this, 'Double Cheddar', 38.50, 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=400')" class="bg-stone-900 text-white w-full py-3 rounded-xl text-xs font-bold transition-all">Adicionar</button>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -63,24 +101,26 @@
             <h3 class="text-xl font-bold brand-font uppercase">Meu Pedido</h3>
             <button onclick="toggleCart()" class="text-gray-400 text-3xl">&times;</button>
         </div>
-        
         <div id="cart-items" class="flex-grow overflow-y-auto p-6 space-y-4"></div>
-
-        <div class="p-4 bg-orange-50 border-t flex gap-2">
-            <input type="text" id="coupon-input" placeholder="CUPOM" class="flex-grow px-3 py-2 rounded-lg border text-sm uppercase outline-none focus:border-orange-500">
-            <button onclick="applyCoupon()" class="bg-orange-600 text-white px-4 py-2 rounded-lg text-xs font-bold">APLICAR</button>
-        </div>
-
         <div class="p-6 border-t bg-white">
-            <div id="discount-display" class="hidden flex justify-between text-green-600 text-sm mb-2 italic font-semibold">
-                <span>Desconto aplicado:</span>
-                <span id="discount-val">- R$ 0,00</span>
-            </div>
             <div class="flex justify-between mb-4">
                 <span class="text-lg font-bold">Total</span>
                 <span id="cart-total" class="font-bold text-2xl text-orange-700">R$ 0,00</span>
             </div>
-            <button onclick="openCheckout()" class="w-full bg-orange-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-orange-200">Finalizar Pedido</button>
+            <button onclick="openCheckout()" class="w-full bg-orange-600 text-white py-4 rounded-xl font-bold">Finalizar Pedido</button>
+        </div>
+    </div>
+
+    <div id="obs-modal" class="fixed inset-0 flex items-center justify-center z-[100] hidden opacity-0">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="bg-white w-[90%] max-w-md rounded-3xl p-6 relative z-[110] shadow-2xl transition-all">
+            <h3 class="text-xl font-bold brand-font mb-2">Observação</h3>
+            <p id="obs-product-name" class="text-xs text-stone-500 mb-4 uppercase"></p>
+            <textarea id="obs-input" rows="4" class="w-full border rounded-2xl p-4 text-sm focus:ring-2 focus:ring-orange-500 outline-none bg-stone-50"></textarea>
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeObsModal()" class="flex-1 py-3 text-sm font-bold text-stone-500">Cancelar</button>
+                <button onclick="saveObservation()" class="flex-1 py-3 bg-orange-600 text-white rounded-xl text-sm font-bold">Salvar</button>
+            </div>
         </div>
     </div>
 
@@ -89,168 +129,134 @@
             <h3 class="text-xl font-bold brand-font uppercase">Finalização</h3>
             <button onclick="closeCheckout()" class="text-white text-3xl">&times;</button>
         </div>
-        
         <div class="p-6 space-y-4 overflow-y-auto flex-grow">
-            <div>
-                <label class="text-[10px] font-bold uppercase text-stone-500">Escolha como prefere:</label>
-                <select id="order-type" onchange="toggleOrderFields()" class="w-full p-3 rounded-xl border text-sm mt-1">
-                    <option value="Entrega">Entrega em Casa</option>
-                    <option value="Balcão">Retirada no Balcão</option>
-                    <option value="Mesa">Consumir na Mesa (Mesa 2)</option>
-                </select>
-            </div>
-
-            <div id="name-field">
-                <input type="text" id="cust-name" placeholder="Seu Nome Completo" class="w-full p-3 rounded-xl border text-sm">
-            </div>
-
+            <select id="order-type" onchange="toggleOrderFields()" class="w-full p-3 rounded-xl border text-sm">
+                <option value="Entrega">Entrega em Casa</option>
+                <option value="Balcão">Retirada no Balcão</option>
+                <option value="Mesa">Consumir na Mesa (Mesa 2)</option>
+            </select>
+            <div id="name-field"><input type="text" id="cust-name" placeholder="Seu Nome" class="w-full p-3 rounded-xl border text-sm"></div>
             <div id="delivery-fields" class="space-y-3">
                 <input type="text" id="cust-bairro" placeholder="Bairro" class="w-full p-3 rounded-xl border text-sm">
                 <div class="grid grid-cols-2 gap-2">
                     <input type="text" id="cust-quadra" placeholder="Quadra" class="w-full p-3 rounded-xl border text-sm">
-                    <input type="text" id="cust-lote" placeholder="Lote/Nº" class="w-full p-3 rounded-xl border text-sm">
+                    <input type="text" id="cust-lote" placeholder="Lote" class="w-full p-3 rounded-xl border text-sm">
                 </div>
-                <input type="text" id="cust-comp" placeholder="Complemento (Opcional)" class="w-full p-3 rounded-xl border text-sm">
             </div>
-
-            <div id="pickup-warning" class="hidden p-4 bg-orange-50 border border-orange-200 rounded-xl">
-                <p class="text-orange-800 text-xs font-semibold flex items-center gap-2">
-                    <i class="fa-solid fa-circle-info"></i>
-                    Para entregarmos para a pessoa certa, precisamos ver o comprovante de pagamento na hora da retirada.
-                </p>
-            </div>
-
-            <div id="table-info" class="hidden p-4 bg-gray-100 rounded-xl font-bold text-center">Mesa Fixa: Mesa 2</div>
         </div>
-
         <div class="p-6 border-t">
-            <button onclick="confirmOrder()" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold">Enviar Pedido</button>
+            <button onclick="confirmOrder()" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold italic uppercase">Enviar no WhatsApp</button>
         </div>
     </div>
 
     <div id="overlay" onclick="closeAll()" class="fixed inset-0 bg-black/40 hidden z-[55] backdrop-blur-sm"></div>
 
     <script>
-        const products = [
-            { id: 1, name: "Premium Classic", price: 32.90, img: "https://images.unsplash.com/photo-1568901339351-63b1375e412f?w=400" },
-            { id: 2, name: "Double Cheddar", price: 38.50, img: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=400" },
-            { id: 3, name: "Bacon Blast", price: 35.90, img: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=400" },
-            { id: 4, name: "Smash Grill", price: 29.90, img: "https://images.unsplash.com/photo-1513185158878-8d8c196b3c6c?w=400" },
-            { id: 5, name: "Barbecue King", price: 42.00, img: "https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400" }
-        ];
+        // ==========================================
+        // 🔗 TABELA DE LINKS DE PAGAMENTO
+        // ==========================================
+        // Coloque o valor EXATO (com ponto) e o link correspondente
+        const LINKS_PAGAMENTO = {
+            "32.90": "https://link.mercadopago.com.br/classic",
+            "38.50": "https://link.mercadopago.com.br/double",
+            "65.80": "https://link.mercadopago.com.br/dois-burguers", // Exemplo se pedir 2 clássicos
+            "71.40": "https://link.mercadopago.com.br/valor-especifico"
+            // Adicione quantos valores quiser aqui...
+        };
 
         let cart = JSON.parse(localStorage.getItem('burguer_cart')) || [];
-        let discountPct = 0;
+        let currentItemForObs = null;
 
-        const track = document.getElementById('product-carousel');
-        products.forEach(p => {
-            track.innerHTML += `
-                <div class="carousel-item bg-white rounded-3xl border p-4 shadow-sm text-center">
-                    <img src="${p.img}" class="h-40 w-full object-cover rounded-2xl mb-4 pointer-events-none">
-                    <h4 class="font-bold text-sm h-10">${p.name}</h4>
-                    <p class="text-orange-600 font-bold mb-4">R$ ${p.price.toFixed(2)}</p>
-                    <button onclick="addToCart(this, ${p.id})" class="bg-stone-900 text-white w-full py-3 rounded-xl text-xs font-bold transition-all">Adicionar</button>
-                </div>`;
-        });
-
-        function scrollBtn(dir) {
-            document.getElementById('carousel-parent').scrollBy({ left: dir * 300, behavior: 'smooth' });
+        function scrollBtn(dir, carouselId) {
+            document.getElementById(carouselId).scrollBy({ left: dir * 300, behavior: 'smooth' });
         }
 
-        function addToCart(btn, id) {
+        function addToCart(btn, name, price, img) {
             btn.classList.add('btn-active-anim');
             setTimeout(() => btn.classList.remove('btn-active-anim'), 400);
-            const p = products.find(x => x.id === id);
-            const inCart = cart.find(x => x.id === id);
-            if (inCart) inCart.qty++; else cart.push({...p, qty: 1});
+            const inCart = cart.find(x => x.name === name);
+            if (inCart) inCart.qty++; else cart.push({ name, price, img, qty: 1, obs: '' });
             renderCart();
         }
 
-        function applyCoupon() {
-            const code = document.getElementById('coupon-input').value.toUpperCase();
-            if (code === "BURGUER10") {
-                discountPct = 0.10;
-                alert("Cupom de 10% aplicado!");
-            } else {
-                discountPct = 0;
-                alert("Cupom inválido.");
-            }
-            renderCart();
+        function openObsModal(name) {
+            currentItemForObs = name;
+            const item = cart.find(x => x.name === name);
+            document.getElementById('obs-product-name').innerText = name;
+            document.getElementById('obs-input').value = item.obs || '';
+            const modal = document.getElementById('obs-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.add('opacity-100'), 10);
+        }
+
+        function closeObsModal() {
+            const modal = document.getElementById('obs-modal');
+            modal.classList.remove('opacity-100');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function saveObservation() {
+            const item = cart.find(x => x.name === currentItemForObs);
+            if (item) { item.obs = document.getElementById('obs-input').value; renderCart(); }
+            closeObsModal();
         }
 
         function renderCart() {
             const itemsCont = document.getElementById('cart-items');
             itemsCont.innerHTML = '';
-            
-            if (cart.length === 0) {
-                closeAll(); 
-            }
+            if (cart.length === 0) closeAll();
 
             let subtotal = 0;
             cart.forEach(item => {
                 subtotal += item.price * item.qty;
                 itemsCont.innerHTML += `
-                    <div class="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border">
-                        <img src="${item.img}" class="w-12 h-12 object-cover rounded-lg">
-                        <div class="flex-grow">
-                            <h5 class="text-[10px] font-bold uppercase">${item.name}</h5>
-                            <p class="text-orange-600 font-bold text-xs">R$ ${item.price.toFixed(2)}</p>
-                            <div class="flex items-center gap-4 mt-1">
-                                <button onclick="updateQty(${item.id}, -1)" class="font-bold">-</button>
-                                <span class="text-xs font-bold">${item.qty}</span>
-                                <button onclick="updateQty(${item.id}, 1)" class="font-bold">+</button>
-                                <button onclick="removeFromCart(${item.id})" class="ml-auto text-red-400"><i class="fa-solid fa-trash-can"></i></button>
+                    <div class="bg-gray-50 p-3 rounded-2xl border">
+                        <div class="flex items-center gap-3">
+                            <img src="${item.img}" class="w-12 h-12 object-cover rounded-xl">
+                            <div class="flex-grow text-left">
+                                <h5 class="text-[10px] font-bold uppercase">${item.name}</h5>
+                                <p class="text-orange-600 font-bold text-xs">R$ ${item.price.toFixed(2)}</p>
                             </div>
+                            <div class="flex items-center gap-3 bg-white px-2 py-1 rounded-lg border">
+                                <button onclick="updateQty('${item.name}', -1)" class="font-bold">-</button>
+                                <span class="text-xs font-bold">${item.qty}</span>
+                                <button onclick="updateQty('${item.name}', 1)" class="font-bold">+</button>
+                            </div>
+                        </div>
+                        <div class="mt-2 flex justify-between items-center">
+                             <p class="text-[10px] text-stone-400 italic">${item.obs ? 'Obs: ' + item.obs : 'Sem obs.'}</p>
+                             <div class="flex gap-2">
+                                <button onclick="openObsModal('${item.name}')"><i class="fa-solid fa-pencil text-stone-400 text-xs"></i></button>
+                                <button onclick="removeFromCart('${item.name}')"><i class="fa-solid fa-trash text-stone-300 text-xs"></i></button>
+                             </div>
                         </div>
                     </div>`;
             });
 
-            const discountAmount = subtotal * discountPct;
-            const finalTotal = subtotal - discountAmount;
-
-            if (discountPct > 0) {
-                document.getElementById('discount-display').classList.remove('hidden');
-                document.getElementById('discount-val').innerText = `- R$ ${discountAmount.toFixed(2).replace('.', ',')}`;
-            } else {
-                document.getElementById('discount-display').classList.add('hidden');
-            }
-
-            document.getElementById('cart-total').innerText = `R$ ${finalTotal.toFixed(2).replace('.', ',')}`;
+            document.getElementById('cart-total').innerText = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
             document.getElementById('cart-count').innerText = cart.reduce((a, b) => a + b.qty, 0);
             localStorage.setItem('burguer_cart', JSON.stringify(cart));
         }
 
-        function updateQty(id, delta) {
-            const item = cart.find(x => x.id === id);
-            if (item) {
-                item.qty += delta;
-                if (item.qty <= 0) removeFromCart(id);
-                else renderCart();
-            }
+        function updateQty(name, delta) {
+            const item = cart.find(x => x.name === name);
+            if (item) { item.qty += delta; if (item.qty <= 0) removeFromCart(name); else renderCart(); }
         }
 
-        function removeFromCart(id) {
-            cart = cart.filter(i => i.id !== id);
-            renderCart();
-        }
+        function removeFromCart(name) { cart = cart.filter(i => i.name !== name); renderCart(); }
 
         function toggleCart() {
-            if (cart.length === 0) return alert("Seu carrinho está vazio!");
+            if (cart.length === 0) return alert("Vazio!");
             document.getElementById('cart-sidebar').classList.toggle('translate-x-full');
             document.getElementById('overlay').classList.toggle('hidden');
         }
 
         function openCheckout() {
-            if (cart.length === 0) return;
             document.getElementById('cart-sidebar').classList.add('translate-x-full');
             document.getElementById('checkout-modal').classList.remove('translate-x-full');
-            document.getElementById('overlay').classList.remove('hidden');
         }
 
-        function closeCheckout() {
-            document.getElementById('checkout-modal').classList.add('translate-x-full');
-            document.getElementById('overlay').classList.add('hidden');
-        }
+        function closeCheckout() { document.getElementById('checkout-modal').classList.add('translate-x-full'); }
 
         function closeAll() {
             document.getElementById('cart-sidebar').classList.add('translate-x-full');
@@ -260,36 +266,33 @@
 
         function toggleOrderFields() {
             const type = document.getElementById('order-type').value;
-            document.getElementById('name-field').className = (type === 'Mesa') ? 'hidden' : 'block';
             document.getElementById('delivery-fields').className = (type === 'Entrega') ? 'space-y-3' : 'hidden';
-            document.getElementById('pickup-warning').className = (type === 'Balcão') ? 'block p-4 bg-orange-50 border border-orange-200 rounded-xl' : 'hidden';
-            document.getElementById('table-info').className = (type === 'Mesa') ? 'block p-4 bg-gray-100 rounded-xl font-bold text-center' : 'hidden';
         }
 
         function confirmOrder() {
             const type = document.getElementById('order-type').value;
             const name = document.getElementById('cust-name').value;
-            if ((type === 'Entrega' || type === 'Balcão') && !name) return alert("Por favor, digite seu nome!");
+            if (!name) return alert("Seu nome!");
 
-            const total = (cart.reduce((a, b) => a + (b.price * b.qty), 0) * (1 - discountPct)).toFixed(2);
-            let payMsg = `*Estamos gerando seu link de pagamento. Gerando link de pagamento.*`;
-
-            let msg = `*🍔 NOVO PEDIDO - BURGUER PREMIUM*%0A%0A`;
-            msg += `*TIPO:* ${type === 'Mesa' ? 'Mesa 2' : type}%0A`;
-            if (name) msg += `*CLIENTE:* ${name}%0A`;
+            const total = cart.reduce((a, b) => a + (b.price * b.qty), 0).toFixed(2);
             
-            if (type === 'Entrega') {
-                msg += `*ENDEREÇO:* ${document.getElementById('cust-bairro').value}, Qdr ${document.getElementById('cust-quadra').value}, Lote ${document.getElementById('cust-lote').value}%0A`;
+            // BUSCA O LINK NA TABELA PELO VALOR TOTAL
+            const linkEncontrado = LINKS_PAGAMENTO[total];
+            
+            let msg = `*🍔 NOVO PEDIDO*%0A*CLIENTE:* ${name}%0A*TIPO:* ${type}%0A%0A*ITENS:*%0A`;
+            cart.forEach(i => {
+                msg += `• ${i.qty}x ${i.name}`;
+                if(i.obs) msg += ` (Obs: ${i.obs})`;
+                msg += `%0A`;
+            });
+            msg += `%0A*TOTAL: R$ ${total.replace('.', ',')}*%0A`;
+
+            if (linkEncontrado) {
+                msg += `%0A*PAGAMENTO ANTECIPADO:*%0A${linkEncontrado}`;
+            } else {
+                msg += `%0A*Pagamento:* Aguardando link (valor não cadastrado).`;
             }
 
-            msg += `%0A*ITENS:*%0A`;
-            cart.forEach(i => msg += `• ${i.qty}x ${i.name}%0A`);
-            msg += `%0A*TOTAL: R$ ${total.replace('.', ',')}*%0A%0A${payMsg}`;
-
-            cart = [];
-            localStorage.removeItem('burguer_cart');
-            discountPct = 0; // Reset cupom para o próximo
-            renderCart();
             window.open(`https://wa.me/5562995679219?text=${msg}`, '_blank');
         }
 
