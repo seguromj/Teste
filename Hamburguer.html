@@ -3,320 +3,180 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grand Royale | Hamburgueria de Elite</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Grand Royale | Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Plus+Jakarta+Sans:wght@400;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --gold: #d4af37;
-            --gold-dark: #b8860b;
-            --bg: #080808;
-            --card: #121212;
-            --text: #ffffff;
-            --subtext: #a0a0a0;
-            --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(212, 175, 55, 0.2);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); color: var(--text); overflow-x: hidden; scroll-behavior: smooth; }
-
-        /* HEADER PREMIUM */
-        header {
-            position: fixed; top: 0; width: 100%; z-index: 1000;
-            padding: 20px 5%; display: flex; justify-content: space-between; align-items: center;
-            backdrop-filter: blur(15px); background: rgba(8, 8, 8, 0.8);
-            border-bottom: 1px solid var(--border);
-        }
-        .logo { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.5rem; letter-spacing: 3px; }
-        .cart-btn {
-            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-            color: #000; padding: 10px 22px; border-radius: 50px; font-weight: 800;
-            cursor: pointer; transition: 0.3s; border: none; font-size: 0.9rem;
-        }
-
-        /* CARROSSEL ESTRUTURA */
-        .section-header { padding: 120px 5% 20px; }
-        .section-header h2 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 2rem; }
-        .carousel-wrapper { position: relative; padding: 0 5% 40px; }
+        :root { --gold: #d4af37; --bg: #080808; --card: #121212; --border: rgba(212, 175, 55, 0.4); }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: #fff; padding-top: 80px; overflow-x: hidden; }
         
-        .carousel-track {
-            display: flex; overflow-x: auto; gap: 20px; scroll-snap-type: x mandatory;
-            scrollbar-width: none; padding: 20px 0;
-        }
-        .carousel-track::-webkit-scrollbar { display: none; }
+        /* HEADER */
+        header { position:fixed; top:0; width:100%; z-index:1000; padding:15px 5%; display:flex; justify-content:space-between; align-items:center; background:rgba(8,8,8,0.95); border-bottom:1px solid var(--border); backdrop-filter: blur(10px); }
+        .logo { font-family:'Cinzel'; color:var(--gold); font-size:1.2rem; }
+        .cart-btn { background:var(--gold); color:#000; padding:10px 18px; border-radius:50px; font-weight:800; border:none; cursor:pointer; transition: 0.3s; }
+        #cart-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        .card {
-            flex: 0 0 300px; scroll-snap-align: center;
-            background: var(--card); border-radius: 24px; overflow: hidden;
-            border: 1px solid var(--border); transition: 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .card:hover { transform: translateY(-10px); border-color: var(--gold); box-shadow: 0 10px 30px rgba(212, 175, 55, 0.1); }
-        .card img { width: 100%; height: 220px; object-fit: cover; filter: brightness(0.8); transition: 0.5s; }
-        .card:hover img { filter: brightness(1); transform: scale(1.05); }
+        /* CARROSSEL */
+        .section-h { padding:20px 5% 0; font-family:'Cinzel'; color:var(--gold); font-size: 1.1rem; }
+        .track { display:flex; overflow-x:auto; gap:15px; padding:20px 5%; scroll-snap-type: x mandatory; scrollbar-width:none; }
+        .track::-webkit-scrollbar { display: none; }
         
-        .card-content { padding: 20px; }
-        .card-content h3 { font-size: 1.2rem; margin-bottom: 8px; color: var(--gold); }
-        .card-content p { font-size: 0.85rem; color: var(--subtext); height: 40px; margin-bottom: 15px; }
-        .price-area { display: flex; justify-content: space-between; align-items: center; }
-        .price-area span { font-size: 1.3rem; font-weight: 800; }
-        .add-btn {
-            background: none; border: 1px solid var(--gold); color: var(--gold);
-            width: 40px; height: 40px; border-radius: 50%; cursor: pointer; transition: 0.3s;
-        }
-        .add-btn:hover { background: var(--gold); color: #000; }
-
-        /* BOTÕES DE NAVEGAÇÃO */
-        .nav-c {
-            position: absolute; top: 50%; transform: translateY(-50%);
-            background: rgba(0,0,0,0.8); color: var(--gold); border: 1px solid var(--gold);
-            width: 40px; height: 40px; border-radius: 50%; cursor: pointer; z-index: 10;
-        }
-        .prev-b { left: 10px; } .next-b { right: 10px; }
-
-        /* MODAL LUXO */
-        .modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            display: none; justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(10px);
-        }
-        .modal-content {
-            background: var(--card); width: 95%; max-width: 450px; border-radius: 30px;
-            padding: 30px; border: 1px solid var(--border); position: relative; max-height: 90vh; overflow-y: auto;
-        }
-        .close-m { position: absolute; top: 20px; right: 20px; cursor: pointer; color: var(--gold); }
-
-        .cart-item { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--glass); }
+        .card { flex:0 0 260px; background:var(--card); border-radius:20px; border:1px solid var(--border); overflow:hidden; scroll-snap-align: start; }
+        .card img { width:100%; height:170px; object-fit:cover; pointer-events: none; }
+        .card-c { padding:15px; }
+        .price-row { display:flex; justify-content:space-between; align-items:center; margin-top:10px; }
         
-        /* FORMULÁRIO CHECKOUT */
-        .field-group { margin-bottom: 15px; text-align: left; }
-        .field-group label { display: block; font-size: 0.7rem; color: var(--gold); text-transform: uppercase; margin-bottom: 5px; }
-        .premium-input {
-            width: 100%; background: #000; border: 1px solid var(--border);
-            padding: 12px; border-radius: 12px; color: #fff;
-        }
-        .cpf-info { font-size: 0.7rem; color: #666; font-style: italic; margin-top: 5px; display: block; }
+        /* BOTÃO ADICIONAR - BLINDADO */
+        .add-btn { background:var(--gold); border:none; width:45px; height:45px; border-radius:50%; font-size:1.8rem; cursor:pointer; font-weight:bold; display: flex; align-items: center; justify-content: center; z-index: 100; position: relative; }
+        .add-btn:active { transform: scale(0.9); }
 
-        .btn-finalizar {
-            width: 100%; background: var(--gold); color: #000; padding: 15px;
-            border-radius: 15px; border: none; font-weight: 800; cursor: pointer; margin-top: 20px;
-        }
+        /* MODAIS */
+        .modal { position:fixed; inset:0; background:rgba(0,0,0,0.98); display:none; justify-content:center; align-items:center; z-index:2000; padding:15px; }
+        .modal-c { background:var(--card); width:100%; max-width:450px; border-radius:25px; padding:25px; border:1px solid var(--border); max-height:85vh; overflow-y:auto; }
+        
+        .cart-item { background:rgba(255,255,255,0.04); padding:15px; border-radius:18px; margin-bottom:12px; border:1px solid #333; }
+        .qty-row { display:flex; align-items:center; gap:15px; margin-top:12px; }
+        .qty-b { background:none; border:1px solid var(--gold); color:var(--gold); width:32px; height:32px; border-radius:50%; cursor:pointer; font-size: 1.2rem; }
+        
+        .obs-in { width:100%; background:#000; border:1px solid #444; color:#fff; padding:10px; border-radius:10px; margin-top:10px; display:none; outline: none; }
+        .in-p { width:100%; background:#000; border:1px solid var(--border); padding:14px; border-radius:12px; color:#fff; margin-bottom:12px; font-size: 1rem; }
+        
+        .btn-a { width:100%; background:var(--gold); color:#000; padding:16px; border-radius:14px; border:none; font-weight:800; cursor:pointer; text-transform:uppercase; margin-bottom:10px; font-size: 1rem; }
+        .btn-w { width:100%; background:#25d366; color:#fff; padding:16px; border-radius:14px; border:none; font-weight:800; cursor:pointer; margin-bottom:10px; text-transform:uppercase; font-size: 1rem; }
+        
+        .aviso { font-size:0.8rem; color:#bbb; margin-bottom:15px; line-height: 1.4; border-left: 3px solid var(--gold); padding-left: 10px; }
     </style>
 </head>
 <body>
 
 <header>
     <div class="logo">Grand Royale</div>
-    <button class="cart-btn" onclick="openCart()">MEU PEDIDO (<span id="cart-count">0</span>)</button>
+    <button id="cart-btn" class="cart-btn" onclick="openM('m-cart')" disabled>CARRINHO (0)</button>
 </header>
 
-<div class="section-header"><h2>Os Imperiais</h2></div>
-<div class="carousel-wrapper">
-    <button class="nav-c prev-b" onclick="sideScroll('track1', 'left')">❮</button>
-    <div class="carousel-track" id="track1">
-        <div class="card">
-            <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500">
-            <div class="card-content">
-                <h3>Gold Truffle</h3><p>Blend Angus 200g, queijo brie e trufas negras.</p>
-                <div class="price-area"><span>R$ 45.00</span><button class="add-btn" onclick="addItem('Gold Truffle', 45.00)">+</button></div>
-            </div>
-        </div>
-        <div class="card">
-            <img src="https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=500">
-            <div class="card-content">
-                <h3>King Bacon</h3><p>Bacon caramelizado e cheddar inglês maturado.</p>
-                <div class="price-area"><span>R$ 40.00</span><button class="add-btn" onclick="addItem('King Bacon', 40.00)">+</button></div>
-            </div>
-        </div>
-        <div class="card">
-            <img src="https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=500">
-            <div class="card-content">
-                <h3>Imperial Gorgon</h3><p>Gorgonzola dolce e cebola roxa ao vinho tinto.</p>
-                <div class="price-area"><span>R$ 42.00</span><button class="add-btn" onclick="addItem('Imperial Gorgon', 42.00)">+</button></div>
-            </div>
-        </div>
-        <div class="card">
-            <img src="https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=500">
-            <div class="card-content">
-                <h3>Classic Diamond</h3><p>O clássico com picles artesanal e molho secreto.</p>
-                <div class="price-area"><span>R$ 35.00</span><button class="add-btn" onclick="addItem('Classic Diamond', 35.00)">+</button></div>
-            </div>
-        </div>
-        <div class="card">
-            <img src="https://images.unsplash.com/photo-1512152272829-e3139592d56f?w=500">
-            <div class="card-content">
-                <h3>Royal Double</h3><p>Dois blends smash de 100g e queijo gouda.</p>
-                <div class="price-area"><span>R$ 47.00</span><button class="add-btn" onclick="addItem('Royal Double', 47.00)">+</button></div>
-            </div>
-        </div>
-    </div>
-    <button class="nav-c next-b" onclick="sideScroll('track1', 'right')">❯</button>
+<div class="section-h"><h2>Burgers Imperiais</h2></div>
+<div class="track">
+    <div class="card"><img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400"><div class="card-c"><h3>Gold Truffle</h3><div class="price-row"><span>R$ 45,00</span><button class="add-btn" onclick="add('Gold Truffle', 45)">+</button></div></div></div>
+    <div class="card"><img src="https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=400"><div class="card-c"><h3>King Bacon</h3><div class="price-row"><span>R$ 40,00</span><button class="add-btn" onclick="add('King Bacon', 40)">+</button></div></div></div>
+    <div class="card"><img src="https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400"><div class="card-c"><h3>Royal Gorgon</h3><div class="price-row"><span>R$ 42,00</span><button class="add-btn" onclick="add('Royal Gorgon', 42)">+</button></div></div></div>
 </div>
 
-<div class="section-header" style="padding-top:0"><h2>Acompanhamentos</h2></div>
-<div class="carousel-wrapper">
-    <button class="nav-c prev-b" onclick="sideScroll('track2', 'left')">❮</button>
-    <div class="carousel-track" id="track2">
-        <div class="card">
-            <img src="https://images.unsplash.com/photo-1573016608244-7d2e073fe955?w=500">
-            <div class="card-content"><h3>Fritas Trufadas</h3><p>Batatas rústicas com parmesão e azeite trufado.</p><div class="price-area"><span>R$ 22.00</span><button class="add-btn" onclick="addItem('Fritas Trufadas', 22.00)">+</button></div></div>
-        </div>
-        <div class="card">
-            <img src="https://images.unsplash.com/photo-1639129938911-b1a620025740?w=500">
-            <div class="card-content"><h3>Onion Rings</h3><p>Cebolas empanadas em massa de cerveja.</p><div class="price-area"><span>R$ 18.00</span><button class="add-btn" onclick="addItem('Onion Rings', 18.00)">+</button></div></div>
-        </div>
-    </div>
-    <button class="nav-c next-b" onclick="sideScroll('track2', 'right')">❯</button>
+<div class="section-h"><h2>Acompanhamentos</h2></div>
+<div class="track">
+    <div class="card"><img src="https://images.unsplash.com/photo-1573016608244-7d2e073fe955?w=400"><div class="card-c"><h3>Fritas Trufadas</h3><div class="price-row"><span>R$ 22,00</span><button class="add-btn" onclick="add('Fritas Trufadas', 22)">+</button></div></div></div>
+    <div class="card"><img src="https://images.unsplash.com/photo-1639129938911-b1a620025740?w=400"><div class="card-c"><h3>Onion Rings</h3><div class="price-row"><span>R$ 18,00</span><button class="add-btn" onclick="add('Onion Rings', 18)">+</button></div></div></div>
 </div>
 
-<div class="section-header" style="padding-top:0"><h2>Bebidas Exclusivas</h2></div>
-<div class="carousel-wrapper">
-    <button class="nav-c prev-b" onclick="sideScroll('track3', 'left')">❮</button>
-    <div class="carousel-track" id="track3">
-        <div class="card">
-            <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=500">
-            <div class="card-content"><h3>Shake de Pistache</h3><p>Pistache puro e sorvete artesanal.</p><div class="price-area"><span>R$ 30.00</span><button class="add-btn" onclick="addItem('Shake de Pistache', 30.00)">+</button></div></div>
-        </div>
-    </div>
-    <button class="nav-c next-b" onclick="sideScroll('track3', 'right')">❯</button>
-</div>
+<div id="m-cart" class="modal"><div class="modal-c">
+    <h2 style="color:var(--gold); font-family: 'Cinzel'">Seu Pedido</h2><br>
+    <div id="c-list"></div><br>
+    <h2 id="t-val" style="text-align:right; color: var(--gold)">Total: R$ 0,00</h2><br>
+    <button class="btn-a" onclick="openM('m-dev')">Escolher Entrega</button>
+    <button onclick="closeM()" style="width:100%; background:none; color:#777; border:none; cursor:pointer; padding: 10px;">Continuar Comprando</button>
+</div></div>
 
-<div id="modal-cart" class="modal">
-    <div class="modal-content">
-        <span class="close-m" onclick="closeModal()">FECHAR</span>
-        <h2 style="font-family:'Cinzel'; margin-bottom:20px">Seu Pedido</h2>
-        <div id="cart-list"></div>
-        
-        <div class="field-group" style="margin-top:20px">
-            <label>Cupom de Desconto</label>
-            <div style="display:flex; gap:10px">
-                <input type="text" id="cupom" class="premium-input" placeholder="CÓDIGO">
-                <button class="add-btn" style="border-radius:10px; width:auto; padding:0 10px" onclick="aplicarCupom()">OK</button>
-            </div>
-        </div>
+<div id="m-dev" class="modal"><div class="modal-c">
+    <h2 style="color:var(--gold); font-family: 'Cinzel'">Dados de Entrega</h2><br>
+    <select id="mode" class="in-p" onchange="renderF()"><option value="delivery">🚀 Delivery</option><option value="pickup">🛍️ Retirada</option><option value="table">🍽️ Mesa 3</option></select>
+    <div id="f-cont"></div>
+    <button class="btn-a" onclick="checkout()">Resumo Final</button>
+</div></div>
 
-        <div style="text-align:right; margin:20px 0; border-top:1px solid var(--glass); padding-top:10px">
-            <p style="font-size:0.8rem; color:var(--subtext)">Frete: R$ 5,00</p>
-            <h2 id="total-txt" style="color:var(--gold)">Total: R$ 0,00</h2>
-        </div>
-
-        <button class="btn-finalizar" onclick="openStep2()">AVANÇAR PARA ENTREGA</button>
-    </div>
-</div>
-
-<div id="modal-delivery" class="modal">
-    <div class="modal-content">
-        <h2 style="font-family:'Cinzel'; margin-bottom:20px">Entrega</h2>
-        <select id="deliv-mode" class="premium-input" onchange="updateFields()">
-            <option value="delivery">🚀 Delivery</option>
-            <option value="pickup">🛍️ Retirada no Balcão</option>
-            <option value="table">🍽️ Mesa 3 (Fixo)</option>
-        </select>
-        <div id="fields-area" style="margin-top:20px"></div>
-        <button class="btn-finalizar" onclick="finishOrder()">FINALIZAR NO WHATSAPP</button>
-        <button style="background:none; border:none; color:#666; width:100%; margin-top:10px; cursor:pointer" onclick="closeModal()">Voltar</button>
-    </div>
-</div>
+<div id="m-fin" class="modal"><div class="modal-c">
+    <h2 style="color:var(--gold); font-family: 'Cinzel'">Finalizar</h2>
+    <div id="res-f" style="margin:20px 0; font-size:0.95rem; border:1px dashed var(--gold); padding:15px; border-radius: 10px;"></div>
+    <p class="aviso">Após o pagamento, envie seu endereço completo no WhatsApp para iniciarmos a entrega.</p>
+    <button class="btn-w" id="w-btn">Enviar no WhatsApp</button>
+    <button class="btn-a" id="p-btn">Realizar Pagamento</button>
+    <button onclick="closeM()" style="width:100%; background:none; color:#777; border:none; cursor:pointer; padding: 10px;">Voltar</button>
+</div></div>
 
 <script>
-    // LISTA DE LINKS (CONFORME SUA TABELA)
-    const linksDePagamentoFixos = {
-        "1.00": "https://mpago.la/2AXmnns", "40.00": "https://mpago.la/22fHXUh",
-        "45.00": "https://mpago.la/2YxWyeN", "50.00": "https://mpago.la/18PNJgh",
-        "82.00": "https://mpago.la/1EQriMV", "100.00": "https://mpago.la/14fLE5V"
-    };
+    let cart = [];
+    const links = { "45.00": "https://mpago.la/2YxWyeN", "50.00": "https://mpago.la/18PNJgh", "100.00": "https://mpago.la/14fLE5V" };
 
-    let cart = JSON.parse(localStorage.getItem('royal_cart')) || [];
-    const FRETE = 5.00;
-    let desconto = 0;
-
-    function sideScroll(id, dir) {
-        const el = document.getElementById(id);
-        el.scrollBy({ left: dir === 'left' ? -320 : 320, behavior: 'smooth' });
-    }
-
-    function addItem(name, price) {
-        cart.push({name, price});
+    function add(n, p) {
+        let item = cart.find(x => x.n === n);
+        if(item) { item.q++; } else { cart.push({n, p, q:1, o:""}); }
         save();
-        alert(`${name} adicionado ao banquete.`);
+        // Feedback visual de clique
+        const btn = document.getElementById('cart-btn');
+        btn.style.transform = "scale(1.1)";
+        setTimeout(() => btn.style.transform = "scale(1)", 200);
     }
 
     function save() {
-        localStorage.setItem('royal_cart', JSON.stringify(cart));
-        document.getElementById('cart-count').innerText = cart.length;
+        localStorage.setItem('royal_cart_v4', JSON.stringify(cart));
+        updUI();
     }
 
-    function openCart() {
-        document.getElementById('modal-cart').style.display = 'flex';
-        renderCart();
+    function updUI() {
+        let count = cart.reduce((a, b) => a + b.q, 0);
+        const btn = document.getElementById('cart-btn');
+        btn.innerText = `CARRINHO (${count})`;
+        btn.disabled = count === 0;
+        renderC();
     }
 
-    function renderCart() {
-        const list = document.getElementById('cart-list');
-        let subtotal = 0;
-        list.innerHTML = cart.map((item, i) => {
-            subtotal += item.price;
-            return `<div class="cart-item"><span>${item.name}</span><b>R$ ${item.price.toFixed(2)}</b></div>`;
-        }).join('');
+    function renderC() {
+        const list = document.getElementById('c-list');
+        if(!list) return;
+        list.innerHTML = cart.map((i, idx) => `
+            <div class="cart-item">
+                <div style="display:flex; justify-content:space-between; align-items:center"><b>${i.n}</b><button onclick="rem(${idx})" style="background:none; border:none; cursor:pointer; font-size: 1.2rem;">🗑️</button></div>
+                <div class="qty-row">
+                    <button class="qty-b" onclick="chg(${idx},-1)">-</button><span style="font-weight:bold">${i.q}</span><button class="qty-b" onclick="chg(${idx},1)">+</button>
+                    <button onclick="tglO(${idx})" style="background:none; border:none; cursor:pointer; font-size: 1.2rem;">✏️</button>
+                </div>
+                <input id="o-${idx}" class="obs-in" placeholder="Ex: Sem cebola, ponto da carne..." value="${i.o}" onchange="sObs(${idx},this.value)" style="display:${i.o?'block':'none'}">
+            </div>`).join('');
+        let total = cart.reduce((a, b) => a + (b.p * b.q), 0) + 5;
+        document.getElementById('t-val').innerText = `Total: R$ ${total.toFixed(2).replace('.', ',')}`;
+    }
+
+    function chg(i, v) { cart[i].q += v; if(cart[i].q <= 0) cart.splice(i, 1); save(); }
+    function rem(i) { cart.splice(i, 1); save(); }
+    function tglO(i) { let el = document.getElementById(`o-${i}`); el.style.display = el.style.display === 'none'?'block':'none'; el.focus(); }
+    function sObs(i, v) { cart[i].o = v; localStorage.setItem('royal_cart_v4', JSON.stringify(cart)); }
+
+    function openM(id) { 
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); 
+        document.getElementById(id).style.display = 'flex'; 
+        if(id === 'm-dev') renderF();
+    }
+
+    function closeM() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+
+    function renderF() {
+        let m = document.getElementById('mode').value;
+        let c = document.getElementById('f-cont');
+        let h = `<input id="un" class="in-p" placeholder="Seu Nome">`;
+        if(m==='delivery') h += `<input id="ua" class="in-p" placeholder="Seu Endereço">`;
+        if(m==='pickup') h += `<input id="uc" class="in-p" placeholder="Seu CPF">`;
+        if(m==='table') h += `<input value="Mesa 3 (Fixo)" class="in-p" readonly style="color: var(--gold)">`;
+        c.innerHTML = h;
+    }
+
+    function checkout() {
+        let n = document.getElementById('un').value; if(!n) return alert("Por favor, informe seu nome!");
+        let totVal = cart.reduce((a, b) => a + (b.p * b.q), 0) + 5;
+        let totStr = totVal.toFixed(2);
         
-        const total = (subtotal + FRETE - desconto).toFixed(2);
-        document.getElementById('total-txt').innerText = `Total: R$ ${total}`;
-    }
-
-    function aplicarCupom() {
-        const c = document.getElementById('cupom').value.toUpperCase();
-        if(c === 'ROYAL10') { 
-            desconto = 10; alert('Desconto de R$ 10,00 aplicado!'); 
-            renderCart();
-        } else { alert('Cupom inválido'); }
-    }
-
-    function openStep2() {
-        if(cart.length === 0) return alert('Carrinho vazio');
-        document.getElementById('modal-cart').style.display = 'none';
-        document.getElementById('modal-delivery').style.display = 'flex';
-        updateFields();
-    }
-
-    function updateFields() {
-        const mode = document.getElementById('deliv-mode').value;
-        const area = document.getElementById('fields-area');
-        let html = `<div class="field-group"><label>Seu Nome</label><input type="text" id="c-nome" class="premium-input"></div>`;
+        let msg = `*PEDIDO GRAND ROYALE*%0A%0A*Cliente:* ${n}%0A%0A*ITENS:*%0A` + cart.map(i => `• ${i.q}x ${i.n} ${i.o ? `(Obs: ${i.o})`:''}`).join('%0A') + `%0A%0A*TOTAL COM TAXA: R$ ${totStr.replace('.', ',')}*%0A%0A_Aguardando confirmação de pagamento..._`;
         
-        if(mode === 'delivery') {
-            html += `<div class="field-group"><label>Endereço Completo</label><input type="text" id="c-end" class="premium-input" placeholder="Rua, Número, Bairro"></div>`;
-        } else if(mode === 'pickup') {
-            html += `<div class="field-group"><label>CPF para Retirada</label><input type="text" id="c-cpf" class="premium-input"><span class="cpf-info">Apresente o documento na entrega para sua segurança.</span></div>`;
-        } else {
-            html += `<div class="field-group"><label>Localização</label><input type="text" value="Mesa 3" class="premium-input" readonly style="color:var(--gold)"></div>`;
-        }
-        area.innerHTML = html;
+        document.getElementById('res-f').innerHTML = `<b>NOME:</b> ${n.toUpperCase()}<br><br><b>RESUMO:</b><br>${cart.map(i => i.q+'x '+i.n).join('<br>')}<br><br><b>TOTAL: R$ ${totStr.replace('.', ',')}</b>`;
+        
+        document.getElementById('w-btn').onclick = () => window.open(`https://wa.me/5511999999999?text=${msg}`);
+        document.getElementById('p-btn').onclick = () => window.open(links[totStr] || "#");
+        openM('m-fin');
     }
 
-    function finishOrder() {
-        const nome = document.getElementById('c-nome').value;
-        const mode = document.getElementById('deliv-mode').value;
-        if(!nome) return alert('Informe seu nome');
-
-        const subtotal = cart.reduce((a, b) => a + b.price, 0);
-        const totalFinal = (subtotal + FRETE - desconto).toFixed(2);
-        const link = linksDePagamentoFixos[totalFinal] || "Link disponível no chat";
-
-        let msg = `*⚜️ NOVO PEDIDO - GRAND ROYALE ⚜️*\n\n`;
-        msg += `*CLIENTE:* ${nome}\n*MODO:* ${mode.toUpperCase()}\n`;
-        if(mode === 'pickup') msg += `*CPF:* ${document.getElementById('c-cpf').value}\n`;
-        msg += `\n*ITENS:* \n` + cart.map(i => `• ${i.name}`).join('\n');
-        msg += `\n\n*TOTAL:* R$ ${totalFinal}\n`;
-        msg += `*PAGAR AGORA:* ${link}`;
-
-        window.open(`https://wa.me/5562995679219?text=${encodeURIComponent(msg)}`);
-    }
-
-    function closeModal() {
-        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    }
-
-    save(); // Inicializa contador
+    window.onload = () => {
+        let saved = localStorage.getItem('royal_cart_v4');
+        if(saved) cart = JSON.parse(saved);
+        updUI();
+    };
 </script>
-
 </body>
 </html>
