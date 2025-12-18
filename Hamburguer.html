@@ -83,7 +83,7 @@
     <header>
         <div class="container">
             <nav>
-                <div class="logo">BURGER HOUSE</div>
+                <div class="logo">BURGER ELITE</div>
                 <button class="cart-btn" onclick="openCart()">
                     <i class="fas fa-shopping-cart"></i> Carrinho <span class="cart-count" id="cartCount">0</span>
                 </button>
@@ -92,7 +92,7 @@
     </header>
 
     <section class="hero">
-        <h1>Hambúrgueres Artesanais</h1>
+        <h1>Hambúrgueres</h1>
     </section>
 
     <section class="menu-section">
@@ -124,7 +124,7 @@
                 </div>
 
                 <div style="text-align: center; font-size: 0.75rem; color: #888; margin-bottom: 5px;">
-                    * Entrega em casa: + R$ 5,00 de frete
+                    * Entrega em casa: + R$ 12,00 de frete
                 </div>
 
                 <div class="total-box">Total: <span id="cartTotal" style="color: var(--primary)">R$ 0,00</span></div>
@@ -140,7 +140,7 @@
             <h2 style="margin-bottom: 1.5rem; font-family: 'Bebas Neue'">Como deseja receber?</h2>
             
             <div class="option-card" id="opt-mesa" onclick="selectDelivery('mesa')">
-                <i class="fas fa-chair"></i> <span>Mesa 5 (Fixo)</span>
+                <i class="fas fa-chair"></i> <span>Mesa 5</span>
             </div>
             <div class="option-card" id="opt-balcao" onclick="selectDelivery('balcao')">
                 <i class="fas fa-store"></i> <span>Retirar no balcão</span>
@@ -158,8 +158,8 @@
             </div>
 
             <div id="addressSection" class="delivery-info-section">
-                <div class="form-group"><label>Nome Completo *</label><input type="text" id="custName" class="form-input" placeholder="Seu nome"></div>
-                <div class="form-group"><label>Rua e Número *</label><input type="text" id="custStreet" class="form-input" placeholder="Rua, 123"></div>
+                <div class="form-group"><label>Seu Nome*</label><input type="text" id="custName" class="form-input" placeholder="Seu nome"></div>
+                <div class="form-group"><label>Rua e Número/Quadra e Lote *</label><input type="text" id="custStreet" class="form-input" placeholder="Rua, 123"></div>
                 <div class="form-group"><label>Bairro *</label><input type="text" id="custBairro" class="form-input" placeholder="Seu bairro"></div>
                 <div class="form-group"><label>Ponto de Referência *</label><input type="text" id="custRef" class="form-input" placeholder="Perto de..."></div>
             </div>
@@ -174,7 +174,7 @@
 
     <script>
         const WHATSAPP_NUMBER = '5562995679219';
-        const FRETE_VALOR_FIXO = 5.00;
+        const FRETE_VALOR_FIXO = 12.00;
         
         const menuItems = [
             { id: 1, name: 'Classic Burger', price: 25.00, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400' },
@@ -396,9 +396,9 @@
                 if(!isValidCPF(cpf)) return alert('CPF Inválido!');
                 info = `Balcão (CPF: ${cpf})`;
             } else {
-                const n = document.getElementById('custName').value, r = document.getElementById('custStreet').value, b = document.getElementById('custBairro').value;
+                const n = document.getElementById('custName').value, r = document.getElementById('custStreet').value, b = document.getElementById('custBairro').value, ref = document.getElementById('custRef').value;
                 if(!n || !r || !b) return alert('Preencha o endereço!');
-                info = `Entrega: ${n}\nEnd: ${r}, ${b}`;
+                info = `Entrega: ${n}\nEnd: ${r}, ${b}${ref ? '\nRef: ' + ref : ''}`;
                 totalPedido += FRETE_VALOR_FIXO;
             }
 
