@@ -4,535 +4,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Digital Interativo</title>
+    <title>Menu Digital Profissional</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #e63946;
             --dark: #1d3557;
-            --light: #f1faee;
-            --success: #28a745;
-            --info: #009ee3;
+            --success: #2ecc71;
+            --mp-blue: #009ee3;
         }
 
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f5f5f5; padding-bottom: 80px; }
-        header { background: var(--dark); color: white; padding: 1rem; text-align: center; position: sticky; top: 0; z-index: 100; }
-        
-        .container { max-width: 1200px; margin: auto; padding: 15px; }
-        
-        .carousel-section { margin-bottom: 30px; }
-        .carousel-container { 
-            display: flex; 
-            overflow-x: auto; 
-            gap: 15px; 
-            padding: 10px 0;
-            scrollbar-width: none;
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { margin: 0; background: #f8f9fa; padding-bottom: 100px; }
+
+        header { 
+            background: linear-gradient(135deg, var(--dark) 0%, #2c3e50 100%);
+            color: white; padding: 40px 20px; text-align: center; border-bottom: 4px solid var(--primary);
         }
-        .carousel-container::-webkit-scrollbar { display: none; }
+        
+        .container { max-width: 1100px; margin: auto; padding: 15px; }
+        .carousel-container { display: flex; overflow-x: auto; gap: 15px; padding-bottom: 15px; scrollbar-width: none; }
         
         .product-card {
-            min-width: 200px;
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
+            min-width: 200px; background: white; border-radius: 15px; padding: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center;
         }
-        .product-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; }
-        .product-card h3 { font-size: 1rem; margin: 10px 0; }
-        .product-card select { width: 100%; padding: 8px; margin: 10px 0; border-radius: 5px; border: 1px solid #ddd; }
-        .btn-add { background: var(--primary); color: white; border: none; padding: 12px 15px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; font-size: 1rem; }
+
+        .btn-add { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: 600; cursor: pointer; }
 
         .cart-bar {
             position: fixed; bottom: 0; left: 0; right: 0;
-            background: var(--dark); color: white;
-            padding: 15px; display: flex; justify-content: space-between;
-            align-items: center; cursor: pointer; z-index: 999;
+            background: var(--dark); color: white; padding: 18px 25px;
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
         }
 
-        .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: none; z-index: 2000;
-            justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background: white; width: 90%; max-width: 500px;
-            max-height: 85vh; overflow-y: auto;
-            border-radius: 15px; padding: 20px; position: relative;
-        }
-        .close-modal { position: absolute; right: 15px; top: 15px; font-size: 1.5rem; cursor: pointer; }
-
-        .cart-item { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #eee; padding: 10px 0; }
-        .cart-item img { width: 50px; height: 50px; border-radius: 5px; }
-        .qty-controls { display: flex; align-items: center; gap: 10px; }
-        .qty-btn { background: #eee; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-content { background: white; width: 95%; max-width: 450px; border-radius: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; }
         
-        .obs-input { width: 100%; margin-top: 5px; padding: 5px; font-size: 0.8rem; border: 1px solid #ccc; border-radius: 4px; }
-        
+        input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 8px; }
         .hidden { display: none; }
-        .delivery-alert { background: #fff3cd; color: #856404; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 0.9rem; }
         
-        input, select { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; border: 1px solid #ddd; border-radius: 5px; }
-
-        .coupon-area { display: flex; gap: 5px; margin: 10px 0; }
-        .btn-coupon { background: var(--dark); color: white; border: none; padding: 0 15px; border-radius: 5px; cursor: pointer; }
-
-        .security-header { text-align: center; margin-bottom: 15px; color: var(--success); }
-        .security-header i { font-size: 2.5rem; }
-
-        .method-card {
-            border: 2px solid #eee; padding: 12px; border-radius: 10px; margin-bottom: 10px;
-            cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s;
-        }
+        .method-card { border: 2px solid #eee; padding: 12px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; }
         .method-card.active { border-color: var(--primary); background: #fff5f5; }
-        
-        /* BOTÃO PAGAR AGORA ELEGANTE */
-        .btn-pay { 
-            background: linear-gradient(135deg, #009ee3 0%, #007bb5 100%); 
-            color: white; 
-            text-decoration: none; 
-            display: inline-block; 
-            text-align: center; 
-            margin: 15px auto; 
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,158,227,0.3);
-            transition: transform 0.2s;
-            width: 80%;
-            cursor: pointer;
-        }
-        .btn-pay:hover { transform: scale(1.03); }
 
-        .btn-wa { background: #25d366; color: white; margin-bottom: 10px; width: 100%; position: relative; overflow: hidden; }
-        .btn-wa.success { background: #128c7e; }
-
-        .modal-final-flex {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+        .btn-pay-link { 
+            display: block; background: var(--mp-blue); color: white; text-align: center; 
+            padding: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>Minha Loja Digital</h1>
+    <h1>Minha Loja Gourmet</h1>
 </header>
 
-<div class="container" id="menu-container">
-    <div class="carousel-section">
-        <h2>Lanches</h2>
-        <div class="carousel-container">
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400">
-                <h3>Lanches 1</h3><p>R$ 10.00</p>
-                <select id="flavor-0-1"><option>Tradicional</option><option>Chocolate</option><option>Morango</option><option>Ninho</option></select>
-                <button class="btn-add" onclick="addToCart('0-1', 'Lanches 1', 10.00, true, 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400">
-                <h3>Lanches 2</h3><p>R$ 20.00</p>
-                <select id="flavor-0-2"><option>Tradicional</option><option>Chocolate</option><option>Morango</option><option>Ninho</option></select>
-                <button class="btn-add" onclick="addToCart('0-2', 'Lanches 2', 20.00, true, 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400">
-                <h3>Lanches 3</h3><p>R$ 30.00</p>
-                <select id="flavor-0-3"><option>Tradicional</option><option>Chocolate</option><option>Morango</option><option>Ninho</option></select>
-                <button class="btn-add" onclick="addToCart('0-3', 'Lanches 3', 30.00, true, 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400">
-                <h3>Lanches 4</h3><p>R$ 40.00</p>
-                <button class="btn-add" onclick="addToCart('0-4', 'Lanches 4', 40.00, false, 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400">
-                <h3>Lanches 5</h3><p>R$ 50.00</p>
-                <button class="btn-add" onclick="addToCart('0-5', 'Lanches 5', 50.00, false, 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400">
-                <h3>Lanches 6</h3><p>R$ 60.00</p>
-                <button class="btn-add" onclick="addToCart('0-6', 'Lanches 6', 60.00, false, 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400">
-                <h3>Lanches 7</h3><p>R$ 70.00</p>
-                <button class="btn-add" onclick="addToCart('0-7', 'Lanches 7', 70.00, false, 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400')">Adicionar</button>
-            </div>
+<div class="container">
+    <h2>🍔 Cardápio</h2>
+    <div class="carousel-container">
+        <div class="product-card">
+            <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200" style="width:100%; border-radius:10px">
+            <h3>Produto 1</h3>
+            <div style="color:var(--success); font-weight:bold">R$ 10.00</div>
+            <button class="btn-add" onclick="addToCart('0-1', 'Produto 1', 10)">Adicionar</button>
         </div>
-    </div>
-
-    <div class="carousel-section">
-        <h2>Bebidas</h2>
-        <div class="carousel-container">
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400">
-                <h3>Bebidas 1</h3><p>R$ 10.00</p>
-                <select id="flavor-1-1"><option>Tradicional</option><option>Chocolate</option><option>Morango</option><option>Ninho</option></select>
-                <button class="btn-add" onclick="addToCart('1-1', 'Bebidas 1', 10.00, true, 'https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400">
-                <h3>Bebidas 2</h3><p>R$ 20.00</p>
-                <select id="flavor-1-2"><option>Tradicional</option><option>Chocolate</option><option>Morango</option><option>Ninho</option></select>
-                <button class="btn-add" onclick="addToCart('1-2', 'Bebidas 2', 20.00, true, 'https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400">
-                <h3>Bebidas 3</h3><p>R$ 30.00</p>
-                <select id="flavor-1-3"><option>Tradicional</option><option>Chocolate</option><option>Morango</option><option>Ninho</option></select>
-                <button class="btn-add" onclick="addToCart('1-3', 'Bebidas 3', 30.00, true, 'https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400">
-                <h3>Bebidas 4</h3><p>R$ 40.00</p>
-                <button class="btn-add" onclick="addToCart('1-4', 'Bebidas 4', 40.00, false, 'https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400">
-                <h3>Bebidas 5</h3><p>R$ 50.00</p>
-                <button class="btn-add" onclick="addToCart('1-5', 'Bebidas 5', 50.00, false, 'https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400">
-                <h3>Bebidas 6</h3><p>R$ 60.00</p>
-                <button class="btn-add" onclick="addToCart('1-6', 'Bebidas 6', 60.00, false, 'https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400">
-                <h3>Bebidas 7</h3><p>R$ 70.00</p>
-                <button class="btn-add" onclick="addToCart('1-7', 'Bebidas 7', 70.00, false, 'https://images.unsplash.com/photo-1544145945-f904253d0c7b?w=400')">Adicionar</button>
-            </div>
         </div>
-    </div>
-
-    <div class="carousel-section">
-        <h2>Sobremesas</h2>
-        <div class="carousel-container">
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400">
-                <h3>Sobremesas 1</h3><p>R$ 10.00</p>
-                <select id="flavor-2-1"><option>Tradicional</option><option>Chocolate</option><option>Morango</option><option>Ninho</option></select>
-                <button class="btn-add" onclick="addToCart('2-1', 'Sobremesas 1', 10.00, true, 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400">
-                <h3>Sobremesas 2</h3><p>R$ 20.00</p>
-                <select id="flavor-2-2"><option>Tradicional</option><option>Chocolate</option><option>Morango</option><option>Ninho</option></select>
-                <button class="btn-add" onclick="addToCart('2-2', 'Sobremesas 2', 20.00, true, 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400">
-                <h3>Sobremesas 3</h3><p>R$ 30.00</p>
-                <select id="flavor-2-3"><option>Tradicional</option><option>Chocolate</option><option>Morango</option><option>Ninho</option></select>
-                <button class="btn-add" onclick="addToCart('2-3', 'Sobremesas 3', 30.00, true, 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400">
-                <h3>Sobremesas 4</h3><p>R$ 40.00</p>
-                <button class="btn-add" onclick="addToCart('2-4', 'Sobremesas 4', 40.00, false, 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400">
-                <h3>Sobremesas 5</h3><p>R$ 50.00</p>
-                <button class="btn-add" onclick="addToCart('2-5', 'Sobremesas 5', 50.00, false, 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400">
-                <h3>Sobremesas 6</h3><p>R$ 60.00</p>
-                <button class="btn-add" onclick="addToCart('2-6', 'Sobremesas 6', 60.00, false, 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400">
-                <h3>Sobremesas 7</h3><p>R$ 70.00</p>
-                <button class="btn-add" onclick="addToCart('2-7', 'Sobremesas 7', 70.00, false, 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400')">Adicionar</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="carousel-section">
-        <h2>Porções</h2>
-        <div class="carousel-container">
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400">
-                <h3>Porções 1</h3><p>R$ 10.00</p>
-                <select id="flavor-3-1"><option>Tradicional</option><option>Chocolate</option><option>Morango</option><option>Ninho</option></select>
-                <button class="btn-add" onclick="addToCart('3-1', 'Porções 1', 10.00, true, 'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400">
-                <h3>Porções 2</h3><p>R$ 20.00</p>
-                <select id="flavor-3-2"><option>Tradicional</option><option>Chocolate</option><option>Morango</option><option>Ninho</option></select>
-                <button class="btn-add" onclick="addToCart('3-2', 'Porções 2', 20.00, true, 'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400">
-                <h3>Porções 3</h3><p>R$ 30.00</p>
-                <select id="flavor-3-3"><option>Tradicional</option><option>Chocolate</option><option>Morango</option><option>Ninho</option></select>
-                <button class="btn-add" onclick="addToCart('3-3', 'Porções 3', 30.00, true, 'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400">
-                <h3>Porções 4</h3><p>R$ 40.00</p>
-                <button class="btn-add" onclick="addToCart('3-4', 'Porções 4', 40.00, false, 'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400">
-                <h3>Porções 5</h3><p>R$ 50.00</p>
-                <button class="btn-add" onclick="addToCart('3-5', 'Porções 5', 50.00, false, 'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400">
-                <h3>Porções 6</h3><p>R$ 60.00</p>
-                <button class="btn-add" onclick="addToCart('3-6', 'Porções 6', 60.00, false, 'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400')">Adicionar</button>
-            </div>
-            <div class="product-card">
-                <img src="https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400">
-                <h3>Porções 7</h3><p>R$ 70.00</p>
-                <button class="btn-add" onclick="addToCart('3-7', 'Porções 7', 70.00, false, 'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400')">Adicionar</button>
-            </div>
-        </div>
-    </div>
 </div>
 
-<div class="cart-bar" onclick="toggleCart()">
-    <span><i class="fas fa-shopping-cart"></i> Carrinho (<span id="cart-count">0</span>)</span>
+<div class="cart-bar" onclick="openCart()">
+    <span>🛒 Itens: <span id="cart-count">0</span></span>
     <span id="cart-total-bar">R$ 0,00</span>
 </div>
 
 <div id="modal-cart" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="toggleCart()">&times;</span>
-        <h2>Seu Pedido</h2>
+        <h2>Seu Carrinho</h2>
         <div id="cart-items-list"></div>
-        <div style="margin-top: 20px;">
-            <label>Cupom de Desconto:</label>
-            <div class="coupon-area">
-                <input type="text" id="coupon-input" placeholder="Digitar...">
-                <button class="btn-coupon" onclick="applyCoupon()">Aplicar</button>
-            </div>
-            <div id="coupon-msg" style="font-size: 0.8rem; margin-bottom: 10px;"></div>
-            <div class="delivery-alert">Aviso: Delivery em casa possui acréscimo de R$ 13,00.</div>
-            <h3 id="modal-total">Total: R$ 0,00</h3>
-            <button class="btn-add" onclick="goToCheckout()">Finalizar Compra</button>
-        </div>
+        <button class="btn-add" onclick="goToCheckout()">Escolher Entrega</button>
+        <button onclick="closeCart()" style="background:none; border:none; color:red; margin-top:10px; width:100%">Fechar</button>
     </div>
 </div>
 
 <div id="modal-checkout" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="closeCheckout()">&times;</span>
-        <div class="security-header"><i class="fas fa-user-shield"></i><p><strong>Checkout Seguro</strong></p></div>
         <h3>Como deseja receber?</h3>
-        <div class="method-card" id="card-mesa" onclick="selectMethod('mesa')"><i class="fas fa-utensils"></i> <span>Mesa 5</span></div>
-        <div class="method-card" id="card-balcao" onclick="selectMethod('balcao')"><i class="fas fa-walking"></i> <span>Retirar no Balcão</span></div>
-        <div class="method-card" id="card-delivery" onclick="selectMethod('delivery')"><i class="fas fa-motorcycle"></i> <span>Delivery em Casa (+ R$ 13,00)</span></div>
-        <form id="form-checkout">
-            <div id="fields-mesa" class="hidden"><input type="text" id="name-mesa" placeholder="Nome Completo" required></div>
-            <div id="fields-balcao" class="hidden">
-                <input type="text" id="name-balcao" placeholder="Nome Completo" required>
-                <input type="text" id="cpf-balcao" placeholder="CPF (Apenas números)" required maxlength="11">
-            </div>
+        <div class="method-card" id="card-mesa" onclick="selectMethod('mesa')">Mesa 5</div>
+        <div class="method-card" id="card-balcao" onclick="selectMethod('balcao')">Retirar no Balcão</div>
+        <div class="method-card" id="card-delivery" onclick="selectMethod('delivery')">Delivery (+ R$ 13)</div>
+
+        <div id="form-dados" class="hidden">
+            <input type="text" id="cust-name" placeholder="Nome Completo">
+            <input type="text" id="cust-cpf" class="hidden" placeholder="CPF Obrigatório" maxlength="14" oninput="maskCPF(this)">
             <div id="fields-delivery" class="hidden">
-                <input type="text" id="name-dev" placeholder="Nome Completo" required>
-                <input type="text" id="cpf-dev" placeholder="CPF (Apenas números)" required maxlength="11">
-                <input type="text" id="bairro-dev" placeholder="Bairro" required>
-                <input type="text" id="rua-dev" placeholder="Rua/Número" required>
-                <input type="text" id="comp-dev" placeholder="Complemento">
+                <input type="text" id="addr-rua" placeholder="Rua e Número">
+                <input type="text" id="addr-bairro" placeholder="Bairro">
             </div>
-            <button type="button" class="btn-add" style="margin-top:20px" onclick="validateAndContinue()">Continuar</button>
-        </form>
+            <button class="btn-add" style="background:var(--success); margin-top:10px" onclick="validateAndFinalize()">Ver Pagamento</button>
+        </div>
     </div>
 </div>
 
 <div id="modal-final" class="modal">
-    <div class="modal-content modal-final-flex">
-        <span class="close-modal" onclick="closeFinal()">&times;</span>
-        <div class="security-header"><i class="fas fa-check-circle"></i><h3>Quase lá!</h3></div>
+    <div class="modal-content" style="text-align:center">
+        <h3>Finalizar Pedido</h3>
+        <p id="total-txt" style="font-weight:bold"></p>
         
-        <button id="btn-whatsapp-final" class="btn-add btn-wa" onclick="sendWhatsApp()"><i class="fab fa-whatsapp"></i> Mandar para WhatsApp</button>
+        <div id="payment-links-area"></div>
         
-        <a id="pay-link" href="#" target="_blank" class="btn-pay">Pagar Agora</a>
-        
-        <p id="no-link-msg" style="color:red; font-size:0.8rem; display:none;">Link não disponível para este valor.</p>
+        <button class="btn-add" style="background:#25d366; margin-top:10px" onclick="sendWhatsApp()">
+            <i class="fab fa-whatsapp"></i> Confirmar no WhatsApp
+        </button>
     </div>
 </div>
 
 <script>
-    const linksDePagamentoFixos = {
-        "1.00": "https://mpago.la/2AXmnns", "2.00": "https://mpago.la/1XRx3MU", "3.00": "https://mpago.la/2hCQdie",
-        "4.00": "https://mpago.la/21V68Ki", "5.00": "https://mpago.la/2GCnr3j", "6.00": "https://mpago.la/127jvNn",
-        "7.00": "https://mpago.la/2p6uptE", "8.00": "https://mpago.la/11j2Jua", "9.00": "https://mpago.la/1eFbxkN",
-        "10.00": "https://mpago.la/2cRxjg5", "11.00": "https://mpago.la/2LS6XMT", "12.00": "https://mpago.la/1ssdztd",
-        "13.00": "https://mpago.la/2pEQ3rJ", "14.00": "https://mpago.la/2ShtRu7", "15.00": "https://mpago.la/2MdLA1J",
-        "20.00": "https://mpago.la/2d4EhNH", "25.00": "https://mpago.la/24MoD81", "30.00": "https://mpago.la/1wEbmXA",
-        "33.00": "https://mpago.la/2P1Snuu", "38.00": "https://mpago.la/32a4XhN", "40.00": "https://mpago.la/22fHXUh",
-        "50.00": "https://mpago.la/18PNJgh", "60.00": "https://mpago.la/32XUkFX", "70.00": "https://mpago.la/19j57aj",
-        "75.00": "https://mpago.la/1ScZwvW", "80.00": "https://mpago.la/2StD47t", "90.00": "https://mpago.la/18ZpYMG",
-        "100.00": "https://mpago.la/14fLE5V"
+    // 1. INSIRA SEUS LINKS AQUI
+    const linksPagamento = {
+        "0-1": "https://link-mercado-pago-lanche-1",
+        "0-2": "https://link-mercado-pago-lanche-2",
+        "1-1": "https://link-mercado-pago-bebida-1"
+        // Adicione todos os 28 IDs aqui
     };
 
-    let cart = JSON.parse(localStorage.getItem('myCart')) || [];
-    let discount = 0;
-    let freeShipping = false;
+    let cart = [];
     let selectedMethod = "";
-    let customerData = {};
 
-    function addToCart(id, name, price, hasFlavor, imgSrc) {
-        const flavor = hasFlavor ? document.getElementById(`flavor-${id}`).value : null;
-        cart.push({ tempId: Date.now(), id, name, price, flavor, qty: 1, obs: '', img: imgSrc });
-        saveCart();
-        updateCartUI();
+    function maskCPF(i) {
+        let v = i.value.replace(/\D/g, "");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d)/, "$1.$2");
+        v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+        i.value = v;
     }
 
-    function saveCart() { localStorage.setItem('myCart', JSON.stringify(cart)); }
+    function addToCart(id, name, price) {
+        cart.push({ id, name, price });
+        updateUI();
+    }
 
-    function updateCartUI() {
+    function updateUI() {
         document.getElementById('cart-count').innerText = cart.length;
-        const total = calculateFinalTotal();
-        document.getElementById('cart-total-bar').innerText = `R$ ${total}`;
-        document.getElementById('modal-total').innerText = `Total: R$ ${total}`;
-        const list = document.getElementById('cart-items-list');
-        list.innerHTML = cart.map((item, index) => `
-            <div class="cart-item">
-                <img src="${item.img}">
-                <div style="flex:1">
-                    <strong>${item.name}</strong> ${item.flavor ? `(${item.flavor})` : ''}<br>R$ ${item.price.toFixed(2)}
-                    <input type="text" class="obs-input" placeholder="Obs..." value="${item.obs}" onchange="updateObs(${index}, this.value)">
-                </div>
-                <div class="qty-controls">
-                    <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
-                    <span>${item.qty}</span>
-                    <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
-                    <i class="fas fa-trash" style="color:red; cursor:pointer" onclick="removeItem(${index})"></i>
-                </div>
-            </div>`).join('');
+        let total = cart.reduce((acc, i) => acc + i.price, 0);
+        if(selectedMethod === 'delivery') total += 13;
+        document.getElementById('cart-total-bar').innerText = `R$ ${total.toFixed(2)}`;
+        document.getElementById('total-txt').innerText = `Total: R$ ${total.toFixed(2)}`;
+        
+        document.getElementById('cart-items-list').innerHTML = cart.map((item, index) => `
+            <div style="display:flex; justify-content:space-between; padding:5px 0">
+                <span>${item.name}</span>
+                <button onclick="removeItem(${index})" style="color:red; border:none; background:none">X</button>
+            </div>
+        `).join('');
     }
 
-    function calculateFinalTotal() {
-        const sub = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
-        let total = sub - (sub * discount);
-        if(selectedMethod === 'delivery' && !freeShipping) total += 13;
-        return total.toFixed(2);
+    function selectMethod(m) {
+        selectedMethod = m;
+        document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
+        document.getElementById(`card-${m}`).classList.add('active');
+        document.getElementById('form-dados').classList.remove('hidden');
+        document.getElementById('cust-cpf').classList.toggle('hidden', m !== 'balcao');
+        document.getElementById('fields-delivery').classList.toggle('hidden', m !== 'delivery');
+        updateUI();
     }
 
-    function validateAndContinue() {
-        if(!selectedMethod) return alert("Selecione um método!");
-        const inputs = document.querySelectorAll(`#fields-${selectedMethod} input[required]`);
-        let valid = true;
-        inputs.forEach(i => { if(!i.value) valid = false; });
-        if(!valid) return alert("Preencha todos os campos!");
+    function validateAndFinalize() {
+        if(!document.getElementById('cust-name').value) return alert("Nome é obrigatório");
+        
+        // Gera os links de pagamento baseados no carrinho
+        const areaLinks = document.getElementById('payment-links-area');
+        areaLinks.innerHTML = "";
+        
+        // Pega os links dos produtos que estão no carrinho
+        const idsNoCarrinho = [...new Set(cart.map(item => item.id))];
+        idsNoCarrinho.forEach(id => {
+            if(linksPagamento[id]) {
+                const nomeProd = cart.find(i => i.id === id).name;
+                areaLinks.innerHTML += `<a href="${linksPagamento[id]}" target="_blank" class="btn-pay-link">Pagar ${nomeProd}</a>`;
+            }
+        });
 
-        if(selectedMethod === 'mesa') {
-            customerData = { nome: document.getElementById('name-mesa').value, endereco: "Mesa 5", cpf: "N/A" };
-        } else if(selectedMethod === 'balcao') {
-            customerData = { nome: document.getElementById('name-balcao').value, cpf: document.getElementById('cpf-balcao').value, endereco: "Retirada no Balcão" };
-        } else {
-            customerData = { 
-                nome: document.getElementById('name-dev').value, 
-                cpf: document.getElementById('cpf-dev').value, 
-                endereco: `${document.getElementById('rua-dev').value}, ${document.getElementById('bairro-dev').value} (${document.getElementById('comp-dev').value})` 
-            };
-        }
-
-        const totalP = calculateFinalTotal();
-        const itensFormatados = cart.map(i => `${i.qty}x ${i.name} ${i.flavor ? `(${i.flavor})` : ''}`).join(', ');
-        enviarParaPlanilha({ produtos: itensFormatados, nome: customerData.nome, cpf: customerData.cpf, bairro: "N/A", rua: customerData.endereco, comp: "N/A", coleta: selectedMethod, total: totalP });
-        showFinalStep();
-    }
-
-    function enviarParaPlanilha(dados) {
-        const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScCadaja6iLfwVL7fH6aVs_iXTJpZgBREY-Ju98Zqg3KKslWg/formResponse";
-        const formData = new FormData();
-        formData.append("entry.62718261", dados.produtos);
-        formData.append("entry.1278482765", dados.nome);
-        formData.append("entry.143126943", dados.cpf);
-        formData.append("entry.1878038120", dados.bairro);
-        formData.append("entry.1399400806", dados.rua);
-        formData.append("entry.1697072560", dados.comp);
-        formData.append("entry.1857638858", dados.coleta);
-        formData.append("entry.1235511550", dados.total);
-        fetch(FORM_URL, { method: "POST", mode: "no-cors", body: formData });
-    }
-
-    function showFinalStep() {
-        const totalStr = calculateFinalTotal();
-        const payBtn = document.getElementById('pay-link');
-        const errorMsg = document.getElementById('no-link-msg');
-        if(linksDePagamentoFixos[totalStr]) {
-            payBtn.href = linksDePagamentoFixos[totalStr];
-            payBtn.style.display = 'inline-block';
-            errorMsg.style.display = 'none';
-        } else {
-            payBtn.style.display = 'none';
-            errorMsg.style.display = 'block';
-        }
         document.getElementById('modal-checkout').style.display = 'none';
         document.getElementById('modal-final').style.display = 'flex';
     }
 
     function sendWhatsApp() {
-        const btn = document.getElementById('btn-whatsapp-final');
-        const total = calculateFinalTotal();
-        const linkPagamento = linksDePagamentoFixos[total] || "Link não disponível";
-        
-        let msg = `*NOVO PEDIDO*\n`;
-        msg += `--------------------------\n`;
-        msg += `*Cliente:* ${customerData.nome}\n`;
-        msg += `*CPF:* ${customerData.cpf}\n`;
-        msg += `*Endereço:* ${customerData.endereco}\n`;
-        msg += `--------------------------\n`;
-        msg += `*ITENS:*\n`;
-        cart.forEach(i => {
-            msg += `• ${i.qty}x ${i.name} ${i.flavor ? `(${i.flavor})` : ''}\n`;
-            if(i.obs) msg += `  _Obs: ${i.obs}_\n`;
-        });
-        msg += `--------------------------\n`;
-        msg += `*TOTAL: R$ ${total}*\n\n`;
-        msg += `*LINK DE PAGAMENTO:*\n${linkPagamento}`;
-
-        // Animação de sucesso no botão
-        btn.classList.add('success');
-        btn.innerHTML = '<i class="fas fa-check"></i> Enviado com sucesso!';
-
-        setTimeout(() => {
-            window.open(`https://wa.me/5562995679219?text=${encodeURIComponent(msg)}`);
-        }, 800);
+        const nome = document.getElementById('cust-name').value;
+        const texto = `Pedido de ${nome}\nMétodo: ${selectedMethod}\nTotal: ${document.getElementById('cart-total-bar').innerText}`;
+        window.open(`https://wa.me/5562995679219?text=${encodeURIComponent(texto)}`);
+        cart = []; updateUI();
+        document.getElementById('modal-final').style.display = 'none';
     }
 
-    function applyCoupon() {
-        const code = document.getElementById('coupon-input').value.toUpperCase();
-        const msg = document.getElementById('coupon-msg');
-        discount = 0; freeShipping = false;
-        if(code === "DEZ10") { discount = 0.10; msg.innerText = "10% OFF!"; msg.style.color = "green"; }
-        else if(code === "CINCO5") { discount = 0.05; msg.innerText = "5% OFF!"; msg.style.color = "green"; }
-        else if(code === "FRETEGRATIS") { freeShipping = true; msg.innerText = "Frete Grátis!"; msg.style.color = "green"; }
-        else { msg.innerText = "Inválido"; msg.style.color = "red"; }
-        updateCartUI();
-    }
-
-    function selectMethod(method) {
-        selectedMethod = method;
-        document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
-        document.getElementById(`card-${method}`).classList.add('active');
-        document.getElementById('fields-mesa').className = method === 'mesa' ? '' : 'hidden';
-        document.getElementById('fields-balcao').className = method === 'balcao' ? '' : 'hidden';
-        document.getElementById('fields-delivery').className = method === 'delivery' ? '' : 'hidden';
-    }
-    function updateQty(idx, c) { cart[idx].qty = Math.max(1, cart[idx].qty + c); saveCart(); updateCartUI(); }
-    function updateObs(idx, v) { cart[idx].obs = v; saveCart(); }
-    function removeItem(idx) { cart.splice(idx, 1); saveCart(); updateCartUI(); }
-    function toggleCart() { const m = document.getElementById('modal-cart'); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; }
-    function closeCheckout() { document.getElementById('modal-checkout').style.display = 'none'; }
-    function closeFinal() { document.getElementById('modal-final').style.display = 'none'; }
-    function goToCheckout() { if(cart.length === 0) return alert("Vazio!"); toggleCart(); document.getElementById('modal-checkout').style.display = 'flex'; }
-    window.onload = updateCartUI;
+    function removeItem(idx) { cart.splice(idx, 1); updateUI(); }
+    function openCart() { document.getElementById('modal-cart').style.display='flex'; }
+    function closeCart() { document.getElementById('modal-cart').style.display='none'; }
+    function goToCheckout() { document.getElementById('modal-cart').style.display='none'; document.getElementById('modal-checkout').style.display='flex'; }
+    window.onload = updateUI;
 </script>
 </body>
 </html>
-
