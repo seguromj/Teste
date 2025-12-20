@@ -599,20 +599,19 @@
         updateUI();
     }
 
-    // MODIFICAÇÃO SOLICITADA: SEQUÊNCIA COM IDs PRÓPRIOS
     function enviarParaPlanilha(dados) {
         const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScCadaja6iLfwVL7fH6aVs_iXTJpZgBREY-Ju98Zqg3KKslWg/formResponse";
         const formData = new FormData();
         
-        formData.append("entry.1399400806", dados.produtos);        // ID PRODUTOS
-        formData.append("entry.1278482765", dados.nome);            // ID NOME
-        formData.append("entry.143126943", dados.cpf);              // ID CPF
-        formData.append("entry.ID_BAIRRO", dados.bairro);           // ID BAIRRO
-        formData.append("entry.ID_RUA", dados.rua);                 // ID RUA
-        formData.append("entry.ID_NUMERO", dados.numero);           // ID NUMERO
-        formData.append("entry.ID_COMPLEMENTO", dados.comp);        // ID COMPLEMENTO
-        formData.append("entry.1697072560", dados.coleta);          // ID COLETA
-        formData.append("entry.764712754", dados.total);            // ID TOTAL
+        formData.append("entry.1399400806", dados.produtos);        
+        formData.append("entry.1278482765", dados.nome);            
+        formData.append("entry.143126943", dados.cpf);              
+        formData.append("entry.ID_BAIRRO", dados.bairro);           
+        formData.append("entry.ID_RUA", dados.rua);                 
+        formData.append("entry.ID_NUMERO", dados.numero);           
+        formData.append("entry.ID_COMPLEMENTO", dados.comp);        
+        formData.append("entry.1697072560", dados.coleta);          
+        formData.append("entry.764712754", dados.total);            
 
         fetch(FORM_URL, { method: "POST", mode: "no-cors", body: formData });
     }
@@ -627,7 +626,6 @@
         if(type === 'delivery') totalFinal += TAXA_ENTREGA;
         const totalStr = totalFinal.toFixed(2);
 
-        // Envia para a planilha na ordem solicitada
         enviarParaPlanilha({
             produtos: cart.map(i => `${i.quantity}x ${i.name}`).join(', '),
             nome: nome,
@@ -640,9 +638,10 @@
             total: totalStr
         });
 
-        // Prepara o modal de pagamento
+        // ATUALIZAÇÃO: Busca o link correto e garante que ele apareça no modal
         document.getElementById('pay-total').innerText = totalStr;
-        document.getElementById('pay-link').href = linksDePagamentoFixos[totalStr] || "#";
+        const linkPagamento = linksDePagamentoFixos[totalStr] || "#";
+        document.getElementById('pay-link').href = linkPagamento;
         
         document.getElementById('checkout-modal').style.display = 'none';
         document.getElementById('payment-modal').style.display = 'block';
@@ -651,11 +650,19 @@
     function finalizarWhatsApp() {
         const type = document.getElementById('delivery-type').value;
         const totalStr = document.getElementById('pay-total').innerText;
-        let msg = `*NOVO PEDIDO BEEFOOD*\n`;
-        cart.forEach(i => msg += `*${i.quantity}x* ${i.name}\n`);
-        msg += `\n*TOTAL: R$ ${totalStr}*\nTipo: ${type}`;
+        // ATUALIZAÇÃO: Pega o link que está atualmente no botão "Pagar Agora"
+        const linkPagamento = document.getElementById('pay-link').href;
         
-        // NÚMERO SOLICITADO: 62995677219
+        let msg = `*NOVO PEDIDO BEEFOOD*\n\n`;
+        cart.forEach(i => msg += `*${i.quantity}x* ${i.name}\n`);
+        msg += `\n*TOTAL: R$ ${totalStr}*`;
+        msg += `\n*TIPO:* ${type}`;
+        
+        // Inclui o link na mensagem do WhatsApp se ele existir na sua lista
+        if(linkPagamento !== "" && linkPagamento !== window.location.href + "#") {
+            msg += `\n\n*LINK PARA PAGAMENTO:* \n${linkPagamento}`;
+        }
+        
         window.open(`https://wa.me/5562995679219?text=${encodeURIComponent(msg)}`);
         localStorage.removeItem('cart');
         location.reload();
