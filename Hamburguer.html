@@ -377,7 +377,7 @@
             <div class="form-group"><label>Complemento</label><input type="text" id="dev-comp"></div>
         </div>
 
-        <button class="btn-main" onclick="sendWhatsApp()">Enviar Pedido <i class="fab fa-whatsapp"></i></button>
+        <button class="btn-main" onclick="sendWhatsApp()">Enviar Pedido <i class="fas fa-lock"></i>•<i class="fab fa-whatsapp"></i></button>
     </div>
 </div>
 
@@ -385,6 +385,7 @@
     <div class="modal-content" style="text-align: center;">
         <i class="fas fa-shield-alt" style="font-size: 4em; color: var(--success); margin-bottom: 15px;"></i>
         <h2 style="margin:0 0 10px 0;">Finalizar Pagamento</h2>
+		<p style="color: #666; font-size: 0.9em;">Seu pedido já foi enviado para nossa cozinha!<br>Agora, realize o pagamento para finalizar.</p>
         
         <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin: 20px 0;">
             <span style="font-size: 0.9em; color: #777;">Valor Total:</span><br>
@@ -734,7 +735,6 @@
             total: totalStr
         });
 
-        // ATUALIZAÇÃO: Busca o link correto e garante que ele apareça no modal
         document.getElementById('pay-total').innerText = totalStr;
         const linkPagamento = linksDePagamentoFixos[totalStr] || "#";
         document.getElementById('pay-link').href = linkPagamento;
@@ -746,18 +746,52 @@
     function finalizarWhatsApp() {
         const type = document.getElementById('delivery-type').value;
         const totalStr = document.getElementById('pay-total').innerText;
-        // ATUALIZAÇÃO: Pega o link que está atualmente no botão "Pagar Agora"
         const linkPagamento = document.getElementById('pay-link').href;
         
-        let msg = `*NOVO PEDIDO BEEFOOD*\n\n`;
-        cart.forEach(i => msg += `*${i.quantity}x* ${i.name}\n`);
-        msg += `\n*TOTAL: R$ ${totalStr}*`;
-        msg += `\n*TIPO:* ${type}`;
+        // Captura dos dados inseridos pelo usuário
+        const nome = document.getElementById('dev-nome').value || "Não informado";
+        const bairro = document.getElementById('dev-bairro').value || "N/A";
+        const rua = document.getElementById('dev-rua').value || "N/A";
+        const num = document.getElementById('dev-num').value || "N/A";
+        const comp = document.getElementById('dev-comp').value || "N/A";
+        const cpfRetirada = document.getElementById('cpf-retirada').value || "N/A";
+        const cpfDelivery = document.getElementById('dev-cpf').value || "N/A";
+
+        // Montagem da Mensagem Personalizada
+        let msg = `*🐝 NOVO PEDIDO - BEEFOOD*\n`;
+        msg += `------------------------------------------\n`;
+        msg += `*🛍️ ITENS DO PEDIDO:*\n`;
+        cart.forEach(i => {
+            msg += `• *${i.quantity}x* ${i.name} (R$ ${(i.price * i.quantity).toFixed(2)})\n`;
+        });
         
-        // Inclui o link na mensagem do WhatsApp se ele existir na sua lista
-        if(linkPagamento !== "" && linkPagamento !== window.location.href + "#") {
-            msg += `\n\n*LINK PARA PAGAMENTO:* \n${linkPagamento}`;
+        msg += `\n*💰 RESUMO FINANCEIRO:*`;
+        if (discountValue > 0) msg += `\nDesconto: - R$ ${discountValue.toFixed(2)}`;
+        if (type === 'delivery') msg += `\nTaxa de Entrega: + R$ ${TAXA_ENTREGA.toFixed(2)}`;
+        msg += `\n*TOTAL: R$ ${totalStr}*\n`;
+        
+        msg += `\n*📍 DADOS DE ENTREGA / COLETA:*`;
+        msg += `\nForma: *${type.toUpperCase()}*`;
+        
+        if (type === 'delivery') {
+            msg += `\nNome: ${nome}`;
+            msg += `\nCPF: ${cpfDelivery}`;
+            msg += `\nEndereço: ${rua}, Nº ${num}`;
+            msg += `\nBairro: ${bairro}`;
+            if(comp !== "N/A" && comp !== "") msg += `\nComplemento: ${comp}`;
+        } else if (type === 'retirada') {
+            msg += `\nCPF do Cliente: ${cpfRetirada}`;
+            msg += `\n_Aguardando retirada no balcão._`;
+        } else {
+            msg += `\n_Pedido realizado para a Mesa 5_`;
         }
+
+        if(linkPagamento !== "" && linkPagamento !== window.location.href + "#") {
+            msg += `\n\n*💳 LINK PARA PAGAMENTO:*`;
+            msg += `\n${linkPagamento}`;
+        }
+        
+        msg += `\n------------------------------------------`;
         
         window.open(`https://wa.me/5562995679219?text=${encodeURIComponent(msg)}`);
         localStorage.removeItem('cart');
