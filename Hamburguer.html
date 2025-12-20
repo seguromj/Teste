@@ -79,8 +79,6 @@
 
         .security-header { text-align: center; margin-bottom: 15px; color: var(--success); }
         .security-header i { font-size: 2.5rem; }
-        .payment-icons { text-align: center; margin-top: 15px; font-size: 1.5rem; color: #666; }
-        .payment-icons i { margin: 0 8px; }
 
         .method-card {
             border: 2px solid #eee; padding: 12px; border-radius: 10px; margin-bottom: 10px;
@@ -88,8 +86,34 @@
         }
         .method-card.active { border-color: var(--primary); background: #fff5f5; }
         
-        .btn-pay { background: var(--info); color: white; text-decoration: none; display: block; text-align: center; margin-top: 10px; }
-        .btn-wa { background: #25d366; color: white; margin-bottom: 10px; }
+        /* BOTÃO PAGAR AGORA ELEGANTE */
+        .btn-pay { 
+            background: linear-gradient(135deg, #009ee3 0%, #007bb5 100%); 
+            color: white; 
+            text-decoration: none; 
+            display: inline-block; 
+            text-align: center; 
+            margin: 15px auto; 
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,158,227,0.3);
+            transition: transform 0.2s;
+            width: 80%;
+            cursor: pointer;
+        }
+        .btn-pay:hover { transform: scale(1.03); }
+
+        .btn-wa { background: #25d366; color: white; margin-bottom: 10px; width: 100%; position: relative; overflow: hidden; }
+        .btn-wa.success { background: #128c7e; }
+
+        .modal-final-flex {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -99,7 +123,6 @@
 </header>
 
 <div class="container" id="menu-container">
-    
     <div class="carousel-section">
         <h2>Lanches</h2>
         <div class="carousel-container">
@@ -328,124 +351,37 @@
 </div>
 
 <div id="modal-final" class="modal">
-    <div class="modal-content" style="text-align:center;">
+    <div class="modal-content modal-final-flex">
         <span class="close-modal" onclick="closeFinal()">&times;</span>
         <div class="security-header"><i class="fas fa-check-circle"></i><h3>Quase lá!</h3></div>
-        <button class="btn-add btn-wa" onclick="sendWhatsApp()"><i class="fab fa-whatsapp"></i> Mandar para WhatsApp</button>
-        <a id="pay-link" href="#" target="_blank" class="btn-add btn-pay">Pagar Agora</a>
+        
+        <button id="btn-whatsapp-final" class="btn-add btn-wa" onclick="sendWhatsApp()"><i class="fab fa-whatsapp"></i> Mandar para WhatsApp</button>
+        
+        <a id="pay-link" href="#" target="_blank" class="btn-pay">Pagar Agora</a>
+        
         <p id="no-link-msg" style="color:red; font-size:0.8rem; display:none;">Link não disponível para este valor.</p>
     </div>
 </div>
 
 <script>
-    // LINKS DE PAGAMENTO
     const linksDePagamentoFixos = {
-        "1.00": "https://mpago.la/2AXmnns", 
-            "2.00": "https://mpago.la/1XRx3MU",
-			"3.00": "https://mpago.la/2hCQdie",
-			"4.00": "https://mpago.la/21V68Ki",
-			"5.00": "https://mpago.la/2GCnr3j",
-			"6.00": "https://mpago.la/127jvNn",
-			"7.00": "https://mpago.la/2p6uptE",
-			"8.00": "https://mpago.la/11j2Jua",
-			"9.00": "https://mpago.la/1eFbxkN",
-			"10.00": "https://mpago.la/2cRxjg5",
-			"11.00": "https://mpago.la/2LS6XMT",
-			"12.00": "https://mpago.la/1ssdztd",
-			"13.00": "https://mpago.la/2pEQ3rJ",
-			"14.00": "https://mpago.la/2ShtRu7",
-			"15.00": "https://mpago.la/2MdLA1J",
-			"16.00": "https://mpago.la/122M9xy",
-			"17.00": "https://mpago.la/1hZpFv4",
-			"18.00": "https://mpago.la/2cvpYLD",
-			"19.00": "https://mpago.la/2fHzer1",
-			"20.00": "https://mpago.la/2d4EhNH",
-			"21.00": "https://mpago.la/2wtPbWJ",
-			"22.00": "https://mpago.la/1VEbPD6",
-			"23.00": "https://mpago.la/1u4N2eZ",
-			"24.00": "https://mpago.la/2tz3Thg",
-			"25.00": "https://mpago.la/24MoD81",
-			"26.00": "https://mpago.la/1gQ85w8",
-			"27.00": "https://mpago.la/2ncRJDR",
-			"28.00": "https://mpago.la/1rHT6fQ",
-			"29.00": "https://mpago.la/1wP8yiX",
-			"30.00": "https://mpago.la/1wEbmXA",
-			"31.00": "https://mpago.la/23tCjAH",
-			"32.00": "https://mpago.la/1H7ACLr",
-			"33.00": "https://mpago.la/2P1Snuu",
-			"34.00": "https://mpago.la/2dM8pXF",
-			"35.00": "https://mpago.la/2ccdL4T",
-			"36.00": "https://mpago.la/2LUutRb",
-			"37.00": "https://mpago.la/2SaBCdk",
-			"38.00": "https://mpago.la/32a4XhN",
-			"39.00": "https://mpago.la/1uK9SV6",
-			"40.00": "https://mpago.la/22fHXUh",
-			"41.00": "https://mpago.la/2FJM5SR",
-			"42.00": "https://mpago.la/2majQ3e",
-			"43.00": "https://mpago.la/2xuPWxe",
-			"44.00": "https://mpago.la/1xnrgBU",
-            "45.00": "https://mpago.la/2YxWyeN",
-            "46.00": "https://mpago.la/1C8B2Ys",
-            "47.00": "https://mpago.la/2BHbwKb",
-			"48.00": "https://mpago.la/2wJ79yX",
-			"49.00": "https://mpago.la/1q1CXu8",
-			"50.00": "https://mpago.la/18PNJgh",
-			"51.00": "https://mpago.la/29ngSEP",
-			"52.00": "https://mpago.la/1wpPNU6",
-			"53.00": "https://mpago.la/2w4JghY",
-			"54.00": "https://mpago.la/2wP8Zzy",
-			"55.00": "https://mpago.la/1uNDuE1",
-			"56.00": "https://mpago.la/2HwcPeo",
-			"57.00": "https://mpago.la/2SrqAtv",
-			"58.00": "https://mpago.la/2QddsUQ",
-			"59.00": "https://mpago.la/1KyezXR",
-			"60.00": "https://mpago.la/32XUkFX",
-			"61.00": "https://mpago.la/2LdRTmk",
-			"62.00": "https://mpago.la/31yQrfo",
-			"63.00": "https://mpago.la/2Nj6SQ3",
-			"64.00": "https://mpago.la/1AUtYYJ",
-			"65.00": "https://mpago.la/2dJLWg6",
-			"66.00": "https://mpago.la/2Qq6ofn",
-			"67.00": "https://mpago.la/2HSYSG8",
-			"68.00": "https://mpago.la/2agtz9z",
-			"69.00": "https://mpago.la/1yzPBDV",
-			"70.00": "https://mpago.la/19j57aj",
-			"71.00": "https://mpago.la/2NN176T",
-			"72.00": "https://mpago.la/2bgb4hq",
-			"73.00": "https://mpago.la/1Pjn7DD",
-			"74.00": "https://mpago.la/1bnsqvS",
-			"75.00": "https://mpago.la/1ScZwvW",
-			"76.00": "https://mpago.la/2pF999n",
-            "77.00": "https://mpago.la/25ZZdoS",
-			"78.00": "https://mpago.la/1df8NXT",
-			"79.00": "https://mpago.la/2c5ZvKh",
-			"80.00": "https://mpago.la/2StD47t",
-			"81.00": "https://mpago.la/1g2b3ky",
-			"82.00": "https://mpago.la/1EQriMV",
-			"83.00": "https://mpago.la/2Ur8gAJ",
-			"84.00": "https://mpago.la/12trufq",
-			"85.00": "https://mpago.la/2UkJGkF",
-			"86.00": "https://mpago.la/1N2Zw5R",
-			"87.00": "https://mpago.la/2QSwF7p",
-			"88.00": "https://mpago.la/2CnEweW",
-			"89.00": "https://mpago.la/1qjGyST",
-			"90.00": "https://mpago.la/18ZpYMG",
-			"91.00": "https://mpago.la/2jXbcve",
-			"92.00": "https://mpago.la/1G4GRb4",
-			"93.00": "https://mpago.la/1G4GRb4",
-			"94.00": "https://mpago.la/2L5SfaX",
-			"95.00": "https://mpago.la/1T8HvbD",
-			"96.00": "https://mpago.la/16i17Um",
-			"97.00": "https://mpago.la/2ULjkPj",
-			"98.00": "https://mpago.la/2WWWm1m",
-			"99.00": "https://mpago.la/2wQMxrn",
-			"100.00": "https://mpago.la/14fLE5V"
-        };
+        "1.00": "https://mpago.la/2AXmnns", "2.00": "https://mpago.la/1XRx3MU", "3.00": "https://mpago.la/2hCQdie",
+        "4.00": "https://mpago.la/21V68Ki", "5.00": "https://mpago.la/2GCnr3j", "6.00": "https://mpago.la/127jvNn",
+        "7.00": "https://mpago.la/2p6uptE", "8.00": "https://mpago.la/11j2Jua", "9.00": "https://mpago.la/1eFbxkN",
+        "10.00": "https://mpago.la/2cRxjg5", "11.00": "https://mpago.la/2LS6XMT", "12.00": "https://mpago.la/1ssdztd",
+        "13.00": "https://mpago.la/2pEQ3rJ", "14.00": "https://mpago.la/2ShtRu7", "15.00": "https://mpago.la/2MdLA1J",
+        "20.00": "https://mpago.la/2d4EhNH", "25.00": "https://mpago.la/24MoD81", "30.00": "https://mpago.la/1wEbmXA",
+        "33.00": "https://mpago.la/2P1Snuu", "38.00": "https://mpago.la/32a4XhN", "40.00": "https://mpago.la/22fHXUh",
+        "50.00": "https://mpago.la/18PNJgh", "60.00": "https://mpago.la/32XUkFX", "70.00": "https://mpago.la/19j57aj",
+        "75.00": "https://mpago.la/1ScZwvW", "80.00": "https://mpago.la/2StD47t", "90.00": "https://mpago.la/18ZpYMG",
+        "100.00": "https://mpago.la/14fLE5V"
+    };
 
     let cart = JSON.parse(localStorage.getItem('myCart')) || [];
     let discount = 0;
     let freeShipping = false;
     let selectedMethod = "";
+    let customerData = {};
 
     function addToCart(id, name, price, hasFlavor, imgSrc) {
         const flavor = hasFlavor ? document.getElementById(`flavor-${id}`).value : null;
@@ -478,32 +414,11 @@
             </div>`).join('');
     }
 
-    // LÓGICA DE CUPOM
-    function applyCoupon() {
-        const code = document.getElementById('coupon-input').value.toUpperCase();
-        const msg = document.getElementById('coupon-msg');
-        discount = 0; freeShipping = false;
-        if(code === "DEZ10") { discount = 0.10; msg.innerText = "10% de desconto!"; msg.style.color = "green"; }
-        else if(code === "CINCO5") { discount = 0.05; msg.innerText = "5% de desconto!"; msg.style.color = "green"; }
-        else if(code === "FRETEGRATIS") { freeShipping = true; msg.innerText = "Frete Grátis!"; msg.style.color = "green"; }
-        else { msg.innerText = "Cupom Inválido"; msg.style.color = "red"; }
-        updateCartUI();
-    }
-
-    // LÓGICA DE ENVIO (GOOGLE FORMS)
-    function enviarParaPlanilha(dados) {
-        const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScCadaja6iLfwVL7fH6aVs_iXTJpZgBREY-Ju98Zqg3KKslWg/formResponse";
-        const formData = new FormData();
-        formData.append("entry.62718261", dados.produtos);
-        formData.append("entry.1278482765", dados.nome);
-        formData.append("entry.143126943", dados.cpf);
-        formData.append("entry.1878038120", dados.bairro);
-        formData.append("entry.1399400806", dados.rua);
-        formData.append("entry.764712754", "N/A");
-        formData.append("entry.1697072560", dados.comp);
-        formData.append("entry.1857638858", dados.coleta);
-        formData.append("entry.1235511550", dados.total);
-        fetch(FORM_URL, { method: "POST", mode: "no-cors", body: formData });
+    function calculateFinalTotal() {
+        const sub = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
+        let total = sub - (sub * discount);
+        if(selectedMethod === 'delivery' && !freeShipping) total += 13;
+        return total.toFixed(2);
     }
 
     function validateAndContinue() {
@@ -513,27 +428,36 @@
         inputs.forEach(i => { if(!i.value) valid = false; });
         if(!valid) return alert("Preencha todos os campos!");
 
-        const itensFormatados = cart.map(i => `${i.qty}x ${i.name} ${i.flavor ? `(${i.flavor})` : ''}`).join(', ');
-        const totalP = calculateFinalTotal();
-        let nome, cpf, bairro, rua, comp;
-
         if(selectedMethod === 'mesa') {
-            nome = document.getElementById('name-mesa').value;
-            cpf = "N/A"; bairro = "N/A"; rua = "Mesa 5"; comp = "N/A";
+            customerData = { nome: document.getElementById('name-mesa').value, endereco: "Mesa 5", cpf: "N/A" };
         } else if(selectedMethod === 'balcao') {
-            nome = document.getElementById('name-balcao').value;
-            cpf = document.getElementById('cpf-balcao').value;
-            bairro = "N/A"; rua = "Balcão"; comp = "N/A";
+            customerData = { nome: document.getElementById('name-balcao').value, cpf: document.getElementById('cpf-balcao').value, endereco: "Retirada no Balcão" };
         } else {
-            nome = document.getElementById('name-dev').value;
-            cpf = document.getElementById('cpf-dev').value;
-            bairro = document.getElementById('bairro-dev').value;
-            rua = document.getElementById('rua-dev').value;
-            comp = document.getElementById('comp-dev').value;
+            customerData = { 
+                nome: document.getElementById('name-dev').value, 
+                cpf: document.getElementById('cpf-dev').value, 
+                endereco: `${document.getElementById('rua-dev').value}, ${document.getElementById('bairro-dev').value} (${document.getElementById('comp-dev').value})` 
+            };
         }
 
-        enviarParaPlanilha({ produtos: itensFormatados, nome, cpf, bairro, rua, comp, coleta: selectedMethod, total: totalP });
+        const totalP = calculateFinalTotal();
+        const itensFormatados = cart.map(i => `${i.qty}x ${i.name} ${i.flavor ? `(${i.flavor})` : ''}`).join(', ');
+        enviarParaPlanilha({ produtos: itensFormatados, nome: customerData.nome, cpf: customerData.cpf, bairro: "N/A", rua: customerData.endereco, comp: "N/A", coleta: selectedMethod, total: totalP });
         showFinalStep();
+    }
+
+    function enviarParaPlanilha(dados) {
+        const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScCadaja6iLfwVL7fH6aVs_iXTJpZgBREY-Ju98Zqg3KKslWg/formResponse";
+        const formData = new FormData();
+        formData.append("entry.62718261", dados.produtos);
+        formData.append("entry.1278482765", dados.nome);
+        formData.append("entry.143126943", dados.cpf);
+        formData.append("entry.1878038120", dados.bairro);
+        formData.append("entry.1399400806", dados.rua);
+        formData.append("entry.1697072560", dados.comp);
+        formData.append("entry.1857638858", dados.coleta);
+        formData.append("entry.1235511550", dados.total);
+        fetch(FORM_URL, { method: "POST", mode: "no-cors", body: formData });
     }
 
     function showFinalStep() {
@@ -542,7 +466,7 @@
         const errorMsg = document.getElementById('no-link-msg');
         if(linksDePagamentoFixos[totalStr]) {
             payBtn.href = linksDePagamentoFixos[totalStr];
-            payBtn.style.display = 'block';
+            payBtn.style.display = 'inline-block';
             errorMsg.style.display = 'none';
         } else {
             payBtn.style.display = 'none';
@@ -553,20 +477,45 @@
     }
 
     function sendWhatsApp() {
-        let itens = cart.map(i => `${i.qty}x ${i.name} ${i.flavor ? `(${i.flavor})` : ''} [Obs: ${i.obs}]`).join('\n');
+        const btn = document.getElementById('btn-whatsapp-final');
         const total = calculateFinalTotal();
-        const text = `*NOVO PEDIDO*\n\n${itens}\n\n*Total: R$ ${total}*`;
-        window.open(`https://wa.me/5562995679219?text=${encodeURIComponent(text)}`);
+        const linkPagamento = linksDePagamentoFixos[total] || "Link não disponível";
+        
+        let msg = `*NOVO PEDIDO*\n`;
+        msg += `--------------------------\n`;
+        msg += `*Cliente:* ${customerData.nome}\n`;
+        msg += `*CPF:* ${customerData.cpf}\n`;
+        msg += `*Endereço:* ${customerData.endereco}\n`;
+        msg += `--------------------------\n`;
+        msg += `*ITENS:*\n`;
+        cart.forEach(i => {
+            msg += `• ${i.qty}x ${i.name} ${i.flavor ? `(${i.flavor})` : ''}\n`;
+            if(i.obs) msg += `  _Obs: ${i.obs}_\n`;
+        });
+        msg += `--------------------------\n`;
+        msg += `*TOTAL: R$ ${total}*\n\n`;
+        msg += `*LINK DE PAGAMENTO:*\n${linkPagamento}`;
+
+        // Animação de sucesso no botão
+        btn.classList.add('success');
+        btn.innerHTML = '<i class="fas fa-check"></i> Enviado com sucesso!';
+
+        setTimeout(() => {
+            window.open(`https://wa.me/5562995679219?text=${encodeURIComponent(msg)}`);
+        }, 800);
     }
 
-    function calculateFinalTotal() {
-        const sub = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
-        let total = sub - (sub * discount);
-        if(selectedMethod === 'delivery' && !freeShipping) total += 13;
-        return total.toFixed(2);
+    function applyCoupon() {
+        const code = document.getElementById('coupon-input').value.toUpperCase();
+        const msg = document.getElementById('coupon-msg');
+        discount = 0; freeShipping = false;
+        if(code === "DEZ10") { discount = 0.10; msg.innerText = "10% OFF!"; msg.style.color = "green"; }
+        else if(code === "CINCO5") { discount = 0.05; msg.innerText = "5% OFF!"; msg.style.color = "green"; }
+        else if(code === "FRETEGRATIS") { freeShipping = true; msg.innerText = "Frete Grátis!"; msg.style.color = "green"; }
+        else { msg.innerText = "Inválido"; msg.style.color = "red"; }
+        updateCartUI();
     }
 
-    // HELPERS DE INTERFACE
     function selectMethod(method) {
         selectedMethod = method;
         document.querySelectorAll('.method-card').forEach(c => c.classList.remove('active'));
@@ -581,8 +530,7 @@
     function toggleCart() { const m = document.getElementById('modal-cart'); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; }
     function closeCheckout() { document.getElementById('modal-checkout').style.display = 'none'; }
     function closeFinal() { document.getElementById('modal-final').style.display = 'none'; }
-    function goToCheckout() { if(cart.length === 0) return alert("Carrinho vazio!"); toggleCart(); document.getElementById('modal-checkout').style.display = 'flex'; }
-
+    function goToCheckout() { if(cart.length === 0) return alert("Vazio!"); toggleCart(); document.getElementById('modal-checkout').style.display = 'flex'; }
     window.onload = updateCartUI;
 </script>
 </body>
