@@ -193,7 +193,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         }
 
-        #cart-modal, #checkout-modal, #payment-modal {
+        #cart-modal, #checkout-modal, #payment-modal, #flavor-modal {
             display: none;
             position: fixed;
             bottom: 0; left: 0; width: 100%; height: 100%;
@@ -291,6 +291,19 @@
             border: none;
             cursor: pointer;
         }
+
+        /* Estilos para o Modal de Sabores */
+        .flavor-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .flavor-option input { width: auto; margin-left: 10px; }
     </style>
 </head>
 <body>
@@ -319,6 +332,30 @@
 <div id="cart-footer" class="cart-footer" onclick="toggleCart()">
     <div><i class="fas fa-shopping-basket"></i> <span id="cart-count">0</span> itens</div>
     <strong>R$ <span id="cart-total-display">0.00</span></strong>
+</div>
+
+<div id="flavor-modal">
+    <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin:0">Escolha o Sabor</h2>
+            <i class="fas fa-times" onclick="closeFlavorModal()" style="font-size: 1.5em; cursor: pointer; color: #999"></i>
+        </div>
+        <div id="flavor-list">
+            <label class="flavor-option">
+                <span>Tradicional</span>
+                <input type="radio" name="flavor-choice" value="Tradicional" checked>
+            </label>
+            <label class="flavor-option">
+                <span>Picante</span>
+                <input type="radio" name="flavor-choice" value="Picante">
+            </label>
+            <label class="flavor-option">
+                <span>Barbecue</span>
+                <input type="radio" name="flavor-choice" value="Barbecue">
+            </label>
+        </div>
+        <button class="btn-main" onclick="confirmFlavor()">Confirmar e Adicionar</button>
+    </div>
 </div>
 
 <div id="cart-modal">
@@ -419,6 +456,7 @@
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
     let discountValue = 0;
     let appliedCoupon = "";
+    let currentFlavorProduct = null; // Armazena o produto sendo selecionado
     const TAXA_ENTREGA = 10.00;
 
     const cuponsValidos = { "BEE10": 0.10, "BEE5": 5.00, "PRIMEIRACOMPRA": 0.15 };
@@ -566,7 +604,7 @@
 
     const menuData = [
         { id: 1, name: "Bee Burguer Especial", price: 28.90, category: "lanches", desc: "Artesanal 180g com molho de mel.", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200" },
-        { id: 16, name: "Produto Selecionável", price: 0.00, category: "lanches", desc: "Escolha suas opções favoritas.", image: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=200", isSelection: true },
+        { id: 16, name: "Produto Selecionável", price: 35.00, category: "lanches", desc: "Escolha seu sabor favorito.", image: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=200", isSelection: true },
         { id: 2, name: "Combo Colmeia", price: 42.00, category: "lanches", desc: "Burguer duplo + Batata + Refri.", image: "https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=200" },
         { id: 3, name: "Batata Frita G", price: 18.00, category: "acompanhamentos", desc: "Crocante com sal e páprica.", image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=200" },
         { id: 5, name: "Coca Cola Lata 350ml", price: 6.00, category: "bebidas", desc: "Coca, Fanta ou Guaraná.", image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200" },
@@ -595,11 +633,39 @@
                     </div>
                 </div>
                 ${item.isSelection 
-                    ? `<button class="select-btn" onclick="alert('Funcionalidade de Seleção aberta!')">Selecionar</button>` 
+                    ? `<button class="select-btn" onclick="openFlavorModal(${item.id})">Selecionar</button>` 
                     : `<button class="add-btn" onclick="addToCart(${item.id})"><i class="fas fa-plus"></i></button>`
                 }
             </div>
         `).join('');
+    }
+
+    // FUNÇÕES DO MODAL DE SABORES
+    function openFlavorModal(id) {
+        currentFlavorProduct = menuData.find(p => p.id === id);
+        document.getElementById('flavor-modal').style.display = 'block';
+    }
+
+    function closeFlavorModal() {
+        document.getElementById('flavor-modal').style.display = 'none';
+        currentFlavorProduct = null;
+    }
+
+    function confirmFlavor() {
+        const flavor = document.querySelector('input[name="flavor-choice"]:checked').value;
+        const personalizedProduct = {
+            ...currentFlavorProduct,
+            name: `${currentFlavorProduct.name} (${flavor})`
+        };
+        
+        // Lógica de adição ao carrinho modificada para considerar o sabor
+        const existingItem = cart.find(i => i.name === personalizedProduct.name);
+        if (existingItem) existingItem.quantity++;
+        else cart.push({ ...personalizedProduct, quantity: 1 });
+        
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateUI();
+        closeFlavorModal();
     }
 
     function addToCart(id) {
@@ -611,6 +677,7 @@
     }
 
     function changeQuantity(id, delta) {
+        // Encontrar por ID ou Nome (para suportar selecionáveis)
         const item = cart.find(i => i.id === id);
         if (item) {
             item.quantity += delta;
