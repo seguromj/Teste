@@ -113,7 +113,7 @@
         /* Alerta de erro para CPF */
         .input-error { border-color: var(--danger) !important; background-color: #fff0f0; }
 
-        /* Estilos Novos */
+        /* Estilos de Cupom e Avisos */
         .coupon-area { margin: 15px 0; display: flex; gap: 10px; }
         .coupon-area input { flex: 1; }
         .btn-apply { background: var(--dark); color: white; border: none; border-radius: 8px; padding: 0 15px; cursor: pointer; }
@@ -366,8 +366,8 @@
     let cart = [];
     let currentFlavorProduct = null;
     let currentPaymentLink = "#"; 
-    let activeDiscount = 0; // Porcentagem de desconto
-    let freeShipping = false; // Cupom de frete grátis
+    let activeDiscount = 0;
+    let freeShippingRequested = false; // Indica se o usuário digitou o cupom
 
     const linksDePagamentoFixos = {
         "1.00": "https://mpago.la/2AXmnns", "2.00": "https://mpago.la/1XRx3MU", "3.00": "https://mpago.la/2hCQdie",
@@ -471,16 +471,16 @@
         closeModal('flavor-modal');
     }
 
-    // NOVA FUNÇÃO DE CUPOM
+    // APLICAÇÃO DE CUPONS
     function applyCoupon() {
         const input = document.getElementById('coupon-input').value.toUpperCase();
         const msg = document.getElementById('coupon-msg');
         activeDiscount = 0;
-        freeShipping = false;
+        freeShippingRequested = false;
 
         if (input === "FRETEGRATIS") {
-            freeShipping = true;
-            msg.innerHTML = "<span style='color:green'>Cupom FRETEGRATIS aplicado!</span>";
+            freeShippingRequested = true;
+            msg.innerHTML = "<span style='color:green'>Cupom FRETEGRATIS ativado (Válido apenas para Delivery).</span>";
         } else if (input === "10%") {
             activeDiscount = 0.10;
             msg.innerHTML = "<span style='color:green'>Desconto de 10% aplicado!</span>";
@@ -495,14 +495,15 @@
 
     function updateUI() {
         let subtotal = cart.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
-        
-        // Aplica Desconto
         let totalComDesconto = subtotal - (subtotal * activeDiscount);
         
-        // Aplica Taxa de Entrega
         const type = document.getElementById('delivery-type')?.value;
-        if (type === 'delivery' && !freeShipping) {
-            totalComDesconto += 10;
+        
+        // Regra do FRETEGRATIS: só funciona se for 'delivery'
+        if (type === 'delivery') {
+            if (!freeShippingRequested) {
+                totalComDesconto += 10; // Adiciona taxa normal
+            }
         }
 
         document.getElementById('cart-footer').style.display = cart.length > 0 ? 'flex' : 'none';
@@ -554,7 +555,6 @@
         document.getElementById('fields-retirada').style.display = type === 'retirada' ? 'block' : 'none';
         document.getElementById('fields-delivery').style.display = type === 'delivery' ? 'block' : 'none';
         
-        // Mostrar aviso e atualizar total
         document.getElementById('delivery-warning').style.display = type === 'delivery' ? 'block' : 'none';
         updateUI();
     }
@@ -634,11 +634,16 @@
             msg += `*Cliente:* ${document.getElementById('dev-nome').value}\n*CPF:* ${document.getElementById('dev-CPF').value}\n*Endereço:* ${document.getElementById('dev-rua').value}, ${document.getElementById('dev-num').value}\n*Bairro:* ${document.getElementById('dev-bairro').value}\n`;
             const complemento = document.getElementById('dev-comp').value;
             if (complemento) msg += `*Comp:* ${complemento}\n`;
-            msg += `*Entrega:* Delivery (+ Taxa R$ 10,00)\n`;
+            
+            // Logica da taxa no texto do WhatsApp
+            if (freeShippingRequested) {
+                msg += `*Entrega:* Delivery (FRETE GRÁTIS APLICADO)\n`;
+            } else {
+                msg += `*Entrega:* Delivery (+ Taxa R$ 10,00)\n`;
+            }
         }
 
         if (activeDiscount > 0) msg += `*Desconto Aplicado:* ${activeDiscount * 100}%\n`;
-        if (freeShipping) msg += `*Frete:* Grátis (Cupom)\n`;
 
         msg += `\n*ÍTENS DO PEDIDO:*\n`;
         cart.forEach(i => msg += `✅ ${i.quantity}x ${i.name} (R$ ${(i.price * i.quantity).toFixed(2)})\n`);
