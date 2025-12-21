@@ -109,6 +109,15 @@
         input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; }
         .flavor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .flavor-btn { padding: 15px; border: 1px solid #ddd; border-radius: 10px; background: #f9f9f9; cursor: pointer; }
+        
+        /* Alerta de erro para CPF */
+        .input-error { border-color: var(--danger) !important; background-color: #fff0f0; }
+
+        /* Estilos Novos */
+        .coupon-area { margin: 15px 0; display: flex; gap: 10px; }
+        .coupon-area input { flex: 1; }
+        .btn-apply { background: var(--dark); color: white; border: none; border-radius: 8px; padding: 0 15px; cursor: pointer; }
+        .delivery-warning { background: #fff3cd; color: #856404; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.9em; display: none; border: 1px solid #ffeeba; }
     </style>
 </head>
 <body>
@@ -285,6 +294,13 @@
             <h2 style="margin:0">Sua Sacola</h2>
         </div>
         <div id="cart-items-list"></div>
+        
+        <div class="coupon-area">
+            <input type="text" id="coupon-input" placeholder="Tem um cupom?">
+            <button class="btn-apply" onclick="applyCoupon()">Aplicar</button>
+        </div>
+        <div id="coupon-msg" style="font-size: 0.8em; margin-bottom: 10px; text-align: left;"></div>
+
         <div style="margin-top:20px; font-weight:bold; font-size:1.2em">Total: R$ <span id="modal-total">0.00</span></div>
         <button class="btn-main" onclick="openCheckout()" style="margin-top:15px">Finalizar Compra</button>
         <button class="btn-main" style="background:#999; margin-top:10px" onclick="toggleCart()">Continuar Comprando</button>
@@ -304,14 +320,19 @@
                 <option value="retirada">Retirar no Balcão</option>
                 <option value="delivery">Delivery em Casa</option>
             </select>
+            <div id="delivery-warning" class="delivery-warning">
+                <i class="fas fa-exclamation-triangle"></i> Atenção: Pedidos para delivery possuem um acréscimo de R$ 10,00 na taxa de entrega.
+            </div>
         </div>
         <div id="fields-mesa"><div class="form-group"><label>Nome*</label><input type="text" id="mesa-nome"></div></div>
         <div id="fields-retirada" style="display:none"><div class="form-group"><label>Nome*</label><input type="text" id="ret-nome"></div><div class="form-group"><label>CPF*</label><input type="text" id="cpf-retirada" oninput="mascaraCPF(this)" maxlength="14"></div></div>
         <div id="fields-delivery" style="display:none">
             <div class="form-group"><label>Nome*</label><input type="text" id="dev-nome"></div>
+            <div class="form-group"><label>CPF*</label><input type="text" id="dev-CPF" oninput="mascaraCPF(this)" maxlength="14"></div>
             <div class="form-group"><label>Bairro*</label><input type="text" id="dev-bairro"></div>
             <div class="form-group"><label>Rua*</label><input type="text" id="dev-rua"></div>
             <div class="form-group"><label>Nº/Lote*</label><input type="text" id="dev-num"></div>
+            <div class="form-group"><label>Complemento</label><input type="text" id="dev-comp" placeholder="Apt, bloco, ponto de ref..."></div>
         </div>
         <button class="btn-main" onclick="sendWhatsApp()">Confirmar e Pagar</button>
     </div>
@@ -319,8 +340,11 @@
 
 <div id="payment-modal">
        <div class="modal-content" style="text-align: center;">
+           
         <i class="fas fa-shield-alt" style="font-size: 4em; color: var(--success); margin-bottom: 15px;"></i>
-        <h2 style="margin:0 0 10px 0;">Finalizar Pagamento</h2>
+        <h2 style="margin:0 0 10px 0;">
+        <button class="btn-back" onclick="closePayment()"><i class="fas fa-arrow-left"></i></button>
+            Finalizar Pagamento</h2>
 		<p style="color: #666; font-size: 0.9em;">Seu pedido já foi enviado para nossa cozinha!<br>Agora, realize o pagamento para finalizar.</p>
         
         <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin: 20px 0;">
@@ -341,8 +365,47 @@
 <script>
     let cart = [];
     let currentFlavorProduct = null;
+    let currentPaymentLink = "#"; 
+    let activeDiscount = 0; // Porcentagem de desconto
+    let freeShipping = false; // Cupom de frete grátis
 
-    // RECUPERAR CARRINHO SALVO AO CARREGAR
+    const linksDePagamentoFixos = {
+        "1.00": "https://mpago.la/2AXmnns", "2.00": "https://mpago.la/1XRx3MU", "3.00": "https://mpago.la/2hCQdie",
+        "4.00": "https://mpago.la/21V68Ki", "5.00": "https://mpago.la/2GCnr3j", "6.00": "https://mpago.la/127jvNn",
+        "7.00": "https://mpago.la/2p6uptE", "8.00": "https://mpago.la/11j2Jua", "9.00": "https://mpago.la/1eFbxkN",
+        "10.00": "https://mpago.la/2cRxjg5", "11.00": "https://mpago.la/2LS6XMT", "12.00": "https://mpago.la/1ssdztd",
+        "13.00": "https://mpago.la/2pEQ3rJ", "14.00": "https://mpago.la/2ShtRu7", "15.00": "https://mpago.la/2MdLA1J",
+        "16.00": "https://mpago.la/122M9xy", "17.00": "https://mpago.la/1hZpFv4", "18.00": "https://mpago.la/2cvpYLD",
+        "19.00": "https://mpago.la/2fHzer1", "20.00": "https://mpago.la/2d4EhNH", "21.00": "https://mpago.la/2wtPbWJ",
+        "22.00": "https://mpago.la/1VEbPD6", "23.00": "https://mpago.la/1u4N2eZ", "24.00": "https://mpago.la/2tz3Thg",
+        "25.00": "https://mpago.la/24MoD81", "26.00": "https://mpago.la/1gQ85w8", "27.00": "https://mpago.la/2ncRJDR",
+        "28.00": "https://mpago.la/1rHT6fQ", "29.00": "https://mpago.la/1wP8yiX", "30.00": "https://mpago.la/1wEbmXA",
+        "31.00": "https://mpago.la/23tCjAH", "32.00": "https://mpago.la/1H7ACLr", "33.00": "https://mpago.la/2P1Snuu",
+        "34.00": "https://mpago.la/2dM8pXF", "35.00": "https://mpago.la/2ccdL4T", "36.00": "https://mpago.la/2LUutRb",
+        "37.00": "https://mpago.la/2SaBCdk", "38.00": "https://mpago.la/32a4XhN", "39.00": "https://mpago.la/1uK9SV6",
+        "40.00": "https://mpago.la/22fHXUh", "41.00": "https://mpago.la/2FJM5SR", "42.00": "https://mpago.la/2majQ3e",
+        "43.00": "https://mpago.la/2xuPWxe", "44.00": "https://mpago.la/1xnrgBU", "45.00": "https://mpago.la/2YxWyeN",
+        "46.00": "https://mpago.la/1C8B2Ys", "47.00": "https://mpago.la/2BHbwKb", "48.00": "https://mpago.la/2wJ79yX",
+        "49.00": "https://mpago.la/1q1CXu8", "50.00": "https://mpago.la/18PNJgh", "51.00": "https://mpago.la/29ngSEP",
+        "52.00": "https://mpago.la/1wpPNU6", "53.00": "https://mpago.la/2w4JghY", "54.00": "https://mpago.la/2wP8Zzy",
+        "55.00": "https://mpago.la/1uNDuE1", "56.00": "https://mpago.la/2HwcPeo", "57.00": "https://mpago.la/2SrqAtv",
+        "58.00": "https://mpago.la/2QddsUQ", "59.00": "https://mpago.la/1KyezXR", "60.00": "https://mpago.la/32XUkFX",
+        "61.00": "https://mpago.la/2LdRTmk", "62.00": "https://mpago.la/31yQrfo", "63.00": "https://mpago.la/2Nj6SQ3",
+        "64.00": "https://mpago.la/1AUtYYJ", "65.00": "https://mpago.la/2dJLWg6", "66.00": "https://mpago.la/2Qq6ofn",
+        "67.00": "https://mpago.la/2HSYSG8", "68.00": "https://mpago.la/2agtz9z", "69.00": "https://mpago.la/1yzPBDV",
+        "70.00": "https://mpago.la/19j57aj", "71.00": "https://mpago.la/2NN176T", "72.00": "https://mpago.la/2bgb4hq",
+        "73.00": "https://mpago.la/1Pjn7DD", "74.00": "https://mpago.la/1bnsqvS", "75.00": "https://mpago.la/1ScZwvW",
+        "76.00": "https://mpago.la/2pF999n", "77.00": "https://mpago.la/25ZZdoS", "78.00": "https://mpago.la/1df8NXT",
+        "79.00": "https://mpago.la/2c5ZvKh", "80.00": "https://mpago.la/2StD47t", "81.00": "https://mpago.la/1g2b3ky",
+        "82.00": "https://mpago.la/1EQriMV", "83.00": "https://mpago.la/2Ur8gAJ", "84.00": "https://mpago.la/12trufq",
+        "85.00": "https://mpago.la/2UkJGkF", "86.00": "https://mpago.la/1N2Zw5R", "87.00": "https://mpago.la/2QSwF7p",
+        "88.00": "https://mpago.la/2CnEweW", "89.00": "https://mpago.la/1qjGyST", "90.00": "https://mpago.la/18ZpYMG",
+        "91.00": "https://mpago.la/2jXbcve", "92.00": "https://mpago.la/1G4GRb4", "93.00": "https://mpago.la/1G4GRb4",
+        "94.00": "https://mpago.la/2L5SfaX", "95.00": "https://mpago.la/1T8HvbD", "96.00": "https://mpago.la/16i17Um",
+        "97.00": "https://mpago.la/2ULjkPj", "98.00": "https://mpago.la/2WWWm1m", "99.00": "https://mpago.la/2wQMxrn",
+        "100.00": "https://mpago.la/14fLE5V",
+    };
+
     window.onload = function() {
         const savedCart = localStorage.getItem('beeDrinksCart');
         if (savedCart) {
@@ -352,12 +415,8 @@
         checkStoreStatus();
     };
 
-    // FUNÇÃO PARA SALVAR NO LOCALSTORAGE
-    function saveCart() {
-        localStorage.setItem('beeDrinksCart', JSON.stringify(cart));
-    }
+    function saveCart() { localStorage.setItem('beeDrinksCart', JSON.stringify(cart)); }
 
-    // ARRASTAR COM O MOUSE
     const sliders = document.querySelectorAll('.carousel-container');
     let isDown = false;
     let startX;
@@ -412,12 +471,44 @@
         closeModal('flavor-modal');
     }
 
+    // NOVA FUNÇÃO DE CUPOM
+    function applyCoupon() {
+        const input = document.getElementById('coupon-input').value.toUpperCase();
+        const msg = document.getElementById('coupon-msg');
+        activeDiscount = 0;
+        freeShipping = false;
+
+        if (input === "FRETEGRATIS") {
+            freeShipping = true;
+            msg.innerHTML = "<span style='color:green'>Cupom FRETEGRATIS aplicado!</span>";
+        } else if (input === "10%") {
+            activeDiscount = 0.10;
+            msg.innerHTML = "<span style='color:green'>Desconto de 10% aplicado!</span>";
+        } else if (input === "5%") {
+            activeDiscount = 0.05;
+            msg.innerHTML = "<span style='color:green'>Desconto de 5% aplicado!</span>";
+        } else {
+            msg.innerHTML = "<span style='color:red'>Cupom inválido.</span>";
+        }
+        updateUI();
+    }
+
     function updateUI() {
         let subtotal = cart.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
+        
+        // Aplica Desconto
+        let totalComDesconto = subtotal - (subtotal * activeDiscount);
+        
+        // Aplica Taxa de Entrega
+        const type = document.getElementById('delivery-type')?.value;
+        if (type === 'delivery' && !freeShipping) {
+            totalComDesconto += 10;
+        }
+
         document.getElementById('cart-footer').style.display = cart.length > 0 ? 'flex' : 'none';
         document.getElementById('cart-count').innerText = cart.reduce((a, b) => a + b.quantity, 0);
-        document.getElementById('cart-total-display').innerText = subtotal.toFixed(2);
-        document.getElementById('modal-total').innerText = subtotal.toFixed(2);
+        document.getElementById('cart-total-display').innerText = totalComDesconto.toFixed(2);
+        document.getElementById('modal-total').innerText = totalComDesconto.toFixed(2);
     }
 
     function renderCartItems() {
@@ -462,25 +553,106 @@
         document.getElementById('fields-mesa').style.display = type === 'mesa' ? 'block' : 'none';
         document.getElementById('fields-retirada').style.display = type === 'retirada' ? 'block' : 'none';
         document.getElementById('fields-delivery').style.display = type === 'delivery' ? 'block' : 'none';
+        
+        // Mostrar aviso e atualizar total
+        document.getElementById('delivery-warning').style.display = type === 'delivery' ? 'block' : 'none';
+        updateUI();
+    }
+
+    function validarCPF(cpf) {
+        cpf = cpf.replace(/[^\d]+/g,'');
+        if(cpf == '') return false;
+        if (cpf.length != 11 || cpf == "00000000000" || cpf == "11111111111" || cpf == "22222222222" || cpf == "33333333333" || cpf == "44444444444" || cpf == "55555555555" || cpf == "66666666666" || cpf == "77777777777" || cpf == "88888888888" || cpf == "99999999999") return false;
+        let add = 0;
+        for (let i=0; i < 9; i ++) add += parseInt(cpf.charAt(i)) * (10 - i);
+        let rev = 11 - (add % 11);
+        if (rev == 10 || rev == 11) rev = 0;
+        if (rev != parseInt(cpf.charAt(9))) return false;
+        add = 0;
+        for (let i = 0; i < 10; i ++) add += parseInt(cpf.charAt(i)) * (11 - i);
+        rev = 11 - (add % 11);
+        if (rev == 10 || rev == 11) rev = 0;
+        if (rev != parseInt(cpf.charAt(10))) return false;
+        return true;
     }
 
     function sendWhatsApp() {
+        const type = document.getElementById('delivery-type').value;
         const totalStr = document.getElementById('modal-total').innerText;
+        
+        if (type === 'delivery') {
+            const cpfInput = document.getElementById('dev-CPF');
+            if (!validarCPF(cpfInput.value)) {
+                cpfInput.classList.add('input-error');
+                alert("Por favor, insira um CPF válido para o delivery.");
+                return;
+            }
+            cpfInput.classList.remove('input-error');
+        }
+
+        currentPaymentLink = linksDePagamentoFixos[totalStr] || "#";
+        const payBtn = document.getElementById('pay-link');
+        payBtn.href = currentPaymentLink;
+        payBtn.style.display = currentPaymentLink === "#" ? "none" : "block";
+
         document.getElementById('pay-total').innerText = totalStr;
+        let produtosTxt = cart.map(i => `${i.quantity}x ${i.name}`).join(', ');
+        
+        let dadosParaPlanilha = {
+            produtos: produtosTxt, total: totalStr, coleta: type,
+            nome: "", cpf: "", bairro: "", rua: "", numero: "", comp: ""
+        };
+
+        if (type === 'mesa') {
+            dadosParaPlanilha.nome = document.getElementById('mesa-nome').value;
+        } else if (type === 'retirada') {
+            dadosParaPlanilha.nome = document.getElementById('ret-nome').value;
+            dadosParaPlanilha.cpf = document.getElementById('cpf-retirada').value;
+        } else if (type === 'delivery') {
+            dadosParaPlanilha.nome = document.getElementById('dev-nome').value;
+            dadosParaPlanilha.cpf = document.getElementById('dev-CPF').value;
+            dadosParaPlanilha.bairro = document.getElementById('dev-bairro').value;
+            dadosParaPlanilha.rua = document.getElementById('dev-rua').value;
+            dadosParaPlanilha.numero = document.getElementById('dev-num').value;
+            dadosParaPlanilha.comp = document.getElementById('dev-comp').value;
+        }
+
+        enviarParaPlanilha(dadosParaPlanilha);
         document.getElementById('checkout-modal').style.display = 'none';
         document.getElementById('payment-modal').style.display = 'block';
     }
 
     function finalizarWhatsApp() {
         const type = document.getElementById('delivery-type').value;
-        let msg = `*🐝 NOVO PEDIDO*\n`;
-        cart.forEach(i => msg += `• ${i.quantity}x ${i.name}\n`);
-        msg += `\n*TOTAL: R$ ${document.getElementById('pay-total').innerText}*\nForma: ${type.toUpperCase()}`;
+        let msg = `*🐝 NOVO PEDIDO - BEEDRINKS*\n\n`;
         
-        // LIMPAR CARRINHO APÓS FINALIZAR
+        if (type === 'mesa') {
+            msg += `*Cliente:* ${document.getElementById('mesa-nome').value}\n*Local:* Mesa 5\n`;
+        } else if (type === 'retirada') {
+            msg += `*Cliente:* ${document.getElementById('ret-nome').value}\n*CPF:* ${document.getElementById('cpf-retirada').value}\n*Entrega:* Retirada no Balcão\n`;
+        } else if (type === 'delivery') {
+            msg += `*Cliente:* ${document.getElementById('dev-nome').value}\n*CPF:* ${document.getElementById('dev-CPF').value}\n*Endereço:* ${document.getElementById('dev-rua').value}, ${document.getElementById('dev-num').value}\n*Bairro:* ${document.getElementById('dev-bairro').value}\n`;
+            const complemento = document.getElementById('dev-comp').value;
+            if (complemento) msg += `*Comp:* ${complemento}\n`;
+            msg += `*Entrega:* Delivery (+ Taxa R$ 10,00)\n`;
+        }
+
+        if (activeDiscount > 0) msg += `*Desconto Aplicado:* ${activeDiscount * 100}%\n`;
+        if (freeShipping) msg += `*Frete:* Grátis (Cupom)\n`;
+
+        msg += `\n*ÍTENS DO PEDIDO:*\n`;
+        cart.forEach(i => msg += `✅ ${i.quantity}x ${i.name} (R$ ${(i.price * i.quantity).toFixed(2)})\n`);
+        
+        msg += `\n*TOTAL A PAGAR: R$ ${document.getElementById('pay-total').innerText}*`;
+        
+        if(currentPaymentLink !== "#") {
+            msg += `\n\n*LINK DE PAGAMENTO:* \n${currentPaymentLink}`;
+        }
+        
+        msg += `\n\n_Por favor, aguarde a confirmação do pagamento._`;
+        
         localStorage.removeItem('beeDrinksCart');
         cart = [];
-        
         window.open(`https://wa.me/5562995679219?text=${encodeURIComponent(msg)}`);
         location.reload();
     }
@@ -504,7 +676,23 @@
     function toggleCart() { const m = document.getElementById('cart-modal'); renderCartItems(); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
     function openCheckout() { document.getElementById('cart-modal').style.display = 'none'; document.getElementById('checkout-modal').style.display = 'block'; }
     function closeCheckout() { document.getElementById('checkout-modal').style.display = 'none'; document.getElementById('cart-modal').style.display = 'block'; }
+    function closePayment() { document.getElementById('payment-modal').style.display = 'none'; document.getElementById('checkout-modal').style.display = 'block'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function enviarParaPlanilha(dados) {
+        const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScCadaja6iLfwVL7fH6aVs_iXTJpZgBREY-Ju98Zqg3KKslWg/formResponse";
+        const formData = new FormData();
+        formData.append("entry.62718261", dados.produtos);        
+        formData.append("entry.1278482765", dados.nome);            
+        formData.append("entry.143126943", dados.cpf);             
+        formData.append("entry.1878038120", dados.bairro);           
+        formData.append("entry.1399400806", dados.rua);                 
+        formData.append("entry.764712754", dados.numero);           
+        formData.append("entry.1697072560", dados.comp);        
+        formData.append("entry.1857638858", dados.coleta);          
+        formData.append("entry.1235511550", dados.total);            
+        fetch(FORM_URL, { method: "POST", mode: "no-cors", body: formData });
+    }
 </script>
 </body>
 </html>
