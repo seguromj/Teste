@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -149,7 +150,7 @@
         <hr>
 
         <h3><span style="color: var(--secondary-color);">①</span> CUPONS da Loja (Objeto JSON)</h3>
-        <p>🏷️ Contém **TODOS** os 248 cupons, com informação de bloco e faixa horária no comentário.</p>
+        <p>🏷️ Contém **TODOS** os 248 cupons agrupados por bloco (0-7).</p>
         <div class="copy-group">
             <button class="copy-btn" onclick="copiarTexto('resultadoObjeto')" id="copiarObjetoBtn" style="display: none;">Copiar</button>
         </div>
@@ -182,14 +183,14 @@
 
         // Mapeamento das faixas de horário para cada bloco
         const BLOCK_TIMES = [
-            "(6:00 - 8:59)",   // BLOCK_0
-            "(9:00 - 11:59)",  // BLOCK_1
-            "(12:00 - 14:59)", // BLOCK_2
-            "(15:00 - 17:59)", // BLOCK_3
-            "(18:00 - 20:59)", // BLOCK_4
-            "(21:00 - 23:59)", // BLOCK_5
-            "(00:00 - 02:59)", // BLOCK_6
-            "(3:00 - 5:59)"    // BLOCK_7
+            "06:00 - 08:59",   // BLOCK_0
+            "09:00 - 11:59",  // BLOCK_1
+            "12:00 - 14:59", // BLOCK_2
+            "15:00 - 17:59", // BLOCK_3
+            "18:00 - 20:59", // BLOCK_4
+            "21:00 - 23:59", // BLOCK_5
+            "00:00 - 02:59", // BLOCK_6
+            "03:00 - 05:59"    // BLOCK_7
         ];
 
 
@@ -231,26 +232,22 @@
                 todasAsChaves.push(novaChave); 
             }
 
-            // --- 2. Formato CUPONS da Loja (Objeto JSON completo com 248 cupons) ---
+            // --- 2. Formato CUPONS da Loja (Estrutura de Array por Bloco) ---
             let cuponsGeradosObjeto = "{\n";
-            const minPurchaseFormatado = CUPOM_BASE.minPurchase.toFixed(2);
-
-            todasAsChaves.forEach((chave, index) => {
+            
+            for (let blockNum = 0; blockNum < TOTAL_BLOCKS; blockNum++) {
+                const startIndex = blockNum * COUPONS_PER_BLOCK;
+                const endIndex = startIndex + COUPONS_PER_BLOCK;
+                const blockKeys = todasAsChaves.slice(startIndex, endIndex);
                 
-                const blockNum = Math.floor(index / COUPONS_PER_BLOCK);
-                
-                // Adiciona o comentário com o bloco e a faixa de horário
-                if (index % COUPONS_PER_BLOCK === 0) {
-                    const blockTime = BLOCK_TIMES[blockNum] || "";
-                    cuponsGeradosObjeto += `\n\t// --- INÍCIO DO BLOCK_${blockNum} --- ${blockTime}\n`;
-                }
+                // Formata os cupons do bloco como ["CUPOM1", "CUPOM2", ...]
+                const keysFormatted = blockKeys.map(k => `"${k}"`).join(", ");
+                const isLastBlock = blockNum === TOTAL_BLOCKS - 1;
+                const timeComment = BLOCK_TIMES[blockNum];
 
-                // Formato Objeto
-                const isLastItem = index === TOTAL_COUPONS - 1;
-                // Estrutura do objeto com o novo campo 'bloco'
-                cuponsGeradosObjeto += `\t"${chave}": { type: "${CUPOM_BASE.type}", value: ${CUPOM_BASE.value}, minPurchase: ${minPurchaseFormatado}, message: "${CUPOM_BASE.message}", bloco: "BLOCK_${blockNum}"\n\t}${isLastItem ? '' : ','}\n`;
-            });
-            cuponsGeradosObjeto += "}";
+                cuponsGeradosObjeto += `\t${blockNum}: [${keysFormatted}]${isLastBlock ? '' : ','} // ${timeComment}\n`;
+            }
+            cuponsGeradosObjeto += "};";
 
 
             // --- 3. Formato CUPONS dos Cadastros (Blocos Array com 248 cupons em Colunas) ---
@@ -336,4 +333,3 @@
     </script>
 </body>
 </html>
-
