@@ -1,803 +1,193 @@
 
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuance | Primeiro Cadastro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <title>Gerador de Cupom Profissional com Produtos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
-        /* --- CSS (Design Moderno e Elegante) --- */
-        :root {
-            --cor-fundo-geral: #f0f0f0;
-            --cor-primaria: #0d3618; /* Verde Escuro (Logo) */
-            --cor-secundaria: #3a824e; /* Verde Médio */
-            --cor-texto-claro: #ffffff;
-            --cor-texto-escuro: #1a1a1a;
-            --cor-borda-input: #ccc;
-            --cor-sombra: rgba(0, 0, 0, 0.1);
-            --fonte-titulo: 'Playfair Display', serif; 
-            --fonte-padrao: 'Roboto', sans-serif;
-        }
-
-        body {
-            font-family: var(--fonte-padrao);
-            background-color: var(--cor-fundo-geral);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .container {
-            background-color: var(--cor-texto-claro);
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px var(--cor-sombra);
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-        }
-
-        h1 {
-            font-family: var(--fonte-titulo);
-            color: var(--cor-primaria);
-            margin-bottom: 5px;
-            font-size: 2.5em;
-        }
-
-        h2 {
-            font-family: var(--fonte-padrao);
-            font-weight: 300;
-            color: var(--cor-secundaria);
-            margin-top: 0;
-            margin-bottom: 30px;
-            font-size: 1.1em;
-        }
-
-        /* Estilos do Formulário */
-        .form-group {
-            margin-bottom: 25px;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 400;
-            color: var(--cor-texto-escuro);
-            font-size: 0.95em;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
-            width: 100%;
-            padding: 14px;
-            border: 1px solid var(--cor-borda-input);
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-
-        input:focus {
-            border-color: var(--cor-secundaria);
-            outline: none;
-        }
-
-        button {
-            background-color: var(--cor-primaria);
-            color: var(--cor-texto-claro);
-            padding: 15px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1.1em;
-            font-weight: 700;
-            transition: background-color 0.3s ease, transform 0.1s;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            background-color: var(--cor-secundaria);
-            transform: translateY(-1px);
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #e9ecef; color: #333; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Estilos de mensagens */
-        .hidden {
-            display: none !important;
+        h2, h3 { text-align: center; color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
+        input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; }
+        
+        .produto-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .produto-row input[type="text"] { flex: 3; }
+        .produto-row input[type="number"] { flex: 1; }
+
+        button { width: 100%; padding: 12px; margin-top: 10px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; text-transform: uppercase; }
+        .btn-add { background-color: #f39c12; color: white; margin-bottom: 20px; }
+        .btn-gerar { background-color: #2ecc71; color: white; }
+        .btn-pdf { background-color: #34495e; color: white; display: none; margin-top: 20px; }
+
+        /* Estilo do Cupom */
+        #area-cupom { 
+            margin-top: 30px; 
+            padding: 20px; 
+            background: #fff; 
+            display: none; 
+            font-family: 'Courier New', Courier, monospace;
+            color: #000;
+            border: 1px solid #ddd;
+            width: 320px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .message {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 5px;
-            font-weight: 400;
-            font-size: 0.95em;
-        }
-
-        .success {
-            background-color: #e6f7e9; 
-            color: var(--cor-primaria);
-            border: 1px solid #c3e6cb;
-        }
+        .cupom-header { text-align: center; margin-bottom: 10px; }
+        .divisor { border-top: 1px dashed #000; margin: 10px 0; }
         
-        .error {
-            background-color: #fcebeb;
-            color: #d9534f;
-            border: 1px solid #f9c0c0;
-        }
-
-        /* Estilos do Card de Cupom */
-        #coupon-display {
-            background-color: var(--cor-fundo-geral);
-            padding: 30px;
-            border-radius: 8px;
-            text-align: center;
-            margin-top: 20px;
-            border: 2px dashed var(--cor-secundaria); 
-        }
+        table { width: 100%; font-size: 13px; border-collapse: collapse; }
+        th { text-align: left; border-bottom: 1px solid #000; }
+        .text-right { text-align: right; }
+        .total-row { font-size: 16px; font-weight: bold; margin-top: 10px; display: flex; justify-content: space-between; }
         
-        #coupon-display h3 {
-            color: var(--cor-texto-escuro);
-            font-family: var(--fonte-titulo);
-            margin-top: 0;
-            font-size: 1.6em;
-        }
-        
-        #coupon-value {
-            background-color: var(--cor-primaria);
-            color: white;
-            padding: 18px;
-            border-radius: 5px;
-            font-size: 1.8em;
-            letter-spacing: 4px;
-            margin: 20px 0;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        
-        #coupon-info {
-            font-size: 0.85em;
-            color: #666;
-        }
-
-        /* Estilo para o botão Voltar ao Carrinho (Comum e no Password Form) */
-        #return-to-cart {
-            margin-top: 20px;
-            background-color: var(--cor-secundaria); 
-            color: var(--cor-texto-claro);
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 700;
-            text-decoration: none; 
-            display: inline-block;
-            transition: background-color 0.3s;
-            width: 100%; /* Ajuste para preencher o container */
-            box-sizing: border-box;
-        }
-        
-        #return-to-cart:hover {
-            background-color: #316d41; 
-        }
-        
-        /* Estilos do Card de Dados (Exibição com senha) */
-        #data-card {
-            background-color: var(--cor-primaria);
-            color: var(--cor-texto-claro);
-            padding: 25px;
-            border-radius: 8px;
-            text-align: left;
-            margin-top: 20px;
-        }
-
-        #data-card p {
-            margin: 8px 0;
-            font-size: 1em;
-            font-weight: 300;
-        }
-
-        .card-label {
-            font-weight: 700;
-            color: var(--cor-secundaria);
-            display: inline-block;
-            min-width: 60px;
-        }
-        
-        /* Estilo específico para o cupom no card de dados */
-        #card-coupon-value {
-            font-weight: 700;
-            color: #fff; /* Branco para destacar */
-            background-color: var(--cor-secundaria);
-            padding: 2px 8px;
-            border-radius: 4px;
-            /* Garante que o span se comporte como bloco para margens */
-            display: inline-block; 
-        }
-
-        #password-form {
-            text-align: center;
-            margin-top: 20px;
-            padding: 25px;
-            border: 1px solid var(--cor-borda-input);
-            border-radius: 8px;
-        }
-        
-        /* Estilo do link de recuperação */
-        #forgot-password-link {
-            display: block;
-            margin-top: 15px;
-            font-size: 0.9em;
-            color: var(--cor-secundaria);
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        
-        /* Estilos do Formulário de Recuperação */
-        #recovery-form {
-             text-align: center;
-            margin-top: 20px;
-            padding: 25px;
-            border: 1px solid var(--cor-borda-input);
-            border-radius: 8px;
-        }
-
+        .rodape { text-align: center; margin-top: 20px; font-size: 12px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>NUANCE</h1>
-        <h2>A arte de transformar sabor em experiência</h2>
-        
-        <div id="registration-form">
-            <h3>Seu Primeiro Drink está a caminho!</h3>
-            <form id="client-form">
-                <div class="form-group">
-                    <label for="name">Nome Completo:</label>
-                    <input type="text" id="name" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">E-mail:</label>
-                    <input type="email" id="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="new-password">Criar Senha de Acesso (Mín. 4 dígitos):</label>
-                    <input type="password" id="new-password" required maxlength="12" placeholder="****">
-                </div>
-                <div class="form-group">
-                    <label for="cpf">CPF (Para Nota Fiscal, Opcional):</label>
-                    <input type="text" id="cpf" maxlength="14" placeholder="000.000.000-00">
-                </div>
-                <button type="submit" id="submit-button">Cadastrar e Receber Meu CUPOM</button>
-            </form>
-            <div id="form-message" class="message hidden"></div>
-        </div>
-        
-        <div id="coupon-display" class="hidden">
-            </div>
-
-        <div id="password-form" class="hidden">
-            </div>
-        
-        <div id="recovery-form" class="hidden">
-            <h3>Recuperar Senha de Acesso</h3>
-            <form id="email-recovery-form">
-                <div class="form-group">
-                    <label for="recovery-email">E-mail de Cadastro:</label>
-                    <input type="email" id="recovery-email" required placeholder="Digite seu e-mail">
-                </div>
-                <button type="submit" id="recover-button">Mostrar Senha</button>
-            </form>
-            <div id="recovery-message" class="message hidden"></div>
-            <a href="#" id="back-to-login" style="display: block; margin-top: 15px; font-size: 0.9em; color: var(--cor-secundaria);">Voltar</a>
-        </div>
-        
-        <div id="data-card" class="hidden">
-            <h3>Dados do Visitante</h3>
-            <p><span class="card-label">Nome:</span> <span id="card-name"></span></p>
-            <p><span class="card-label">E-mail:</span> <span id="card-email"></span></p>
-            <p><span class="card-label">CPF:</span> <span id="card-cpf"></span></p>
-            <p><span class="card-label">Cupom:</span> <span id="card-coupon-value"></span></p>
-            <p style="font-size: 0.85em; margin-top: 15px;">* Estes dados expiram em <span id="expiry-time"></span><br>Depois desse Período, você poderá fazer um novo cadastro e ter um novo<strong>CUPOM</strong>.</p>
-        </div>
-
+<div class="container">
+    <h2>Emissor de Cupom</h2>
+    
+    <div class="form-group">
+        <label>Nome do Cliente:</label>
+        <input type="text" id="nome" placeholder="Nome completo">
     </div>
 
-    <script>
-        // --- JAVASCRIPT ---
-        document.addEventListener('DOMContentLoaded', () => {
-            const clientForm = document.getElementById('client-form');
-            const registrationDiv = document.getElementById('registration-form');
-            const passwordFormDiv = document.getElementById('password-form');
-            const recoveryFormDiv = document.getElementById('recovery-form'); 
-            const recoveryEmailForm = document.getElementById('email-recovery-form'); 
-            const cardDiv = document.getElementById('data-card');
-            const couponDiv = document.getElementById('coupon-display');
-            const submitButton = document.getElementById('submit-button');
-            const recoverButton = document.getElementById('recover-button'); 
-            const backToLoginLink = document.getElementById('back-to-login'); 
+    <div class="form-group">
+        <label>CPF:</label>
+        <input type="text" id="cpf" placeholder="000.000.000-00">
+    </div>
 
-            const nameInput = document.getElementById('name');
-            const emailInput = document.getElementById('email');
-            const newPasswordInput = document.getElementById('new-password'); 
-            const cpfInput = document.getElementById('cpf');
-            
-            const recoveryEmailInput = document.getElementById('recovery-email'); 
-            
-            const formMessage = document.getElementById('form-message');
-            const recoveryMessage = document.getElementById('recovery-message'); 
-            
-            // =======================================================================================
-            // 🚨 CONFIGURAÇÃO OBRIGATÓRIA DO GOOGLE FORMS 
-            // =======================================================================================
-            const FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSd5kqX1HuvNnQwKCknXcsbmy2DEdon7jsGAQtzyvzRr0aLojQ/formResponse'; 
-            const NAME_FIELD_GF = 'entry.2009915093';   
-            const EMAIL_FIELD_GF = 'entry.188272270'; 
-            const CPF_FIELD_GF = 'entry.199255072';
-            const PASSWORD_FIELD_GF = 'entry.1955124742'; 
-            // =======================================================================================
-            
-            // =======================================================================================
-            // 🚨 ALERTA 2: TEMPO DE EXPIRAÇÃO E URL DO CARDÁPIO
-            // =======================================================================================
-            const EXPIRATION_DAYS = 0;   
-            const EXPIRATION_HOURS = 0;   
-            const EXPIRATION_MINUTES = 2; 
-            const CARDAPIO_URL = 'Cardapio-Nuance.html'; // 👈 URL DO CARDÁPIO
-            // =======================================================================================
+    <div class="form-group">
+        <label>WhatsApp / E-mail:</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="whatsapp" placeholder="WhatsApp">
+            <input type="email" id="email" placeholder="E-mail">
+        </div>
+    </div>
 
-            const STORAGE_KEY = 'nuance_client_data';
-            const STORAGE_KEY_COUPON = 'nuance_client_coupon'; 
-            
-            const COUPON_INDEX_KEY = 'nuance_coupon_index';
-            const SHUFFLED_COUPONS_KEY = 'nuance_shuffled_coupons'; 
+    <div class="divisor"></div>
+    <h3>Produtos</h3>
+    <div id="lista-inputs-produtos">
+        <div class="produto-row">
+            <input type="text" class="p-nome" placeholder="Nome do produto">
+            <input type="number" class="p-preco" placeholder="Preço (0.00)" step="0.01">
+        </div>
+    </div>
+    <button class="btn-add" onclick="adicionarCampoProduto()">+ Adicionar Outro Produto</button>
 
-           // LISTA ORIGINAL COM 31 CUPONS (confirmado)
-           const BASE_COUPONS = [
-                "NUANCE_B8C95RF6",
-                "NUANCE_87SBYS1Y",
-                "NUANCE_C0Z7P90C",
-                "NUANCE_4LUJ96PK",
-                "NUANCE_K616LW2F",
-                "NUANCE_HHLCOA8A",
-                "NUANCE_KFFXW1QE",
-                "NUANCE_65TZMONP",
-                "NUANCE_OT73KSFJ",
-                "NUANCE_3SLC9FSW",
-                "NUANCE_W4E9EFE2",
-                "NUANCE_N27EIGZE",
-                "NUANCE_NV3ZC6B5",
-                "NUANCE_FM3YMBRA",
-                "NUANCE_0IL5PJG8",
-                "NUANCE_E1H1HRLD",
-                "NUANCE_SZGYVUZM",
-                "NUANCE_HBQUR22D",
-                "NUANCE_1QDXZ4JI",
-                "NUANCE_REXWJN4Z",
-                "NUANCE_S28L86CN",
-                "NUANCE_M9L5195D",
-                "NUANCE_B5YDBMR9",
-                "NUANCE_RVVH9R38",
-                "NUANCE_74ZIABOT",
-                "NUANCE_62BXST36",
-                "NUANCE_9VWLJ5L5",
-                "NUANCE_9WQJ7LY5",
-                "NUANCE_R9IC4810",
-                "NUANCE_PBID3BP1",
-                "NUANCE_5SL6Y6G1" // Total de 31 cupons
-            ];
-            const EXPECTED_COUPON_COUNT = 31; // Novo constante para o número esperado de cupons
-            
-            // --- FUNÇÃO DE VALIDAÇÃO DE CPF ---
-            function isValidCPF(cpf) {
-                cpf = cpf.replace(/[^\d]+/g, '');
-                if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
-                let sum, remainder;
-                sum = 0;
-                for (let i = 1; i <= 9; i++) {
-                    sum += parseInt(cpf.substring(i-1, i)) * (11 - i);
-                }
-                remainder = (sum * 10) % 11;
-                if ((remainder === 10) || (remainder === 11)) remainder = 0;
-                if (remainder !== parseInt(cpf.substring(9, 10))) return false;
-                sum = 0;
-                for (let i = 1; i <= 10; i++) {
-                    sum += parseInt(cpf.substring(i-1, i)) * (12 - i);
-                }
-                remainder = (sum * 10) % 11;
-                if ((remainder === 10) || (remainder === 11)) remainder = 0;
-                if (remainder !== parseInt(cpf.substring(10, 11))) return false;
-                return true;
-            }
-            
-            // --- INPUT EVENTO CPF ---
-            cpfInput.addEventListener('input', (e) => {
-                let value = e.target.value.replace(/\D/g, ''); 
-                if (value.length > 9) {
-                    value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-                } else if (value.length > 6) {
-                    value = value.replace(/(\d{3})(\d{3})(\d{3})/, '$1.$2.$3');
-                } else if (value.length > 3) {
-                    value = value.replace(/(\d{3})(\d{3})/, '$1.$2');
-                } else if (value.length > 0) {
-                    value = value.replace(/(\d{3})/, '$1');
-                }
-                e.target.value = value;
-            });
+    <button class="btn-gerar" onclick="gerarCupom()">Visualizar Nota</button>
 
-            // --- FUNÇÕES DE STORAGE E CUPOM ---
-            function shuffleArray(array) {
-                let shuffled = [...array];
-                for (let i = shuffled.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-                }
-                return shuffled;
-            }
+    <div id="area-cupom">
+        <div class="cupom-header">
+            <strong>RECIBO DE VENDA</strong><br>
+            <small>Não possui valor fiscal</small>
+        </div>
 
-            function getNextCoupon() {
-                const shuffledCouponsString = localStorage.getItem(SHUFFLED_COUPONS_KEY);
+        <div class="divisor"></div>
+        <div style="font-size: 12px;">
+            <strong>DATA:</strong> <span id="view-data"></span><br>
+            <strong>CLIENTE:</strong> <span id="view-nome"></span><br>
+            <strong>CPF:</strong> <span id="view-cpf"></span>
+        </div>
+        <div class="divisor"></div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ITEM</th>
+                    <th class="text-right">VALOR</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-itens">
+                </tbody>
+        </table>
+
+        <div class="divisor"></div>
+        <div class="total-row">
+            <span>TOTAL:</span>
+            <span id="view-total">R$ 0,00</span>
+        </div>
+
+        <div class="rodape">
+            <strong>OBRIGADO PELA PREFERÊNCIA!</strong>
+        </div>
+    </div>
+
+    <button id="btn-download" class="btn-pdf" onclick="baixarPDF()">Baixar PDF do Cupom</button>
+</div>
+
+<script>
+    function adicionarCampoProduto() {
+        const container = document.getElementById('lista-inputs-produtos');
+        const novaLinha = document.createElement('div');
+        novaLinha.className = 'produto-row';
+        novaLinha.innerHTML = `
+            <input type="text" class="p-nome" placeholder="Nome do produto">
+            <input type="number" class="p-preco" placeholder="Preço (0.00)" step="0.01">
+        `;
+        container.appendChild(novaLinha);
+    }
+
+    function gerarCupom() {
+        const nome = document.getElementById('nome').value;
+        if(!nome) { alert("Informe o nome do cliente."); return; }
+
+        // Dados do Cliente
+        document.getElementById('view-nome').innerText = nome;
+        document.getElementById('view-cpf').innerText = document.getElementById('cpf').value || "ISENTO";
+        document.getElementById('view-data').innerText = new Date().toLocaleString('pt-BR');
+
+        // Processar Produtos
+        const nomes = document.getElementsByClassName('p-nome');
+        const precos = document.getElementsByClassName('p-preco');
+        const tabela = document.getElementById('tabela-itens');
+        tabela.innerHTML = "";
+        let total = 0;
+
+        for (let i = 0; i < nomes.length; i++) {
+            if (nomes[i].value && precos[i].value) {
+                const valor = parseFloat(precos[i].value);
+                total += valor;
                 
-                // Força a inicialização se não houver dados, garantindo que o sistema de cupons esteja pronto.
-                if (!shuffledCouponsString) {
-                    initializeCouponSystem(true); // Chamada forçada
-                    return getNextCoupon(); 
-                }
-                
-                const SHUFFLED_COUPONS = JSON.parse(shuffledCouponsString);
-                
-                // Se a lista estiver vazia (erro grave), retorna um fallback
-                if(SHUFFLED_COUPONS.length === 0) return "ERRO_CUPOM_VAZIO"; 
-                
-                let currentIndex = parseInt(localStorage.getItem(COUPON_INDEX_KEY) || '-1');
-                let nextIndex = (currentIndex + 1) % SHUFFLED_COUPONS.length;
-                
-                const coupon = SHUFFLED_COUPONS[nextIndex];
-                localStorage.setItem(COUPON_INDEX_KEY, nextIndex.toString());
-                return coupon;
-            }
-
-            function saveClientData(name, email, password, cpf, coupon) { 
-                const now = new Date().getTime();
-                const daysInMs = EXPIRATION_DAYS * 24 * 60 * 60 * 1000;
-                const hoursInMs = EXPIRATION_HOURS * 60 * 60 * 1000;
-                const minutesInMs = EXPIRATION_MINUTES * 60 * 1000; 
-                const expirationTime = now + daysInMs + hoursInMs + minutesInMs; 
-                
-                const clientData = {
-                    name: name,
-                    email: email,
-                    password: password,
-                    cpf: cpf,
-                    expiry: expirationTime
-                };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(clientData));
-                localStorage.setItem(STORAGE_KEY_COUPON, coupon); 
-            }
-
-            function getClientData() {
-                const dataString = localStorage.getItem(STORAGE_KEY);
-                if (!dataString) return null;
-
-                const data = JSON.parse(dataString);
-                const now = new Date().getTime();
-
-                if (now > data.expiry) {
-                    localStorage.removeItem(STORAGE_KEY); 
-                    localStorage.removeItem(STORAGE_KEY_COUPON); 
-                    return null;
-                }
-                return data;
-            }
-
-            function getClientCoupon() {
-                return localStorage.getItem(STORAGE_KEY_COUPON) || 'N/A';
-            }
-
-            // --- FUNÇÃO DE ENVIO ---
-            async function sendToGoogleForms(name, email, cpf, password) { 
-                const formData = new FormData();
-                formData.append(NAME_FIELD_GF, name);
-                formData.append(EMAIL_FIELD_GF, email);
-                formData.append(CPF_FIELD_GF, cpf);
-                formData.append(PASSWORD_FIELD_GF, password); 
-
-                try {
-                    const response = await fetch(FORM_ACTION_URL, {
-                        method: 'POST',
-                        mode: 'no-cors', 
-                        body: formData
-                    });
-                    console.log("Dados enviados para o Google Forms com sucesso.");
-                    return true;
-                } catch (error) {
-                    console.error("Erro ao enviar dados para o Google Forms:", error);
-                    return false;
-                }
-            }
-            // --- FIM FUNÇÃO DE ENVIO ---
-            
-            function displayCoupon(name, couponCode) { 
-                const firstName = name.split(' ')[0];
-
-                couponDiv.innerHTML = `
-                    <h3>🎉 Bem-Vindo(a), ${firstName}!</h3>
-                    <p style="font-size: 1.1em; color: var(--cor-texto-escuro);">
-                        Seu presente de primeiro pedido chegou! Use o código:
-                    </p>
-                    <div id="coupon-value" onclick="navigator.clipboard.writeText('${couponCode}'); alert('Cupom copiado: ${couponCode}');">
-                        ${couponCode} <span style="font-size: 0.6em; opacity: 0.8;">(Clique para copiar)</span>
-                    </div>
-                    <p id="coupon-info">
-                        * Válido apenas no seu primeiro pedido.
-                    </p>
-                    <a id="return-to-cart" href="${CARDAPIO_URL}">Voltar ao Carrinho</a>
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${nomes[i].value.toUpperCase()}</td>
+                    <td class="text-right">R$ ${valor.toFixed(2)}</td>
                 `;
-                
-                registrationDiv.classList.add('hidden');
-                passwordFormDiv.classList.add('hidden');
-                recoveryFormDiv.classList.add('hidden'); 
-                cardDiv.classList.add('hidden');
-                couponDiv.classList.remove('hidden');
+                tabela.appendChild(tr);
             }
+        }
 
-            // --- LÓGICA DE RECUPERAÇÃO DE SENHA ---
-            function handleForgotPassword() {
-                passwordFormDiv.classList.add('hidden');
-                recoveryFormDiv.classList.remove('hidden');
-                
-                recoveryMessage.classList.add('hidden'); 
-                recoveryEmailInput.value = ''; 
-            }
+        document.getElementById('view-total').innerText = "R$ " + total.toFixed(2);
+        
+        // Mostrar Cupom
+        document.getElementById('area-cupom').style.display = 'block';
+        document.getElementById('btn-download').style.display = 'block';
+    }
 
-            recoveryEmailForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                recoverButton.disabled = true;
-                recoverButton.textContent = 'Buscando...';
-                recoveryMessage.classList.add('hidden'); 
-                
-                const enteredEmail = recoveryEmailInput.value.trim();
-                const clientData = getClientData();
+    function baixarPDF() {
+        const elemento = document.getElementById('area-cupom');
+        const nomeCli = document.getElementById('nome').value;
 
-                if (!clientData) {
-                    recoveryMessage.textContent = 'Erro: Nenhum dado de cadastro ativo encontrado neste navegador.';
-                    recoveryMessage.className = 'message error';
-                    recoveryMessage.classList.remove('hidden');
-                } else if (enteredEmail.toLowerCase() === clientData.email.toLowerCase()) {
-                    recoveryMessage.innerHTML = `✅ Sua senha de acesso é: <strong>${clientData.password}</strong>.`;
-                    recoveryMessage.className = 'message success';
-                    recoveryMessage.classList.remove('hidden');
-                    
-                    setTimeout(() => {
-                        handleBackToLogin();
-                    }, 5000);
+        const opcoes = {
+            margin:       0.2,
+            filename:     'cupom_' + nomeCli + '.pdf',
+            image:        { type: 'jpeg', quality: 1.0 },
+            html2canvas:  { scale: 3 },
+            jsPDF:        { unit: 'in', format: [3.5, 6], orientation: 'portrait' }
+        };
 
-                } else {
-                    recoveryMessage.textContent = 'E-mail não corresponde ao cadastro ativo. Verifique e tente novamente.';
-                    recoveryMessage.className = 'message error';
-                    recoveryMessage.classList.remove('hidden');
-                }
+        html2pdf().set(opcoes).from(elemento).save();
+    }
+</script>
 
-                recoverButton.disabled = false;
-                recoverButton.textContent = 'Mostrar Senha';
-            });
-            
-            function handleBackToLogin() {
-                recoveryFormDiv.classList.add('hidden');
-                passwordFormDiv.classList.remove('hidden');
-                // Garante que o feedback de login seja limpo ao voltar
-                const loginFeedback = document.getElementById('login-feedback-message');
-                if (loginFeedback) loginFeedback.classList.add('hidden');
-                
-                cardDiv.classList.add('hidden'); 
-            }
-
-            backToLoginLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                handleBackToLogin();
-            });
-            // --- FIM LÓGICA DE RECUPERAÇÃO DE SENHA ---
-
-
-            // --- FUNÇÃO DE ACESSO AO CARTÃO ---
-            function handleAccessCard() {
-                const passwordInput = document.getElementById('card-password');
-                const feedbackMessage = document.getElementById('login-feedback-message');
-                const enteredPassword = passwordInput.value;
-                const clientData = getClientData();
-                const clientCoupon = getClientCoupon(); 
-                
-                feedbackMessage.classList.add('hidden');
-                cardDiv.classList.add('hidden');
-                couponDiv.classList.add('hidden'); 
-
-                if (!clientData) {
-                     feedbackMessage.textContent = 'Nenhum dado encontrado ou expirou. Por favor, faça um novo cadastro.';
-                     feedbackMessage.className = 'message error';
-                     feedbackMessage.classList.remove('hidden');
-                     registrationDiv.classList.remove('hidden');
-                     passwordFormDiv.classList.add('hidden');
-                     return;
-                }
-
-                if (enteredPassword === clientData.password) { 
-                    const cardName = document.getElementById('card-name');
-                    const cardEmail = document.getElementById('card-email');
-                    const cardCpf = document.getElementById('card-cpf');
-                    const cardCoupon = document.getElementById('card-coupon-value'); 
-                    const expiryTimeSpan = document.getElementById('expiry-time');
-
-                    // Preenche os dados
-                    cardName.textContent = clientData.name;
-                    cardEmail.textContent = clientData.email;
-                    cardCpf.textContent = clientData.cpf || 'Não Informado'; 
-                    cardCoupon.textContent = clientCoupon; 
-                    
-                    const expiryDate = new Date(clientData.expiry);
-                    expiryTimeSpan.textContent = expiryDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + 
-                                           ' de ' + expiryDate.toLocaleDateString('pt-BR');
-
-                    cardDiv.classList.remove('hidden');
-                    feedbackMessage.textContent = 'Acesso liberado! (Dados visíveis abaixo)';
-                    feedbackMessage.className = 'message success';
-                    feedbackMessage.classList.remove('hidden');
-                    passwordInput.value = ''; 
-                } else {
-                    feedbackMessage.textContent = 'Senha incorreta. Tente novamente.';
-                    feedbackMessage.className = 'message error';
-                    feedbackMessage.classList.remove('hidden'); 
-                    passwordInput.value = '';
-                }
-            }
-            // --- FIM FUNÇÃO DE ACESSO AO CARTÃO ---
-
-
-            // 1. Submissão do Formulário de Cadastro
-            clientForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                submitButton.disabled = true;
-                submitButton.textContent = 'Verificando...';
-                
-                const name = nameInput.value.trim();
-                const email = emailInput.value.trim();
-                const newPassword = newPasswordInput.value.trim();
-                const rawCpf = cpfInput.value.trim();
-                const formattedCpf = rawCpf.replace(/[^\d]+/g, '');
-                
-                formMessage.classList.add('hidden'); 
-
-                if (!name || !email) {
-                    formMessage.textContent = 'Por favor, preencha o Nome e E-mail.';
-                    formMessage.className = 'message error';
-                    formMessage.classList.remove('hidden');
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Cadastrar e Receber Meu CUPOM';
-                    return;
-                }
-
-                if (newPassword.length < 4) {
-                    formMessage.textContent = 'A senha de acesso deve ter no mínimo 4 caracteres.';
-                    formMessage.className = 'message error';
-                    formMessage.classList.remove('hidden');
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Cadastrar e Receber Meu CUPOM';
-                    return;
-                }
-
-                if (rawCpf.length > 0) {
-                    if (!isValidCPF(formattedCpf)) {
-                        formMessage.textContent = 'O CPF preenchido é inválido. Por favor, corrija ou deixe o campo vazio para continuar.';
-                        formMessage.className = 'message error';
-                        formMessage.classList.remove('hidden');
-                        submitButton.disabled = false;
-                        submitButton.textContent = 'Cadastrar e Receber Meu CUPOM';
-                        return; 
-                    }
-                }
-                
-                submitButton.textContent = 'Gerando Cupom...';
-                
-                // --- GARANTE QUE O SISTEMA DE CUPONS ESTEJA CORRETO E SELECIONA O PRÓXIMO CUPOM DA SUA LISTA ---
-                initializeCouponSystem(); // Garante que a lista de 31 cupons esteja no storage
-                const newCoupon = getNextCoupon();
-                
-                saveClientData(name, email, newPassword, rawCpf, newCoupon);
-                
-                submitButton.textContent = 'Enviando Dados...';
-
-                await sendToGoogleForms(name, email, rawCpf, newPassword);
-                
-                displayCoupon(name, newCoupon);
-
-                formMessage.textContent = 'Cadastro e envio de dados concluídos. Aproveite seu cupom!';
-                formMessage.className = 'message success';
-                formMessage.classList.remove('hidden');
-                    
-                submitButton.disabled = false;
-            });
-
-            // --- FUNÇÃO DE INICIALIZAÇÃO DO SISTEMA DE CUPONS ---
-            function initializeCouponSystem(force = false) {
-                let shuffledCoupons = localStorage.getItem(SHUFFLED_COUPONS_KEY);
-                let currentShuffledList = null;
-
-                // 1. Verifica se existe uma lista salva
-                if (shuffledCoupons) {
-                    try {
-                        currentShuffledList = JSON.parse(shuffledCoupons);
-                    } catch (e) {
-                        console.error("Erro ao parsear lista de cupons embaralhados.");
-                        currentShuffledList = null;
-                    }
-                }
-
-                // 2. Decide se precisa inicializar/re-inicializar (se não existir, se o tamanho estiver errado, ou se for forçado)
-                if (force || !currentShuffledList || currentShuffledList.length !== EXPECTED_COUPON_COUNT) {
-                    if (!currentShuffledList || currentShuffledList.length !== EXPECTED_COUPON_COUNT) {
-                        console.warn(`Aviso: Re-inicializando a lista de cupons. O tamanho atual (${currentShuffledList ? currentShuffledList.length : 0}) não corresponde ao esperado (${EXPECTED_COUPON_COUNT}).`);
-                    } else if (force) {
-                        console.log("Forçando re-inicialização do sistema de cupons.");
-                    }
-
-                    const newShuffledList = shuffleArray(BASE_COUPONS);
-                    localStorage.setItem(SHUFFLED_COUPONS_KEY, JSON.stringify(newShuffledList));
-                    localStorage.setItem(COUPON_INDEX_KEY, '-1'); // Reinicia o índice
-                }
-            }
-
-
-            // 3. Inicialização Principal
-            function initialize() {
-                // Garante que o sistema de cupons esteja pronto (e limpo de versões antigas)
-                initializeCouponSystem(); 
-                
-                const clientData = getClientData();
-                if (clientData) {
-                    registrationDiv.classList.add('hidden');
-                    passwordFormDiv.classList.remove('hidden');
-                    
-                    const firstName = clientData.name.split(' ')[0];
-
-                    // INJEÇÃO DO HTML
-                    passwordFormDiv.innerHTML = `
-                        <h3>Acesso Rápido</h3>
-                        <div class="message success" style="margin-top: 0;">
-                            Olá ${firstName}! Seus dados estão salvos. Insira a senha que você criou para acessar o cartão.
-                        </div>
-                        
-                        <a id="return-to-cart" href="${CARDAPIO_URL}">Voltar ao Carrinho</a>
-                        
-                        <label for="card-password" style="margin-top: 25px;">Insira sua Senha de Acesso:</label>
-                        <input type="password" id="card-password" placeholder="******" maxlength="12" style="margin-bottom: 10px;">
-                        <button id="access-button">Acessar Cartão</button>
-                        
-                        <span id="forgot-password-link">Esqueceu a senha?</span>
-                        
-                        <div id="login-feedback-message" class="message hidden"></div>
-                    `;
-
-                    // RE-ANEXO DOS EVENTOS INJETADOS
-                    document.getElementById('access-button').addEventListener('click', handleAccessCard);
-                    document.getElementById('forgot-password-link').addEventListener('click', handleForgotPassword);
-                    
-                } else {
-                    registrationDiv.classList.remove('hidden');
-                    passwordFormDiv.classList.add('hidden');
-                }
-            }
-
-            initialize();
-
-        });
-    </script>
 </body>
 </html>
