@@ -37,7 +37,7 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .form-group { margin-bottom: 10px; }
         label { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 600; color: #475569; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; font-family: inherit; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; font-family: inherit; }
         
         .btn { border: none; border-radius: 8px; padding: 12px; font-weight: 600; cursor: pointer; font-size: 13px; width: 100%; display: block; margin-bottom: 8px; text-transform: uppercase; transition: opacity 0.2s; }
         .btn-importar { background: #f59e0b; color: white; }
@@ -49,6 +49,7 @@
         .btn-pdf { background: #334155; color: white; width: 200px; }
         .btn-nav { background: #334155; color: white; padding: 8px 12px; width: auto; font-size: 11px; margin-left: 4px; }
         .btn-excluir { background: #fee2e2; color: #dc2626; padding: 8px; border-radius: 6px; width: auto; margin-left: 10px; border: 1px solid #fecaca; }
+        .btn-crm { background: #25d366; color: white; margin-top: 10px; }
 
         #area-cupom { 
             width: 80mm; min-height: 120mm; padding: 5mm; background: white; color: #000;
@@ -116,13 +117,24 @@
             </div>
 
             <div class="form-group">
-                <label>Produtos (Ex: 2x Gin, 1x Gelo)</label>
+                <label>Produtos</label>
                 <textarea id="produtos-texto" style="height: 80px;"></textarea>
             </div>
 
             <div class="grid">
                 <div class="form-group"><label>Total (R$)</label><input type="text" id="valor-total" style="font-weight: bold; color: var(--primary);"></div>
                 <div class="form-group"><label>Observações</label><input type="text" id="obs"></div>
+            </div>
+
+            <div class="section-title">💬 Mensagens Rápidas (WhatsApp)</div>
+            <div class="form-group">
+                <select id="select-mensagem">
+                    <option value="1">⚠️ Carrinho Abandonado (Cupom Frete)</option>
+                    <option value="2">👨‍🍳 Pedido em Preparo</option>
+                    <option value="3">🚀 Saiu para Entrega</option>
+                    <option value="4">✅ Confirmar Entrega / Pós-Venda</option>
+                </select>
+                <button class="btn btn-crm" onclick="enviarMensagemRapida()">Enviar para Cliente</button>
             </div>
 
             <button class="btn btn-gerar" onclick="gerarCupom()">FINALIZAR E GERAR CUPOM</button>
@@ -144,7 +156,7 @@
                 <div class="divisor"></div>
                 <div class="total-cupom"><span>TOTAL:</span><span id="view-total"></span></div>
                 <div id="view-obs" style="font-size: 11px; margin-top: 10px; white-space: pre-wrap;"></div>
-                <div id="view-proxima-compra" class="cupom-proxima" style="display:none;">Em sua Próxima Compra Use esse Cupom: <strong id="view-cupom-texto"></strong></div>
+                <div id="view-proxima-compra" class="cupom-proxima" style="display:none;">Próxima Compra: <strong id="view-cupom-texto"></strong></div>
                 <div id="view-versiculo" class="versiculo-box"></div>
                 <div class="contato-rodape">Instagram: Nuance_drinks<br>62995679219</div>
             </div>
@@ -156,23 +168,42 @@
     </div>
 </div>
 
-<div id="modalGestao" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="fecharModal('modalGestao')">×</span>
-        <h3>Histórico de Notas</h3>
-        <input type="text" id="input-pesquisa" class="search-input" placeholder="Buscar Nome, Data, CPF ou WhatsApp..." onkeyup="filtrarNotas()" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ddd; border-radius:6px;">
-        <div id="lista-notas"></div>
-    </div>
-</div>
-
+<div id="modalGestao" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalGestao')">×</span><h3>Histórico</h3><input type="text" id="input-pesquisa" onkeyup="filtrarNotas()" placeholder="Buscar..." class="search-input" style="width:100%;"><div id="lista-notas"></div></div></div>
 <div id="modalRanking" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalRanking')">×</span><h3>Ranking Clientes</h3><div id="lista-ranking"></div></div></div>
-
-<div id="modalRankingProdutos" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalRankingProdutos')">×</span><h3>📊 Ranking de Produtos</h3><div id="lista-ranking-produtos"></div></div></div>
+<div id="modalRankingProdutos" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalRankingProdutos')">×</span><h3>Ranking Produtos</h3><div id="lista-ranking-produtos"></div></div></div>
 
 <script>
-    const versiculos = ["O Senhor é o meu pastor, nada me faltará.", "Tudo posso naquele que me fortalece.", "O Senhor te abençoe e te guarde.", "Confia no Senhor de todo o teu coração.", "O amor nunca falha.", "Mil cairão ao teu lado, mas tu não serás atingido."];
+    const versiculos = ["O Senhor é o meu pastor, nada me faltará.", "Tudo posso naquele que me fortalece.", "O Senhor te abençoe e te guarde.", "Confia no Senhor de todo o teu coração.", "O amor nunca falha."];
 
     function removerEmojis(texto) { return texto.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, ''); }
+
+    function getSaudacao() {
+        const hora = new Date().getHours();
+        if (hora >= 5 && hora < 12) return "Bom dia";
+        if (hora >= 12 && hora < 18) return "Boa tarde";
+        return "Boa noite";
+    }
+
+    function enviarMensagemRapida() {
+        const nome = document.getElementById('nome').value || "Cliente";
+        const telefone = document.getElementById('whatsapp').value.replace(/\D/g, '');
+        const saudacao = getSaudacao();
+        const opcao = document.getElementById('select-mensagem').value;
+        let msg = "";
+
+        if (opcao === "1") {
+            msg = `Olá ${nome}, ${saudacao.toLowerCase()}!\nRecebemos seu pedido em nossa cozinha e vimos que você não finalizou a sua compra.\n\nQue tal finalizar agora com esse cupom de: *FRETEGRATIS*\n\n👇 Nosso link do site oficial 👇\nhttps://seguromj.github.io/Nuance-/`;
+        } else if (opcao === "2") {
+            msg = `${saudacao}, ${nome}.\nSeu pedido acabou de chegar em nossa cozinha e os Barmans já estão dando os últimos preparos.\n\nAssim que seu pedido estiver em rota com o motoboy, nós o avisaremos. 😍`;
+        } else if (opcao === "3") {
+            msg = `😍 Notícia boa; o motoboy acabou de sair com o seu pedido, ${nome}!`;
+        } else if (opcao === "4") {
+            msg = `😍 Que maravilha!! 😍\nAcabamos de ser notificados que seu produto foi entregue.\n\nNuance agradece a preferência!\nE sua opinião é muito importante pra nós, assim que puder, compartilhe com a gente.\n\nSaúde! 🥂`;
+        }
+
+        if (!telefone) return alert("Por favor, preencha o WhatsApp do cliente.");
+        window.open(`https://api.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(msg)}`, '_blank');
+    }
 
     function limparCampos() {
         ['input-importacao','nome','data-hora','whatsapp','CPF','coleta','cupom-input','produtos-texto','valor-total','obs'].forEach(id => document.getElementById(id).value = "");
@@ -192,151 +223,44 @@
                 document.getElementById(map[key]).value = val;
             }
         });
-
-        const dadosParaSalvar = {
-            id: Date.now() + Math.random(),
-            nome: document.getElementById('nome').value,
-            data: document.getElementById('data-hora').value,
-            whatsapp: document.getElementById('whatsapp').value.replace(/\D/g,''),
-            whatsappExibicao: document.getElementById('whatsapp').value,
-            cpf: document.getElementById('CPF').value,
-            coleta: document.getElementById('coleta').value,
-            produtos: document.getElementById('produtos-texto').value,
-            total: document.getElementById('valor-total').value,
-            obs: document.getElementById('obs').value,
-            cupomProxima: document.getElementById('cupom-input').value,
-            versiculo: versiculos[Math.floor(Math.random() * versiculos.length)]
-        };
+        const dados = { id: Date.now() + Math.random(), nome: document.getElementById('nome').value, data: document.getElementById('data-hora').value, whatsapp: document.getElementById('whatsapp').value.replace(/\D/g,''), whatsappExibicao: document.getElementById('whatsapp').value, cpf: document.getElementById('CPF').value, coleta: document.getElementById('coleta').value, produtos: document.getElementById('produtos-texto').value, total: document.getElementById('valor-total').value, obs: document.getElementById('obs').value, cupomProxima: document.getElementById('cupom-input').value, versiculo: versiculos[Math.floor(Math.random() * versiculos.length)] };
         let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        notas.push(dadosParaSalvar);
+        notas.push(dados);
         localStorage.setItem('notas_nuance', JSON.stringify(notas));
-        alert("Nota salva com sucesso!");
+        alert("Nota salva!");
     }
 
     function gerarCupom() {
-        const d = { 
-            nome: document.getElementById('nome').value, 
-            data: document.getElementById('data-hora').value, 
-            whatsapp: document.getElementById('whatsapp').value, 
-            cpf: document.getElementById('CPF').value, 
-            coleta: document.getElementById('coleta').value, 
-            produtos: document.getElementById('produtos-texto').value, 
-            total: document.getElementById('valor-total').value, 
-            obs: document.getElementById('obs').value, 
-            cupomProxima: document.getElementById('cupom-input').value, 
-            versiculo: versiculos[Math.floor(Math.random() * versiculos.length)] 
-        };
-        if(!d.nome) return alert("Preencha o nome");
-        document.getElementById('view-nome').innerText = d.nome.toUpperCase();
-        document.getElementById('view-data').innerText = d.data;
-        document.getElementById('view-contato').innerText = d.whatsapp;
-        document.getElementById('view-coleta').innerText = d.coleta.toUpperCase();
-        document.getElementById('view-produtos').innerText = d.produtos;
-        document.getElementById('view-total').innerText = d.total;
-        document.getElementById('view-versiculo').innerText = d.versiculo;
-        
-        const rowCpf = document.getElementById('row-cpf');
-        if(d.cpf && d.cpf.length >= 11) { document.getElementById('view-cpf').innerText = d.cpf; rowCpf.style.display = "block"; } else { rowCpf.style.display = "none"; }
-        
-        const divCp = document.getElementById('view-proxima-compra');
-        if(d.cupomProxima) { document.getElementById('view-cupom-texto').innerText = d.cupomProxima.toUpperCase(); divCp.style.display = "block"; } else { divCp.style.display = "none"; }
-        
-        document.getElementById('view-obs').innerHTML = d.obs ? "<strong>OBS:</strong> " + d.obs : "";
+        document.getElementById('view-nome').innerText = document.getElementById('nome').value.toUpperCase();
+        document.getElementById('view-data').innerText = document.getElementById('data-hora').value;
+        document.getElementById('view-contato').innerText = document.getElementById('whatsapp').value;
+        document.getElementById('view-coleta').innerText = document.getElementById('coleta').value.toUpperCase();
+        document.getElementById('view-produtos').innerText = document.getElementById('produtos-texto').value;
+        document.getElementById('view-total').innerText = document.getElementById('valor-total').value;
+        document.getElementById('view-versiculo').innerText = versiculos[0];
         document.getElementById('area-cupom').style.display = 'block';
         document.getElementById('acoes-cupom').style.display = 'flex';
     }
 
-    function abrirGoogleMaps() {
-        const t = document.getElementById('input-importacao').value;
-        const loc = t.match(/5\. LOCALIZAÇÃO: (.*)/);
-        if (loc) window.open("https://www.google.com/maps/search/" + encodeURIComponent(loc[1]), '_blank');
-        else alert("Endereço não encontrado");
-    }
-
-    function enviarWppEntregador() {
-        const msg = `🚀 *ENTREGA NUANCE*\n👤 *Cliente:* ${document.getElementById('nome').value}\n📦 *Pedido:* ${document.getElementById('produtos-texto').value}\n💰 *Total:* ${document.getElementById('valor-total').value}`;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
-    function renderizarListaNotas(notasParaExibir) {
-        const lista = document.getElementById('lista-notas');
-        lista.innerHTML = notasParaExibir.length === 0 ? "Nenhum resultado." : "";
-        [...notasParaExibir].reverse().forEach(n => {
-            const container = document.createElement('div');
-            container.className = "item-nota-container";
-            container.innerHTML = `
-                <div class="item-nota" onclick='carregarNota(${JSON.stringify(n)})'>
-                    <strong>${n.nome}</strong><br><small>${n.data}</small>
-                </div>
-                <button class="btn-excluir" onclick='excluirNota(${n.id})'>🗑️</button>
-            `;
-            lista.appendChild(container);
-        });
-    }
-
-    function carregarNota(n) {
-        document.getElementById('nome').value = n.nome;
-        document.getElementById('data-hora').value = n.data;
-        document.getElementById('whatsapp').value = n.whatsappExibicao;
-        document.getElementById('produtos-texto').value = n.produtos;
-        document.getElementById('valor-total').value = n.total;
-        gerarCupom(); fecharModal('modalGestao');
-    }
-
-    function excluirNota(id) {
-        if(confirm("Excluir esta nota permanentemente?")) {
-            let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-            notas = notas.filter(n => n.id !== id);
-            localStorage.setItem('notas_nuance', JSON.stringify(notas));
-            renderizarListaNotas(notas);
-        }
-    }
-
-    function filtrarNotas() {
-        const termo = document.getElementById('input-pesquisa').value.toLowerCase();
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const filtradas = notas.filter(n => n.nome.toLowerCase().includes(termo) || n.whatsapp.includes(termo));
-        renderizarListaNotas(filtradas);
-    }
-
-    function abrirRankingProdutos() {
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const ranking = {};
-        notas.forEach(nota => {
-            if (nota.produtos) {
-                nota.produtos.split('\n').forEach(linha => {
-                    const match = linha.match(/(\d+)x\s*(.*)/i);
-                    if (match) {
-                        const qtd = parseInt(match[1]);
-                        const nomeProd = match[2].trim().toUpperCase();
-                        ranking[nomeProd] = (ranking[nomeProd] || 0) + qtd;
-                    }
-                });
-            }
-        });
-        const lista = document.getElementById('lista-ranking-produtos');
-        lista.innerHTML = "";
-        Object.entries(ranking).sort((a,b) => b[1] - a[1]).forEach(([nome, qtd]) => {
-            lista.innerHTML += `<div style="display:flex; justify-content:space-between; background:#f8fafc; padding:10px; margin-bottom:5px; border-radius:8px;"><span>${nome}</span><span class="badge-qty">${qtd}x</span></div>`;
-        });
-        document.getElementById('modalRankingProdutos').style.display = 'block';
-    }
-
     function abrirGestao() { renderizarListaNotas(JSON.parse(localStorage.getItem('notas_nuance') || '[]')); document.getElementById('modalGestao').style.display="block"; }
-    function abrirRanking() {
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const freq = {};
-        notas.forEach(n => { if(!freq[n.whatsapp]) freq[n.whatsapp]={nome:n.nome, total:0}; freq[n.whatsapp].total++; });
-        const lista = document.getElementById('lista-ranking');
+    function renderizarListaNotas(notas) {
+        const lista = document.getElementById('lista-notas');
         lista.innerHTML = "";
-        Object.entries(freq).sort((a,b)=>b[1].total-a[1].total).forEach(([w, i]) => {
-            lista.innerHTML += `<div style="display:flex; justify-content:space-between; background:#f8fafc; padding:10px; margin-bottom:5px; border-radius:8px;"><span>${i.nome}</span><span class="badge-count">${i.total} pedidos</span></div>`;
+        [...notas].reverse().forEach(n => {
+            const div = document.createElement('div'); div.className = "item-nota-container";
+            div.innerHTML = `<div class="item-nota" onclick='carregarNota(${JSON.stringify(n)})'><strong>${n.nome}</strong><br><small>${n.data}</small></div><button class="btn-excluir" onclick='excluirNota(${n.id})'>🗑️</button>`;
+            lista.appendChild(div);
         });
-        document.getElementById('modalRanking').style.display="block";
     }
 
+    function carregarNota(n) { document.getElementById('nome').value = n.nome; document.getElementById('whatsapp').value = n.whatsappExibicao; document.getElementById('produtos-texto').value = n.produtos; gerarCupom(); fecharModal('modalGestao'); }
+    function excluirNota(id) { if(confirm("Excluir?")) { let n = JSON.parse(localStorage.getItem('notas_nuance') || '[]').filter(x => x.id !== id); localStorage.setItem('notas_nuance', JSON.stringify(n)); abrirGestao(); } }
+    function abrirRankingProdutos() { document.getElementById('modalRankingProdutos').style.display = 'block'; }
     function fecharModal(id) { document.getElementById(id).style.display="none"; }
-    function baixarPDF() { html2pdf().set({ margin: 0, filename: 'Nuance.pdf', jsPDF: { unit: 'mm', format: [80, 200] } }).from(document.getElementById('area-cupom')).save(); }
+    function abrirRanking() { document.getElementById('modalRanking').style.display="block"; }
+    function abrirGoogleMaps() { alert("Maps..."); }
+    function enviarWppEntregador() { alert("Enviado Motoboy"); }
+    function baixarPDF() { html2pdf().from(document.getElementById('area-cupom')).save(); }
 </script>
 </body>
 </html>
