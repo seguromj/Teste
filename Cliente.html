@@ -17,13 +17,10 @@
         
         .pdv-container { display: flex; flex: 1; overflow: hidden; padding: 20px; gap: 20px; }
         
-        /* Coluna de Entrada (Esquerda) */
         .panel-left { flex: 1.2; background: white; border-radius: 12px; padding: 20px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        
-        /* Coluna de Visualização (Direita) */
         .panel-right { flex: 0.8; background: #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; border: 2px inset #cbd5e1; }
 
-        /* RESPONSIVIDADE CELULAR (Mantém o original) */
+        /* RESPONSIVIDADE CELULAR */
         @media (max-width: 900px) {
             .pdv-container { flex-direction: column; overflow: visible; height: auto; padding: 10px; }
             .panel-left, .panel-right { flex: none; width: 100%; overflow: visible; box-sizing: border-box; }
@@ -31,7 +28,6 @@
             .panel-right { margin-top: 20px; background: white; border: none; padding: 0; }
         }
 
-        /* ESTILOS INTERNOS */
         h2 { margin: 0; font-size: 20px; }
         .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin: 15px 0 10px; border-left: 3px solid var(--primary); padding-left: 8px; }
         
@@ -43,9 +39,7 @@
         label { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 600; color: #475569; }
         input, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; font-family: inherit; }
         
-        /* BOTÕES */
         .btn { border: none; border-radius: 8px; padding: 12px; font-weight: 600; cursor: pointer; font-size: 13px; width: 100%; display: block; margin-bottom: 8px; text-transform: uppercase; transition: opacity 0.2s; }
-        .btn:active { transform: scale(0.98); }
         .btn-importar { background: #f59e0b; color: white; }
         .btn-maps { background: #16a34a; color: white; }
         .btn-wpp-entrega { background: var(--whatsapp); color: white; }
@@ -53,11 +47,9 @@
         .btn-gerar { background: var(--primary); color: white; margin-top: 15px; font-size: 15px; padding: 16px; }
         .btn-print { background: var(--success); color: white; width: 200px; }
         .btn-pdf { background: #334155; color: white; width: 200px; }
-        .btn-gestao { background: #8b5cf6; color: white; padding: 8px 15px; width: auto; font-size: 12px; }
-        .btn-ranking { background: #0ea5e9; color: white; padding: 8px 15px; width: auto; font-size: 12px; margin-left: 5px; }
+        .btn-nav { background: #334155; color: white; padding: 8px 12px; width: auto; font-size: 11px; margin-left: 4px; }
         .btn-excluir { background: #fee2e2; color: #dc2626; padding: 8px; border-radius: 6px; width: auto; margin-left: 10px; border: 1px solid #fecaca; }
 
-        /* CUPOM (Visualização PDV) */
         #area-cupom { 
             width: 80mm; min-height: 120mm; padding: 5mm; background: white; color: #000;
             font-family: 'Courier New', Courier, monospace; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -71,14 +63,13 @@
         .contato-rodape { text-align: center; margin-top: 10px; font-size: 11px; font-weight: bold; }
         .cupom-proxima { text-align: center; margin-top: 10px; font-size: 11px; border: 1px solid #000; padding: 5px; }
 
-        /* MODAIS */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); overflow-y: auto; }
         .modal-content { background: white; margin: 2% auto; padding: 20px; width: 95%; max-width: 500px; border-radius: 12px; position: relative; }
         .close { position: absolute; right: 20px; top: 10px; font-size: 28px; cursor: pointer; }
-        .search-input { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; margin: 10px 0; box-sizing: border-box; }
         .item-nota-container { display: flex; align-items: center; margin-bottom: 8px; }
         .item-nota { background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; flex-grow: 1; text-align: left; }
         .badge-count { background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+        .badge-qty { background: #0ea5e9; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
 
         @media print {
             body * { visibility: hidden; }
@@ -93,16 +84,17 @@
     <div class="top-bar">
         <h2>PDV NUANCE</h2>
         <div style="display:flex;">
-            <button class="btn btn-gestao" onclick="abrirGestao()">📁 HISTÓRICO</button>
-            <button class="btn btn-ranking" onclick="abrirRanking()">📊 RANKING</button>
+            <button class="btn btn-nav" onclick="abrirGestao()">📁 NOTAS</button>
+            <button class="btn btn-nav" onclick="abrirRanking()">👤 CLIENTES</button>
+            <button class="btn btn-nav" style="background:#0ea5e9;" onclick="abrirRankingProdutos()">📦 PRODUTOS</button>
         </div>
     </div>
 
     <div class="pdv-container">
         <div class="panel-left">
             <div class="import-box">
-                <label>📦 IMPORTAR PEDIDO (COLE AQUI):</label>
-                <textarea id="input-importacao" placeholder="Cole a mensagem do WhatsApp..."></textarea>
+                <label>📦 IMPORTAR PEDIDO:</label>
+                <textarea id="input-importacao" placeholder="Cole a mensagem aqui..."></textarea>
                 <div class="grid">
                     <button class="btn btn-importar" onclick="processarTexto()">Processar Mensagem</button>
                     <button class="btn btn-maps" onclick="abrirGoogleMaps()">📍 Mapa Cliente</button>
@@ -113,41 +105,33 @@
                 </div>
             </div>
 
-            <div class="section-title">Dados do Cliente e Pedido</div>
+            <div class="section-title">Dados da Nota</div>
             <div class="grid">
-                <div class="form-group"><label>Nome do Cliente</label><input type="text" id="nome"></div>
+                <div class="form-group"><label>Nome</label><input type="text" id="nome"></div>
                 <div class="form-group"><label>Data/Hora</label><input type="text" id="data-hora"></div>
                 <div class="form-group"><label>WhatsApp</label><input type="text" id="whatsapp"></div>
                 <div class="form-group"><label>CPF</label><input type="text" id="CPF"></div>
-                <div class="form-group"><label>Tipo de Coleta</label><input type="text" id="coleta"></div>
-                <div class="form-group"><label>Cupom Próx. Compra</label><input type="text" id="cupom-input"></div>
+                <div class="form-group"><label>Coleta</label><input type="text" id="coleta"></div>
+                <div class="form-group"><label>Cupom</label><input type="text" id="cupom-input"></div>
             </div>
 
             <div class="form-group">
-                <label>Produtos (Itens)</label>
+                <label>Produtos (Ex: 2x Gin, 1x Gelo)</label>
                 <textarea id="produtos-texto" style="height: 80px;"></textarea>
             </div>
 
             <div class="grid">
-                <div class="form-group">
-                    <label>Valor Total (R$)</label>
-                    <input type="text" id="valor-total" style="font-weight: bold; color: var(--primary); font-size: 18px;">
-                </div>
-                <div class="form-group">
-                    <label>Observações</label>
-                    <input type="text" id="obs">
-                </div>
+                <div class="form-group"><label>Total (R$)</label><input type="text" id="valor-total" style="font-weight: bold; color: var(--primary);"></div>
+                <div class="form-group"><label>Observações</label><input type="text" id="obs"></div>
             </div>
 
             <button class="btn btn-gerar" onclick="gerarCupom()">FINALIZAR E GERAR CUPOM</button>
         </div>
 
         <div class="panel-right">
-            <div class="section-title" style="align-self: flex-start;">Pré-visualização do Cupom</div>
-            
             <div id="area-cupom">
                 <div class="empresa-nome">NUANCE</div>
-                <div class="cupom-header"><strong>COMPROVANTE DE PEDIDO</strong><br><small>Controle Interno</small></div>
+                <div class="cupom-header"><strong>COMPROVANTE DE PEDIDO</strong></div>
                 <div style="font-size: 12px; margin: 10px 0;">
                     DATA: <span id="view-data"></span><br>
                     CLIENTE: <span id="view-nome"></span><br>
@@ -156,21 +140,17 @@
                     COLETA: <span id="view-coleta"></span>
                 </div>
                 <div class="divisor"></div>
-                <div style="font-size: 12px;"><strong>ITENS:</strong><br><div id="view-produtos" style="white-space: pre-wrap; margin-top: 5px;"></div></div>
+                <div style="font-size: 12px;"><div id="view-produtos" style="white-space: pre-wrap;"></div></div>
                 <div class="divisor"></div>
                 <div class="total-cupom"><span>TOTAL:</span><span id="view-total"></span></div>
                 <div id="view-obs" style="font-size: 11px; margin-top: 10px; white-space: pre-wrap;"></div>
-                <div id="view-proxima-compra" class="cupom-proxima" style="display:none;">
-                    Cupom Próxima Compra:<br>
-                    <strong id="view-cupom-texto"></strong>
-                </div>
+                <div id="view-proxima-compra" class="cupom-proxima" style="display:none;">Em sua Próxima Compra Use esse Cupom: <strong id="view-cupom-texto"></strong></div>
                 <div id="view-versiculo" class="versiculo-box"></div>
-                <div class="contato-rodape">Instagram: Nuance_drinks<br>Whatsapp: 62995679219</div>
+                <div class="contato-rodape">Instagram: Nuance_drinks<br>62995679219</div>
             </div>
-
-            <div id="acoes-cupom" style="margin-top: 20px; display: none; gap: 10px; display: none;">
+            <div id="acoes-cupom" style="margin-top: 20px; display: none; gap: 10px;">
                 <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir</button>
-                <button class="btn btn-pdf" onclick="baixarPDF()">💾 Salvar PDF</button>
+                <button class="btn btn-pdf" onclick="baixarPDF()">💾 PDF</button>
             </div>
         </div>
     </div>
@@ -180,21 +160,17 @@
     <div class="modal-content">
         <span class="close" onclick="fecharModal('modalGestao')">×</span>
         <h3>Histórico de Notas</h3>
-        <input type="text" id="input-pesquisa" class="search-input" placeholder="🔍 Buscar Nome, Data, CPF ou WhatsApp..." onkeyup="filtrarNotas()">
-        <div id="lista-notas" class="lista-notas"></div>
+        <input type="text" id="input-pesquisa" class="search-input" placeholder="Buscar Nome, Data, CPF ou WhatsApp..." onkeyup="filtrarNotas()" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ddd; border-radius:6px;">
+        <div id="lista-notas"></div>
     </div>
 </div>
 
-<div id="modalRanking" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="fecharModal('modalRanking')">×</span>
-        <h3>Ranking de Clientes</h3>
-        <div id="lista-ranking" class="lista-notas"></div>
-    </div>
-</div>
+<div id="modalRanking" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalRanking')">×</span><h3>Ranking Clientes</h3><div id="lista-ranking"></div></div></div>
+
+<div id="modalRankingProdutos" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalRankingProdutos')">×</span><h3>📊 Ranking de Produtos</h3><div id="lista-ranking-produtos"></div></div></div>
 
 <script>
-    const versiculos = ["O Senhor é o meu pastor, nada me faltará. (Salmos 23:1)", "Tudo posso naquele que me fortalece. (Filipenses 4:13)", "O Senhor te abençoe e te guarde. (Números 6:24)", "Confia no Senhor de todo o teu coração. (Provérbios 3:5)", "Alegrem-se na esperança, sejam pacientes na tribulação. (Romanos 12:12)", "Mil cairão ao teu lado, mas tu não serás atingido. (Salmos 91:7)", "O amor nunca falha. (1 Coríntios 13:8)", "Se Deus é por nós, quem será contra nós? (Romanos 8:31)", "Deem graças ao Senhor, porque ele é bom. (Salmos 136:1)", "Lâmpada para os meus pés é tua palavra. (Salmos 119:105)"];
+    const versiculos = ["O Senhor é o meu pastor, nada me faltará.", "Tudo posso naquele que me fortalece.", "O Senhor te abençoe e te guarde.", "Confia no Senhor de todo o teu coração.", "O amor nunca falha.", "Mil cairão ao teu lado, mas tu não serás atingido."];
 
     function removerEmojis(texto) { return texto.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, ''); }
 
@@ -216,15 +192,40 @@
                 document.getElementById(map[key]).value = val;
             }
         });
-        const dados = { id: Date.now() + Math.random(), nome: document.getElementById('nome').value, data: document.getElementById('data-hora').value, whatsapp: document.getElementById('whatsapp').value.replace(/\D/g,''), whatsappExibicao: document.getElementById('whatsapp').value, cpf: document.getElementById('CPF').value, coleta: document.getElementById('coleta').value, produtos: document.getElementById('produtos-texto').value, total: document.getElementById('valor-total').value, obs: document.getElementById('obs').value, cupomProxima: document.getElementById('cupom-input').value, versiculo: versiculos[Math.floor(Math.random() * versiculos.length)] };
+
+        const dadosParaSalvar = {
+            id: Date.now() + Math.random(),
+            nome: document.getElementById('nome').value,
+            data: document.getElementById('data-hora').value,
+            whatsapp: document.getElementById('whatsapp').value.replace(/\D/g,''),
+            whatsappExibicao: document.getElementById('whatsapp').value,
+            cpf: document.getElementById('CPF').value,
+            coleta: document.getElementById('coleta').value,
+            produtos: document.getElementById('produtos-texto').value,
+            total: document.getElementById('valor-total').value,
+            obs: document.getElementById('obs').value,
+            cupomProxima: document.getElementById('cupom-input').value,
+            versiculo: versiculos[Math.floor(Math.random() * versiculos.length)]
+        };
         let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        notas.push(dados);
+        notas.push(dadosParaSalvar);
         localStorage.setItem('notas_nuance', JSON.stringify(notas));
-        alert("Processado e salvo!");
+        alert("Nota salva com sucesso!");
     }
 
     function gerarCupom() {
-        const d = { nome: document.getElementById('nome').value, data: document.getElementById('data-hora').value, whatsapp: document.getElementById('whatsapp').value, cpf: document.getElementById('CPF').value, coleta: document.getElementById('coleta').value, produtos: document.getElementById('produtos-texto').value, total: document.getElementById('valor-total').value, obs: document.getElementById('obs').value, cupomProxima: document.getElementById('cupom-input').value, versiculo: versiculos[Math.floor(Math.random() * versiculos.length)] };
+        const d = { 
+            nome: document.getElementById('nome').value, 
+            data: document.getElementById('data-hora').value, 
+            whatsapp: document.getElementById('whatsapp').value, 
+            cpf: document.getElementById('CPF').value, 
+            coleta: document.getElementById('coleta').value, 
+            produtos: document.getElementById('produtos-texto').value, 
+            total: document.getElementById('valor-total').value, 
+            obs: document.getElementById('obs').value, 
+            cupomProxima: document.getElementById('cupom-input').value, 
+            versiculo: versiculos[Math.floor(Math.random() * versiculos.length)] 
+        };
         if(!d.nome) return alert("Preencha o nome");
         document.getElementById('view-nome').innerText = d.nome.toUpperCase();
         document.getElementById('view-data').innerText = d.data;
@@ -233,10 +234,13 @@
         document.getElementById('view-produtos').innerText = d.produtos;
         document.getElementById('view-total').innerText = d.total;
         document.getElementById('view-versiculo').innerText = d.versiculo;
+        
         const rowCpf = document.getElementById('row-cpf');
         if(d.cpf && d.cpf.length >= 11) { document.getElementById('view-cpf').innerText = d.cpf; rowCpf.style.display = "block"; } else { rowCpf.style.display = "none"; }
+        
         const divCp = document.getElementById('view-proxima-compra');
         if(d.cupomProxima) { document.getElementById('view-cupom-texto').innerText = d.cupomProxima.toUpperCase(); divCp.style.display = "block"; } else { divCp.style.display = "none"; }
+        
         document.getElementById('view-obs').innerHTML = d.obs ? "<strong>OBS:</strong> " + d.obs : "";
         document.getElementById('area-cupom').style.display = 'block';
         document.getElementById('acoes-cupom').style.display = 'flex';
@@ -254,20 +258,19 @@
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    function filtrarNotas() {
-        const termo = document.getElementById('input-pesquisa').value.toLowerCase();
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        renderizarLista(notas.filter(n => n.nome.toLowerCase().includes(termo) || n.whatsapp.includes(termo) || (n.cpf && n.cpf.includes(termo))));
-    }
-
-    function renderizarLista(notas) {
+    function renderizarListaNotas(notasParaExibir) {
         const lista = document.getElementById('lista-notas');
-        lista.innerHTML = "";
-        [...notas].reverse().forEach(n => {
-            const div = document.createElement('div'); div.className = "item-nota-container";
-            div.innerHTML = `<button class="item-nota" onclick='carregarNota(${JSON.stringify(n)})'><strong>${n.nome}</strong><br><small>${n.data}</small></button>
-                             <button class="btn-excluir" onclick='excluirNota(${n.id})'>🗑️</button>`;
-            lista.appendChild(div);
+        lista.innerHTML = notasParaExibir.length === 0 ? "Nenhum resultado." : "";
+        [...notasParaExibir].reverse().forEach(n => {
+            const container = document.createElement('div');
+            container.className = "item-nota-container";
+            container.innerHTML = `
+                <div class="item-nota" onclick='carregarNota(${JSON.stringify(n)})'>
+                    <strong>${n.nome}</strong><br><small>${n.data}</small>
+                </div>
+                <button class="btn-excluir" onclick='excluirNota(${n.id})'>🗑️</button>
+            `;
+            lista.appendChild(container);
         });
     }
 
@@ -281,22 +284,53 @@
     }
 
     function excluirNota(id) {
-        if(confirm("Excluir esta nota?")) {
+        if(confirm("Excluir esta nota permanentemente?")) {
             let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-            localStorage.setItem('notas_nuance', JSON.stringify(notas.filter(n => n.id !== id)));
-            filtrarNotas();
+            notas = notas.filter(n => n.id !== id);
+            localStorage.setItem('notas_nuance', JSON.stringify(notas));
+            renderizarListaNotas(notas);
         }
     }
 
-    function abrirGestao() { renderizarLista(JSON.parse(localStorage.getItem('notas_nuance') || '[]')); document.getElementById('modalGestao').style.display="block"; }
+    function filtrarNotas() {
+        const termo = document.getElementById('input-pesquisa').value.toLowerCase();
+        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        const filtradas = notas.filter(n => n.nome.toLowerCase().includes(termo) || n.whatsapp.includes(termo));
+        renderizarListaNotas(filtradas);
+    }
+
+    function abrirRankingProdutos() {
+        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        const ranking = {};
+        notas.forEach(nota => {
+            if (nota.produtos) {
+                nota.produtos.split('\n').forEach(linha => {
+                    const match = linha.match(/(\d+)x\s*(.*)/i);
+                    if (match) {
+                        const qtd = parseInt(match[1]);
+                        const nomeProd = match[2].trim().toUpperCase();
+                        ranking[nomeProd] = (ranking[nomeProd] || 0) + qtd;
+                    }
+                });
+            }
+        });
+        const lista = document.getElementById('lista-ranking-produtos');
+        lista.innerHTML = "";
+        Object.entries(ranking).sort((a,b) => b[1] - a[1]).forEach(([nome, qtd]) => {
+            lista.innerHTML += `<div style="display:flex; justify-content:space-between; background:#f8fafc; padding:10px; margin-bottom:5px; border-radius:8px;"><span>${nome}</span><span class="badge-qty">${qtd}x</span></div>`;
+        });
+        document.getElementById('modalRankingProdutos').style.display = 'block';
+    }
+
+    function abrirGestao() { renderizarListaNotas(JSON.parse(localStorage.getItem('notas_nuance') || '[]')); document.getElementById('modalGestao').style.display="block"; }
     function abrirRanking() {
-        const lista = document.getElementById('lista-ranking');
         const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
         const freq = {};
         notas.forEach(n => { if(!freq[n.whatsapp]) freq[n.whatsapp]={nome:n.nome, total:0}; freq[n.whatsapp].total++; });
+        const lista = document.getElementById('lista-ranking');
         lista.innerHTML = "";
         Object.entries(freq).sort((a,b)=>b[1].total-a[1].total).forEach(([w, i]) => {
-            lista.innerHTML += `<div class="item-nota" style="margin-bottom:5px; display:flex; justify-content:space-between"><span>${i.nome}</span><span class="badge-count">${i.total} pedidos</span></div>`;
+            lista.innerHTML += `<div style="display:flex; justify-content:space-between; background:#f8fafc; padding:10px; margin-bottom:5px; border-radius:8px;"><span>${i.nome}</span><span class="badge-count">${i.total} pedidos</span></div>`;
         });
         document.getElementById('modalRanking').style.display="block";
     }
