@@ -58,13 +58,23 @@
         .btn-lancar { background: #10b981; color: white; padding: 4px 8px; width: auto; font-size: 10px; border-radius: 4px; }
         .btn-etiqueta { background: #f59e0b; color: white; padding: 4px 8px; width: auto; font-size: 10px; border-radius: 4px; }
 
-        /* Status Cores */
-        .status-badge { padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: bold; color: white; text-transform: uppercase; }
+        /* Estilos do Modal de Notas Organizado */
+        #lista-notas { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+        .nota-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .nota-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .nota-cliente-info b { font-size: 15px; color: #0f172a; display: block; }
+        .nota-cliente-info span { font-size: 11px; color: #64748b; }
+        .nota-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        .nota-status-row { display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid #f1f5f9; margin-top: 5px; }
+        .btn-icon-wpp { background: #25d366; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-weight: 600; }
+
+        .status-badge { padding: 4px 8px; border-radius: 20px; font-size: 10px; font-weight: bold; color: white; text-transform: uppercase; border: none; outline: none; }
         .st-pendente { background: #64748b; }
         .st-preparando { background: #3b82f6; }
         .st-rua { background: #f59e0b; }
         .st-entregue { background: #10b981; }
 
+        /* Pastas de Produtos */
         .product-folder { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
         .folder-header { background: #f8fafc; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; }
         .folder-content { padding: 12px; background: #fff; border-top: 1px solid #eee; }
@@ -209,7 +219,7 @@
     <div class="modal-content">
         <span class="close" onclick="fecharModal('modalGestao')">×</span>
         <h3>Histórico e Status</h3>
-        <input type="text" id="busca-nota" placeholder="Pesquisar..." onkeyup="filtrarNotas()" style="margin-bottom:15px;">
+        <input type="text" id="busca-nota" placeholder="Busca: Nome * Zap * CPF" onkeyup="filtrarNotas()" style="margin-bottom:15px;">
         <div id="lista-notas"></div>
     </div>
 </div>
@@ -220,7 +230,7 @@
         <h3>🚀 Realizar Lançamento</h3>
         <p id="lancar-info-cliente" style="font-weight: bold; color: var(--primary);"></p>
         <div id="lista-produtos-lancar"></div>
-        <button class="btn btn-gerar" onclick="confirmarLancamento()">REALMENTE LANÇAMENTO</button>
+        <button class="btn btn-gerar" onclick="confirmarLancamento()">REALIZAR LANÇAMENTO</button>
     </div>
 </div>
 
@@ -271,7 +281,6 @@
         document.getElementById('view-total').innerText = "R$ " + (document.getElementById('valor-total').value || "0.00");
         document.getElementById('view-obs').innerText = obs;
         
-        // Dados para Etiqueta
         document.getElementById('etiq-nome').innerText = nome;
         document.getElementById('etiq-end').innerText = end;
         document.getElementById('etiq-obs').innerText = obs;
@@ -325,7 +334,9 @@
         if(!nome) return alert("Preencha o nome.");
         const dados = { 
             id: Date.now(), nome, data: document.getElementById('data-hora').value, 
-            whatsapp: document.getElementById('whatsapp').value, rua: document.getElementById('rua').value,
+            whatsapp: document.getElementById('whatsapp').value,
+            cpf: document.getElementById('CPF').value || "",
+            rua: document.getElementById('rua').value,
             numero: document.getElementById('numero').value, bairro: document.getElementById('bairro').value,
             produtos: document.getElementById('produtos-texto').value, total: document.getElementById('valor-total').value,
             status: 'pendente', data_criacao: new Date().toISOString()
@@ -337,28 +348,70 @@
     }
 
     function filtrarNotas() {
-        const termo = document.getElementById('busca-nota').value.toLowerCase();
+        const busca = document.getElementById('busca-nota').value.toLowerCase();
+        const partes = busca.split('*').map(p => p.trim());
         const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
         const lista = document.getElementById('lista-notas');
         
-        lista.innerHTML = notas.reverse().filter(n => n.nome.toLowerCase().includes(termo)).map(n => `
-            <div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <b>${n.nome}</b><br>
-                    <select onchange="mudarStatus(${n.id}, this.value)" class="status-badge st-${n.status}">
-                        <option value="pendente" ${n.status==='pendente'?'selected':''}>Pendente</option>
-                        <option value="preparando" ${n.status==='preparando'?'selected':''}>Preparando</option>
-                        <option value="rua" ${n.status==='rua'?'selected':''}>Na Rua</option>
-                        <option value="entregue" ${n.status==='entregue'?'selected':''}>Entregue</option>
-                    </select>
+        const filtradas = notas.reverse().filter(n => {
+            const matchNome = n.nome.toLowerCase().includes(partes[0] || "");
+            const matchWhats = partes[1] ? (n.whatsapp || "").includes(partes[1]) : true;
+            const matchCPF = partes[2] ? (n.cpf || "").includes(partes[2]) : true;
+            return matchNome && matchWhats && matchCPF;
+        });
+
+        lista.innerHTML = filtradas.map(n => `
+            <div class="nota-card">
+                <div class="nota-header">
+                    <div class="nota-cliente-info">
+                        <b>${n.nome}</b>
+                        <span>📅 ${n.data || 'Sem data'} | 💰 R$ ${n.total}</span>
+                    </div>
+                    <div class="nota-actions">
+                        <button class="btn btn-lancar" onclick="abrirModalLancar(${n.id})">🚀 LANÇAR</button>
+                        <button class="btn btn-reabrir" onclick="reabrirNota(${n.id})">👁️</button>
+                        <button class="btn btn-delete" onclick="excluirNota(${n.id})">🗑️</button>
+                    </div>
                 </div>
-                <div style="display:flex; gap:4px;">
-                    <button class="btn btn-lancar" onclick="abrirModalLancar(${n.id})">🚀 LANÇA</button>
-                    <button class="btn btn-reabrir" onclick="reabrirNota(${n.id})">👁️</button>
-                    <button class="btn btn-delete" onclick="excluirNota(${n.id})">🗑️</button>
+                <div class="nota-status-row">
+                    <div style="flex: 1;">
+                        <select onchange="mudarStatus(${n.id}, this.value)" class="status-badge st-${n.status}" style="width: auto; cursor:pointer;">
+                            <option value="pendente" ${n.status==='pendente'?'selected':''}>Pendente</option>
+                            <option value="preparando" ${n.status==='preparando'?'selected':''}>Preparando</option>
+                            <option value="rua" ${n.status==='rua'?'selected':''}>Na Rua</option>
+                            <option value="entregue" ${n.status==='entregue'?'selected':''}>Entregue</option>
+                        </select>
+                    </div>
+                    <button onclick="enviarAcompanhamento(${n.id})" class="btn-icon-wpp">
+                        <span>📲</span> AVISAR CLIENTE
+                    </button>
                 </div>
             </div>
         `).join("");
+    }
+
+    function enviarAcompanhamento(id) {
+        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        const n = notas.find(x => x.id === id);
+        if(!n || !n.whatsapp) return alert("WhatsApp não encontrado.");
+        
+        const primeiroNome = n.nome.split(' ')[0];
+        const saudacao = getSaudacao();
+        let msg = "";
+        
+        if(n.status === 'pendente') {
+            msg = `Olá ${primeiroNome}, ${saudacao.toLowerCase()}!\nRecebemos seu pedido de: \n${n.produtos}\nEle já caiu aqui no nosso sistema e em breve daremos início ao preparo! 🥂`;
+        } else if(n.status === 'preparando') {
+            msg = `Oi ${primeiroNome}, sou o Barman da Nuance! 👨‍🍳\nSeu pedido já está em preparo e as frutas estão fresquinhas! 😍`;
+        } else if(n.status === 'rua') {
+            msg = `Notícia boa, ${primeiroNome}! Seu pedido acabou de sair para entrega. 🚀\nO motoboy está indo para ${n.rua || n.bairro}.\nPrepare a taça! 🥂`;
+        } else if(n.status === 'entregue') {
+            msg = `Olá ${primeiroNome}! Notamos que seu pedido foi entregue. 😍\nEspero que goste! Se puder nos marcar no Instagram ajuda muito! Saúde! 🥂✨`;
+        }
+
+        if(msg) {
+            window.open(`https://api.whatsapp.com/send?phone=55${n.whatsapp.replace(/\D/g,'')}&text=${encodeURIComponent(msg)}`, '_blank');
+        }
     }
 
     function mudarStatus(id, novoStatus) {
@@ -375,31 +428,19 @@
         const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
         const clientes = {};
         const hoje = new Date();
-
         notas.forEach(n => {
-            if(!clientes[n.nome]) {
-                clientes[n.nome] = { qtd: 0, ultima: n.data_criacao, tel: n.whatsapp };
-            }
+            if(!clientes[n.nome]) { clientes[n.nome] = { qtd: 0, ultima: n.data_criacao, tel: n.whatsapp }; }
             clientes[n.nome].qtd++;
-            if(new Date(n.data_criacao) > new Date(clientes[n.nome].ultima)) {
-                clientes[n.nome].ultima = n.data_criacao;
-            }
+            if(new Date(n.data_criacao) > new Date(clientes[n.nome].ultima)) { clientes[n.nome].ultima = n.data_criacao; }
         });
-
         const lista = document.getElementById('lista-ranking-clientes');
         lista.innerHTML = Object.entries(clientes).sort((a,b)=>b[1].qtd - a[1].qtd).map(([nome, dados]) => {
             const diasSemComprar = Math.floor((hoje - new Date(dados.ultima)) / (1000 * 60 * 60 * 24));
             const precisaAviso = diasSemComprar >= 10;
             return `
                 <div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <strong>${nome}</strong> (${dados.qtd} pedidos)<br>
-                        <small>Último pedido: ${diasSemComprar} dias atrás</small>
-                    </div>
-                    ${precisaAviso ? `
-                        <button class="btn btn-crm" onclick="enviarCupomSaudade('${nome}', '${dados.tel}')" style="width:auto; background:var(--warning);">
-                            ⚠️ SAUDADE
-                        </button>` : '✅'}
+                    <div><strong>${nome}</strong> (${dados.qtd} pedidos)<br><small>Último: ${diasSemComprar} dias atrás</small></div>
+                    ${precisaAviso ? `<button class="btn btn-crm" onclick="enviarCupomSaudade('${nome}', '${dados.tel}')" style="width:auto; background:var(--warning); padding: 5px 10px;">⚠️ SAUDADE</button>` : '✅'}
                 </div>`;
         }).join("");
         document.getElementById('modalRankingClientes').style.display = 'block';
@@ -407,12 +448,10 @@
 
     function enviarCupomSaudade(nome, tel) {
         if(!tel) return alert("WhatsApp não cadastrado.");
-        const primeiroNome = nome.split(' ')[0];
-        const msg = `Olá ${primeiroNome}! Notamos que você está sumido da Nuance Drinks. 🥺\nPara matar a saudade, use o cupom *SAUDADE10* e ganhe 10% OFF no próximo drink! 🥂`;
+        const msg = `Olá ${nome.split(' ')[0]}! Notamos que você está sumido da Nuance Drinks. 🥺\nPara matar a saudade, use o cupom *SAUDADE10* e ganhe 10% OFF no próximo drink! 🥂`;
         window.open(`https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g,'')}&text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // --- REPETE AS FUNÇÕES DE LANÇAMENTO DO PASSO ANTERIOR ---
     function abrirModalLancar(id) {
         const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
         const n = notas.find(item => item.id === id);
@@ -476,21 +515,11 @@
                 });
             }
         });
-
         let lucroGeral = 0;
         document.getElementById('lista-ranking-produtos').innerHTML = Object.entries(pastas).map(([nomeProd, lista]) => {
             const subs = lista.map(item => {
                 lucroGeral += parseFloat(item.valor);
-                return `
-                    <div class="sub-folder">
-                        <div class="sub-folder-header" onclick="togglePasta(this)">
-                            <span>📂 Venda - ${item.cliente}</span>
-                            <span>R$ ${parseFloat(item.valor).toFixed(2)}</span>
-                        </div>
-                        <div class="sub-folder-content" style="display:none;">
-                            <input type="number" step="0.01" value="${item.valor}" onchange="salvarValorIndividual('${item.chave}', this.value)" style="width:100%;">
-                        </div>
-                    </div>`;
+                return `<div class="sub-folder"><div class="sub-folder-header" onclick="togglePasta(this)"><span>📂 Venda - ${item.cliente}</span><span>R$ ${parseFloat(item.valor).toFixed(2)}</span></div><div class="sub-folder-content" style="display:none;"><input type="number" step="0.01" value="${item.valor}" onchange="salvarValorIndividual('${item.chave}', this.value)" style="width:100%;"></div></div>`;
             }).join("");
             return `<div class="product-folder"><div class="folder-header" onclick="togglePasta(this)"><span>📁 ${nomeProd}</span><span>${lista.length} un</span></div><div class="folder-content" style="display:none;">${subs}</div></div>`;
         }).join("");
@@ -502,7 +531,7 @@
         let v = JSON.parse(localStorage.getItem('nuance_valores_individuais') || '{}');
         v[chave] = parseFloat(valor) || 0;
         localStorage.setItem('nuance_valores_individuais', JSON.stringify(v));
-        abrirRankingProdutos(); // Refresh
+        abrirRankingProdutos();
     }
 
     function togglePasta(e) { const c = e.nextElementSibling; c.style.display = c.style.display==='none'?'block':'none'; event.stopPropagation(); }
@@ -513,8 +542,12 @@
         if(n) {
             document.getElementById('nome').value = n.nome;
             document.getElementById('whatsapp').value = n.whatsapp || "";
+            document.getElementById('CPF').value = n.cpf || "";
             document.getElementById('produtos-texto').value = n.produtos;
             document.getElementById('valor-total').value = n.total;
+            document.getElementById('rua').value = n.rua || "";
+            document.getElementById('bairro').value = n.bairro || "";
+            document.getElementById('numero').value = n.numero || "";
             atualizarCupom();
             fecharModal('modalGestao');
         }
@@ -524,6 +557,19 @@
     function baixarPDF() { html2pdf().from(document.getElementById('area-cupom')).save(); }
     function abrirGoogleMaps() { const end = `${document.getElementById('rua').value}, ${document.getElementById('numero').value}`; window.open("https://www.google.com/maps/search/" + encodeURIComponent(end)); }
     function enviarWppEntregador() { const msg = `🚀 ENTREGA\n👤 ${document.getElementById('nome').value}\n📍 ${document.getElementById('rua').value}`; window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`); }
+    function enviarMensagemRapida() {
+        const nomeCompleto = document.getElementById('nome').value || "Cliente";
+        const telefone = document.getElementById('whatsapp').value.replace(/\D/g, '');
+        const saudacao = getSaudacao();
+        const opcao = document.getElementById('select-mensagem').value;
+        let msg = "";
+        if (opcao === "1") msg = `Olá ${nomeCompleto.split(' ')[0]}, ${saudacao.toLowerCase()}!\nVi que não finalizou seu pedido. Cupom: *FRETE-10* para você agora! 🥂`;
+        else if (opcao === "2") msg = `${saudacao}, ${nomeCompleto.split(' ')[0]}.\nSeu pedido está nos preparos finais! 😍`;
+        else if (opcao === "3") msg = `Seu drink está a caminho! 🚀 Prepare a taça!`;
+        else if (opcao === "4") msg = `Drink entregue! 😍 Gostou? Posta e marca a gente! Saúde! 🥂`;
+        if (!telefone) return alert("Preencha o WhatsApp.");
+        window.open(`https://api.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(msg)}`, '_blank');
+    }
 </script>
 </body>
 </html>
