@@ -78,9 +78,6 @@
         .product-folder { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
         .folder-header { background: #f8fafc; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; }
         .folder-content { padding: 12px; background: #fff; border-top: 1px solid #eee; }
-        .sub-folder { border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 5px; }
-        .sub-folder-header { background: #f1f5f9; padding: 8px; cursor: pointer; font-size: 12px; display: flex; justify-content: space-between; }
-        .sub-folder-content { padding: 10px; background: #fff; }
 
         #area-cupom, #area-etiqueta { 
             width: 80mm; padding: 5mm; background: white; color: #000;
@@ -335,15 +332,15 @@
         const dados = { 
             id: Date.now(), 
             nome: nome, 
-            data: document.getElementById('data-hora').value, 
-            whatsapp: document.getElementById('whatsapp').value,
+            data: document.getElementById('data-hora').value || "", 
+            whatsapp: document.getElementById('whatsapp').value || "",
             cpf: document.getElementById('CPF').value || "",
-            rua: document.getElementById('rua').value,
-            numero: document.getElementById('numero').value, 
-            bairro: document.getElementById('bairro').value,
+            rua: document.getElementById('rua').value || "",
+            numero: document.getElementById('numero').value || "", 
+            bairro: document.getElementById('bairro').value || "",
             coleta: document.getElementById('coleta').value || "NÃO INFORMADO",
-            produtos: document.getElementById('produtos-texto').value, 
-            total: document.getElementById('valor-total').value,
+            produtos: document.getElementById('produtos-texto').value || "", 
+            total: document.getElementById('valor-total').value || "0.00",
             status: 'pendente', 
             data_criacao: new Date().toISOString()
         };
@@ -351,15 +348,17 @@
         notas.push(dados);
         localStorage.setItem('notas_nuance', JSON.stringify(notas));
         alert("Pedido salvo!");
+        filtrarNotas();
     }
 
     function filtrarNotas() {
-        const busca = document.getElementById('busca-nota').value.toLowerCase();
+        const busca = (document.getElementById('busca-nota').value || "").toLowerCase();
         const partes = busca.split('*').map(p => p.trim());
-        const notasRaw = localStorage.getItem('notas_nuance') || '[]';
-        const notas = JSON.parse(notasRaw);
+        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
         const lista = document.getElementById('lista-notas');
         
+        if (!lista) return;
+
         const filtradas = notas.slice().reverse().filter(n => {
             const matchNome = (n.nome || "").toLowerCase().includes(partes[0] || "");
             const matchWhats = partes[1] ? (n.whatsapp || "").includes(partes[1]) : true;
@@ -368,35 +367,40 @@
         });
 
         let html = "";
-        filtradas.forEach(n => {
-            html += `
-            <div class="nota-card">
-                <div class="nota-header">
-                    <div class="nota-cliente-info">
-                        <b>${n.nome}</b>
-                        <span>📍 ${n.coleta.toUpperCase()} | 📅 ${n.data || 'Sem data'} | 💰 R$ ${n.total}</span>
+        if (filtradas.length === 0) {
+            html = "<p style='text-align:center; color:#64748b;'>Nenhum pedido encontrado.</p>";
+        } else {
+            filtradas.forEach(n => {
+                const tipoColeta = (n.coleta || "NÃO INFORMADO").toUpperCase();
+                html += `
+                <div class="nota-card">
+                    <div class="nota-header">
+                        <div class="nota-cliente-info">
+                            <b>${n.nome || "CLIENTE SEM NOME"}</b>
+                            <span>📍 ${tipoColeta} | 📅 ${n.data || 'Sem data'} | 💰 R$ ${n.total}</span>
+                        </div>
+                        <div class="nota-actions">
+                            <button class="btn btn-lancar" onclick="abrirModalLancar(${n.id})">🚀 LANÇAR</button>
+                            <button class="btn btn-reabrir" onclick="reabrirNota(${n.id})">👁️</button>
+                            <button class="btn btn-delete" onclick="excluirNota(${n.id})">🗑️</button>
+                        </div>
                     </div>
-                    <div class="nota-actions">
-                        <button class="btn btn-lancar" onclick="abrirModalLancar(${n.id})">🚀 LANÇAR</button>
-                        <button class="btn btn-reabrir" onclick="reabrirNota(${n.id})">👁️</button>
-                        <button class="btn btn-delete" onclick="excluirNota(${n.id})">🗑️</button>
+                    <div class="nota-status-row">
+                        <div style="flex: 1;">
+                            <select onchange="mudarStatus(${n.id}, this.value)" class="status-badge st-${n.status}" style="width: auto; cursor:pointer;">
+                                <option value="pendente" ${n.status==='pendente'?'selected':''}>Pendente</option>
+                                <option value="preparando" ${n.status==='preparando'?'selected':''}>Preparando</option>
+                                <option value="rua" ${n.status==='rua'?'selected':''}>Na Rua</option>
+                                <option value="entregue" ${n.status==='entregue'?'selected':''}>Entregue</option>
+                            </select>
+                        </div>
+                        <button onclick="enviarAcompanhamento(${n.id})" class="btn-icon-wpp">
+                            <span>📲</span> AVISAR CLIENTE
+                        </button>
                     </div>
-                </div>
-                <div class="nota-status-row">
-                    <div style="flex: 1;">
-                        <select onchange="mudarStatus(${n.id}, this.value)" class="status-badge st-${n.status}" style="width: auto; cursor:pointer;">
-                            <option value="pendente" ${n.status==='pendente'?'selected':''}>Pendente</option>
-                            <option value="preparando" ${n.status==='preparando'?'selected':''}>Preparando</option>
-                            <option value="rua" ${n.status==='rua'?'selected':''}>Na Rua</option>
-                            <option value="entregue" ${n.status==='entregue'?'selected':''}>Entregue</option>
-                        </select>
-                    </div>
-                    <button onclick="enviarAcompanhamento(${n.id})" class="btn-icon-wpp">
-                        <span>📲</span> AVISAR CLIENTE
-                    </button>
-                </div>
-            </div>`;
-        });
+                </div>`;
+            });
+        }
         lista.innerHTML = html;
     }
 
@@ -410,7 +414,7 @@
         const n = notas.find(x => x.id === id);
         if(!n || !n.whatsapp) return alert("WhatsApp não encontrado.");
         
-        const primeiroNome = n.nome.split(' ')[0];
+        const primeiroNome = (n.nome || "Cliente").split(' ')[0];
         const saudacao = getSaudacao();
         let msg = "";
         
@@ -444,6 +448,7 @@
         const clientes = {};
         const hoje = new Date();
         notas.forEach(n => {
+            if(!n.nome) return;
             if(!clientes[n.nome]) { clientes[n.nome] = { qtd: 0, ultima: n.data_criacao, tel: n.whatsapp }; }
             clientes[n.nome].qtd++;
             if(new Date(n.data_criacao) > new Date(clientes[n.nome].ultima)) { clientes[n.nome].ultima = n.data_criacao; }
@@ -553,13 +558,14 @@
     function fecharModal(id) { document.getElementById(id).style.display="none"; }
     
     function reabrirNota(id) {
-        const n = JSON.parse(localStorage.getItem('notas_nuance')).find(x => x.id === id);
+        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        const n = notas.find(x => x.id === id);
         if(n) {
-            document.getElementById('nome').value = n.nome;
+            document.getElementById('nome').value = n.nome || "";
             document.getElementById('whatsapp').value = n.whatsapp || "";
             document.getElementById('CPF').value = n.cpf || "";
-            document.getElementById('produtos-texto').value = n.produtos;
-            document.getElementById('valor-total').value = n.total;
+            document.getElementById('produtos-texto').value = n.produtos || "";
+            document.getElementById('valor-total').value = n.total || "";
             document.getElementById('rua').value = n.rua || "";
             document.getElementById('bairro').value = n.bairro || "";
             document.getElementById('numero').value = n.numero || "";
@@ -568,7 +574,7 @@
             fecharModal('modalGestao');
         }
     }
-    function excluirNota(id) { if(confirm("Excluir?")) { let n = JSON.parse(localStorage.getItem('notas_nuance')).filter(x=>x.id!==id); localStorage.setItem('notas_nuance', JSON.stringify(n)); filtrarNotas(); } }
+    function excluirNota(id) { if(confirm("Excluir?")) { let n = JSON.parse(localStorage.getItem('notas_nuance') || '[]').filter(x=>x.id!==id); localStorage.setItem('notas_nuance', JSON.stringify(n)); filtrarNotas(); } }
     function limparCampos() { document.querySelectorAll('input, textarea').forEach(i => i.value = ""); atualizarCupom(); }
     function baixarPDF() { html2pdf().from(document.getElementById('area-cupom')).save(); }
     function abrirGoogleMaps() { const end = `${document.getElementById('rua').value}, ${document.getElementById('numero').value}`; window.open("https://www.google.com/maps/search/" + encodeURIComponent(end)); }
