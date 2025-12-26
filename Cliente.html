@@ -508,16 +508,22 @@
         let msg = "";
         const telLimpo = tel.replace(/\D/g, '');
         const pNome = (nomeFull || "Cliente").split(' ')[0];
-        const saudacao = new Date().getHours() < 12 ? "Bom dia" : "Boa noite";
+        
+        // Inteligência de reconhecimento de período
+        const hora = new Date().getHours();
+        let saudacao = "Olá";
+        if (hora >= 5 && hora < 12) saudacao = "Bom dia";
+        else if (hora >= 12 && hora < 18) saudacao = "Boa tarde";
+        else saudacao = "Boa noite";
         
         if(tipo=="1") {
-            msg = `Olá, ${pNome}, ${saudacao}! Percebemos que você deixou seu carrinho com pedidos:\n\n${prods || "Não especificado"}\n\nQue tal finalizar essa compra com esse cupom: FRETEGRATIS`;
+            msg = `Olá, ${pNome}, ${saudacao}! Percebemos que você deixou seu carrinho cheio 👇:\n\n${prods || "Não especificado"}\n\nQue tal finalizar essa compra com esse cupom: FRETEGRATIS\n\n Nosso site Oficial 👇\n https://seguromj.github.io/Nuance-/`;
         } else if(tipo=="2") {
-            msg = "Seu pedido já entrou em preparo! 👨‍🍳 Em breve sairá para você!";
+            msg = `${saudacao}, ${pNome}! 🤗 Seu pedido já entrou em preparo!\n Estamos dando os últimos toque final para sua experiência ser inesquecível 😍\n\n Assim que o motoboy saí para a entrega, nós o avisaremos.`;
         } else if(tipo=="3") {
-            msg = "Seu pedido acabou de sair para entrega! 🚀 Logo o motoboy chegará aí!";
+            msg = `${saudacao}, ${pNome}! 🤗 Seu pedido acabou de sair para entrega! 🚀 Logo o motoboy chegará aí!`;
         } else if(tipo=="4") {
-            msg = "Pedido entregue! O que achou da experiência? ✅ Sua avaliação nos ajuda muito!";
+            msg = `${saudacao}, ${pNome}! Acabamos de ser notificado que seu *Pedido foi Entregue*! O que achou da experiência?\n Sua avaliação nos ajuda muito!\n\n Saúde!!! 😉🥂`;
         }
         
         if(telLimpo) {
