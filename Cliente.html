@@ -8,31 +8,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-        :root { --primary: #2563eb; --danger: #dc2626; --success: #16a34a; --bg: #f1f5f9; --whatsapp: #25d366; --purple: #8b5cf6; }
+        :root { --primary: #2563eb; --danger: #dc2626; --success: #16a34a; --bg: #f1f5f9; --whatsapp: #25d366; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: #1e293b; }
         
         .main-wrapper { display: flex; flex-direction: column; height: 100vh; }
         .top-bar { background: #0f172a; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        /* Ajuste no container para caber a pasta da planilha */
         .pdv-container { display: flex; flex: 1; overflow: hidden; padding: 20px; gap: 20px; }
         
-        /* NOVA SEÇÃO: PASTA PLANILHA */
-        .sidebar-planilha { width: 250px; background: white; border-radius: 12px; display: flex; flex-direction: column; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .sidebar-header { background: var(--purple); color: white; padding: 15px; border-radius: 12px 12px 0 0; font-weight: bold; font-size: 13px; text-align: center; }
-        .lista-pedidos-planilha { flex: 1; overflow-y: auto; padding: 10px; }
-        .card-planilha { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; position: relative; }
-        .card-planilha:hover { border-color: var(--purple); background: #f0f4ff; }
-        .card-planilha .status-new { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: var(--success); border-radius: 50%; }
-        .card-planilha b { font-size: 12px; display: block; color: var(--dark); }
-        .card-planilha span { font-size: 10px; color: #64748b; }
-
         .panel-left { flex: 1.2; background: white; border-radius: 12px; padding: 20px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .panel-right { flex: 0.8; background: #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; border: 2px inset #cbd5e1; }
 
         @media (max-width: 900px) {
             .pdv-container { flex-direction: column; overflow: visible; height: auto; padding: 10px; }
-            .sidebar-planilha { width: 100%; height: 200px; margin-bottom: 10px; }
             .panel-left, .panel-right { flex: none; width: 100%; overflow: visible; box-sizing: border-box; }
             .main-wrapper { height: auto; }
             .panel-right { margin-top: 20px; background: white; border: none; padding: 0; }
@@ -95,14 +83,6 @@
     </div>
 
     <div class="pdv-container">
-        
-        <div class="sidebar-planilha">
-            <div class="sidebar-header">📥 PASTA PLANILHA</div>
-            <div class="lista-pedidos-planilha" id="lista-planilha">
-                <p style="text-align:center; color:#94a3b8; font-size:11px; margin-top:20px;">Aguardando novos dados...</p>
-            </div>
-        </div>
-
         <div class="panel-left">
             <div class="import-box">
                 <label>📦 IMPORTAR PEDIDO:</label>
@@ -184,55 +164,7 @@
 <div id="modalRankingProdutos" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalRankingProdutos')">×</span><h3>Ranking Produtos</h3><div id="lista-ranking-produtos"></div></div></div>
 
 <script>
-    // URL DA SUA PLANILHA (O LINK /EXEC DA IMPLANTAÇÃO)
-    const URL_PLANILHA = "COLE_AQUI_SEU_LINK_EXEC"; 
-
     const versiculos = ["O Senhor é o meu pastor, nada me faltará.", "Tudo posso naquele que me fortalece.", "O Senhor te abençoe e te guarde.", "Confia no Senhor de todo o teu coração.", "O amor nunca falha."];
-
-    // FUNÇÃO PARA O RADAR DA PLANILHA (VIGIA A PASTA)
-    let ultimoPedidoID = "";
-    async function radarPlanilha() {
-        if(URL_PLANILHA.includes("COLE_AQUI")) return;
-        try {
-            const resp = await fetch(URL_PLANILHA);
-            const p = await resp.json();
-            const idAtual = p.nome + p.data_hora;
-            if (idAtual !== ultimoPedidoID) {
-                ultimoPedidoID = idAtual;
-                const lista = document.getElementById('lista-planilha');
-                if(lista.innerText.includes("Aguardando")) lista.innerHTML = "";
-                
-                const card = document.createElement('div');
-                card.className = 'card-planilha';
-                card.onclick = () => preencherDosDados(p);
-                card.innerHTML = `<div class="status-new"></div><b>${p.nome}</b><span>${p.data_hora}</span>`;
-                lista.prepend(card);
-                tocarBip();
-            }
-        } catch (e) { console.log("Buscando..."); }
-    }
-    setInterval(radarPlanilha, 10000); // Checa a cada 10 segundos
-
-    function preencherDosDados(p) {
-        document.getElementById('nome').value = p.nome || "";
-        document.getElementById('data-hora').value = p.data_hora || "";
-        document.getElementById('whatsapp').value = p.whatsapp || "";
-        document.getElementById('cep').value = p.cep || "";
-        document.getElementById('numero').value = p.numero || "";
-        document.getElementById('bairro').value = p.bairro || "";
-        document.getElementById('rua').value = p.rua || "";
-        document.getElementById('complemento').value = p.complemento || "";
-        document.getElementById('pagamento').value = p.pagamento || "";
-        document.getElementById('coleta').value = p.coleta || "";
-        document.getElementById('produtos-texto').value = (p.pedido || "").replace(/(\d+x)/g, '\n$1').trim();
-        document.getElementById('valor-total').value = p.total || "";
-        alert("Dados da planilha carregados!");
-    }
-
-    function tocarBip() {
-        const audio = new Audio('https://www.soundjay.com/buttons/beep-07a.mp3');
-        audio.play().catch(e => {});
-    }
 
     function removerEmojis(texto) { return texto.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, ''); }
 
@@ -276,9 +208,9 @@
         
         if (rua || cep) {
             const enderecoCompleto = `${rua}, ${num}, ${bairro}, ${cep}`;
-            window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(enderecoCompleto), '_blank');
+            window.open("https://www.google.com/maps/search/" + encodeURIComponent(enderecoCompleto), '_blank');
         } else {
-            alert("⚠️ Dados de endereço insuficientes.");
+            alert("⚠️ Dados de endereço insuficientes para abrir o mapa.");
         }
     }
 
@@ -296,14 +228,13 @@
         document.getElementById('acoes-cupom').style.display = 'flex';
     }
 
+    function abrirGestao() { /* Lógica de histórico simplificada */ }
     function fecharModal(id) { document.getElementById(id).style.display="none"; }
     function baixarPDF() { html2pdf().from(document.getElementById('area-cupom')).save(); }
     function limparCampos() { 
         ['input-importacao','nome','data-hora','whatsapp','CPF','rua','numero','bairro','cep','complemento','pagamento','coleta','produtos-texto','valor-total','obs'].forEach(id => {
             if(document.getElementById(id)) document.getElementById(id).value = "";
         });
-        document.getElementById('area-cupom').style.display = 'none';
-        document.getElementById('acoes-cupom').style.display = 'none';
     }
 
     function enviarWppEntregador() { 
@@ -314,3 +245,4 @@
 </script>
 </body>
 </html>
+a
