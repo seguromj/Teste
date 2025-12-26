@@ -62,8 +62,11 @@
         #lista-notas { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
         .nota-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .nota-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .nota-cliente-info b { font-size: 15px; color: #0f172a; display: block; }
+        
+        /* Ajuste: Nome Verde */
+        .nota-cliente-info b { font-size: 15px; color: #16a34a; display: block; text-transform: uppercase; }
         .nota-cliente-info span { font-size: 11px; color: #64748b; }
+        
         .nota-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
         .nota-status-row { display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid #f1f5f9; margin-top: 5px; }
         .btn-icon-wpp { background: #25d366; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-weight: 600; }
@@ -338,6 +341,7 @@
             cpf: document.getElementById('CPF').value || "",
             rua: document.getElementById('rua').value,
             numero: document.getElementById('numero').value, bairro: document.getElementById('bairro').value,
+            coleta: document.getElementById('coleta').value || "NÃO INFORMADO",
             produtos: document.getElementById('produtos-texto').value, total: document.getElementById('valor-total').value,
             status: 'pendente', data_criacao: new Date().toISOString()
         };
@@ -365,7 +369,7 @@
                 <div class="nota-header">
                     <div class="nota-cliente-info">
                         <b>${n.nome}</b>
-                        <span>📅 ${n.data || 'Sem data'} | 💰 R$ ${n.total}</span>
+                        <span>📍 ${n.coleta.toUpperCase()} | 📅 ${n.data || 'Sem data'} | 💰 R$ ${n.total}</span>
                     </div>
                     <div class="nota-actions">
                         <button class="btn btn-lancar" onclick="abrirModalLancar(${n.id})">🚀 LANÇAR</button>
@@ -400,9 +404,7 @@
         let msg = "";
         
         if(n.status === 'pendente') {
-            msg = `Olá, ${primeiroNome}, ${saudacao.toLowerCase()}!\n Percebemos que seu pedido de: \n${n.produtos}\nFicou no seu carrinho!\n\n 🤗 Que tal finalizar essa compra com esse Cupom: FRETEGRATIS\n\n 
-            Link Oficial NUANCE 👇\n 
-            https://seguromj.github.io/Nuance-/`;
+            msg = `Olá, ${primeiroNome}, ${saudacao.toLowerCase()}!\n Percebemos que seu pedido de: \n${n.produtos}\nFicou no seu carrinho!\n\n 🤗 Que tal finalizar essa compra com esse Cupom: FRETEGRATIS\n\n Link Oficial NUANCE 👇\n https://seguromj.github.io/Nuance-/`;
         } else if(n.status === 'preparando') {
             msg = `Olá, ${primeiroNome}!\n Sou uns dos Barman da Nuance! 👨‍🍳\nSeu pedido chegou em nossa cozinha e já estamos dando os últimos detalhes, para seu pedido chegar em boas condições e com qualidade! 😍`;
         } else if(n.status === 'rua') {
@@ -550,6 +552,7 @@
             document.getElementById('rua').value = n.rua || "";
             document.getElementById('bairro').value = n.bairro || "";
             document.getElementById('numero').value = n.numero || "";
+            document.getElementById('coleta').value = n.coleta || "";
             atualizarCupom();
             fecharModal('modalGestao');
         }
