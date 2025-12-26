@@ -4,50 +4,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDV Nuance - Fluxo em Tempo Real</title>
+    <title>PDV Nuance - Sistema Profissional</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
-        :root { --primary: #2563eb; --success: #16a34a; --bg: #f1f5f9; --whatsapp: #25d366; --purple: #8b5cf6; --dark: #0f172a; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); margin: 0; padding: 0; overflow: hidden; }
+        :root { --primary: #2563eb; --danger: #dc2626; --success: #16a34a; --bg: #f1f5f9; --whatsapp: #25d366; --purple: #8b5cf6; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: #1e293b; }
         
         .main-wrapper { display: flex; flex-direction: column; height: 100vh; }
-        .top-bar { background: var(--dark); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .top-bar { background: #0f172a; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        .pdv-container { display: flex; flex: 1; overflow: hidden; padding: 15px; gap: 15px; }
+        /* Ajuste no container para caber a pasta da planilha */
+        .pdv-container { display: flex; flex: 1; overflow: hidden; padding: 20px; gap: 20px; }
         
-        /* Lateral: Pasta de Pedidos Capturados */
-        .sidebar-pedidos { width: 280px; background: white; border-radius: 12px; display: flex; flex-direction: column; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .sidebar-header { background: var(--purple); color: white; padding: 15px; border-radius: 12px 12px 0 0; font-weight: bold; text-align: center; font-size: 14px; }
-        .lista-captura { flex: 1; overflow-y: auto; padding: 10px; }
-        
-        .card-pedido { background: #f8fafc; border: 2px solid #e2e8f0; padding: 12px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; animation: slideIn 0.3s ease; }
-        .card-pedido:hover { border-color: var(--purple); transform: scale(1.02); }
-        .card-pedido.novo { border-color: var(--whatsapp); background: #f0fff4; animation: pulse 1.5s infinite; }
-        .card-pedido .nome { font-weight: bold; font-size: 13px; display: block; color: var(--dark); }
-        .card-pedido .hora { font-size: 11px; color: #64748b; }
+        /* NOVA SEÇÃO: PASTA PLANILHA */
+        .sidebar-planilha { width: 250px; background: white; border-radius: 12px; display: flex; flex-direction: column; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .sidebar-header { background: var(--purple); color: white; padding: 15px; border-radius: 12px 12px 0 0; font-weight: bold; font-size: 13px; text-align: center; }
+        .lista-pedidos-planilha { flex: 1; overflow-y: auto; padding: 10px; }
+        .card-planilha { background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; position: relative; }
+        .card-planilha:hover { border-color: var(--purple); background: #f0f4ff; }
+        .card-planilha .status-new { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: var(--success); border-radius: 50%; }
+        .card-planilha b { font-size: 12px; display: block; color: var(--dark); }
+        .card-planilha span { font-size: 10px; color: #64748b; }
 
-        /* Painel Central: Formulário de Edição */
-        .panel-center { flex: 1; background: white; border-radius: 12px; padding: 20px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin: 15px 0 10px; border-left: 3px solid var(--primary); padding-left: 8px; }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 8px; box-sizing: border-box; font-size: 14px; }
-        
-        .btn { border: none; border-radius: 8px; padding: 12px; font-weight: 600; cursor: pointer; width: 100%; margin-bottom: 8px; text-transform: uppercase; color: white; }
-        .btn-gerar { background: var(--primary); padding: 18px; font-size: 16px; margin-top: 10px; }
-        .btn-wpp { background: var(--whatsapp); font-size: 12px; }
-
-        /* Painel Direito: Cupom */
-        .panel-right { width: 320px; background: #cbd5e1; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        #area-cupom { width: 80mm; background: white; padding: 8mm; display: none; font-family: 'Courier New', monospace; box-shadow: 0 10px 20px rgba(0,0,0,0.1); color: black; }
-        
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .panel-left { flex: 1.2; background: white; border-radius: 12px; padding: 20px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .panel-right { flex: 0.8; background: #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; border: 2px inset #cbd5e1; }
 
         @media (max-width: 900px) {
-            body { overflow-y: auto; }
-            .pdv-container { flex-direction: column; height: auto; }
-            .sidebar-pedidos, .panel-center, .panel-right { width: 100%; height: auto; }
+            .pdv-container { flex-direction: column; overflow: visible; height: auto; padding: 10px; }
+            .sidebar-planilha { width: 100%; height: 200px; margin-bottom: 10px; }
+            .panel-left, .panel-right { flex: none; width: 100%; overflow: visible; box-sizing: border-box; }
+            .main-wrapper { height: auto; }
+            .panel-right { margin-top: 20px; background: white; border: none; padding: 0; }
+        }
+
+        h2 { margin: 0; font-size: 20px; }
+        .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin: 15px 0 10px; border-left: 3px solid var(--primary); padding-left: 8px; }
+        
+        .import-box { background: #fffbeb; border: 2px dashed #f59e0b; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        textarea#input-importacao { width: 100%; height: 100px; font-size: 13px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ddd; padding: 8px; box-sizing: border-box; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .form-group { margin-bottom: 10px; }
+        label { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 600; color: #475569; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; font-family: inherit; }
+        
+        .btn { border: none; border-radius: 8px; padding: 12px; font-weight: 600; cursor: pointer; font-size: 13px; width: 100%; display: block; margin-bottom: 8px; text-transform: uppercase; transition: opacity 0.2s; }
+        .btn-importar { background: #f59e0b; color: white; }
+        .btn-maps { background: #16a34a; color: white; }
+        .btn-wpp-entrega { background: var(--whatsapp); color: white; }
+        .btn-limpar { background: #64748b; color: white; }
+        .btn-gerar { background: var(--primary); color: white; margin-top: 15px; font-size: 15px; padding: 16px; }
+        .btn-print { background: var(--success); color: white; width: 200px; }
+        .btn-pdf { background: #334155; color: white; width: 200px; }
+        .btn-nav { background: #334155; color: white; padding: 8px 12px; width: auto; font-size: 11px; margin-left: 4px; }
+
+        #area-cupom { 
+            width: 80mm; min-height: 120mm; padding: 5mm; background: white; color: #000;
+            font-family: 'Courier New', Courier, monospace; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: 1px solid #ddd; display: none;
+        }
+        .empresa-nome { text-align: center; font-family: 'Trebuchet MS', sans-serif; font-size: 26px; font-weight: 900; letter-spacing: 2px; margin-bottom: 2px; }
+        .cupom-header { text-align: center; border-bottom: 1px dashed #000; margin-bottom: 5px; padding-bottom: 5px; }
+        .divisor { border-top: 1px dashed #000; margin: 5px 0; }
+        .total-cupom { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; }
+        .versiculo-box { margin-top: 15px; font-size: 11px; text-align: center; font-style: italic; border-top: 1px dashed #000; padding-top: 10px; }
+        .contato-rodape { text-align: center; margin-top: 10px; font-size: 11px; font-weight: bold; }
+
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); overflow-y: auto; }
+        .modal-content { background: white; margin: 2% auto; padding: 20px; width: 95%; max-width: 500px; border-radius: 12px; position: relative; }
+        .close { position: absolute; right: 20px; top: 10px; font-size: 28px; cursor: pointer; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #area-cupom, #area-cupom * { visibility: visible; }
+            #area-cupom { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; }
         }
     </style>
 </head>
@@ -55,179 +86,231 @@
 
 <div class="main-wrapper">
     <div class="top-bar">
-        <h2 style="margin:0; font-size: 18px;">NUANCE PDV <span id="status" style="font-size: 10px; color: #25d366;">● ONLINE</span></h2>
-        <div id="radar-loader" style="font-size: 11px; color: #94a3b8;">Radar: Buscando...</div>
+        <h2>PDV NUANCE</h2>
+        <div style="display:flex;">
+            <button class="btn btn-nav" onclick="abrirGestao()">📁 NOTAS</button>
+            <button class="btn btn-nav" onclick="abrirRankingClientes()">👤 CLIENTES</button>
+            <button class="btn btn-nav" style="background:#0ea5e9;" onclick="abrirRankingProdutos()">📦 PRODUTOS</button>
+        </div>
     </div>
 
     <div class="pdv-container">
-        <div class="sidebar-pedidos">
-            <div class="sidebar-header">📥 PEDIDOS DA PLANILHA</div>
-            <div class="lista-captura" id="lista-pedidos">
-                <p style="text-align:center; color:#94a3b8; font-size:12px; margin-top:30px;">Aguardando novos pedidos...</p>
+        
+        <div class="sidebar-planilha">
+            <div class="sidebar-header">📥 PASTA PLANILHA</div>
+            <div class="lista-pedidos-planilha" id="lista-planilha">
+                <p style="text-align:center; color:#94a3b8; font-size:11px; margin-top:20px;">Aguardando novos dados...</p>
             </div>
         </div>
 
-        <div class="panel-center">
-            <div class="section-title">Dados do Cliente</div>
-            <div class="grid">
-                <input type="text" id="nome" placeholder="Nome Completo">
-                <input type="text" id="whatsapp" placeholder="WhatsApp">
-            </div>
-            <div class="grid">
-                <input type="text" id="rua" placeholder="Rua/Avenida">
-                <input type="text" id="numero" placeholder="Nº/QD/LT">
-            </div>
-            <div class="grid">
-                <input type="text" id="bairro" placeholder="Bairro">
-                <input type="text" id="cep" placeholder="CEP">
-            </div>
-            <input type="text" id="complemento" placeholder="Ponto de Referência / Complemento">
-
-            <div class="section-title">Itens do Pedido</div>
-            <textarea id="produtos-texto" placeholder="Lista de produtos..." style="height: 100px;"></textarea>
-            
-            <div class="grid">
-                <input type="text" id="valor-total" placeholder="Valor Total (R$)">
-                <input type="text" id="pagamento" placeholder="Forma de Pagamento">
+        <div class="panel-left">
+            <div class="import-box">
+                <label>📦 IMPORTAR PEDIDO:</label>
+                <textarea id="input-importacao" placeholder="Cole a mensagem aqui..."></textarea>
+                <div class="grid">
+                    <button class="btn btn-importar" onclick="processarTexto()">Processar Mensagem</button>
+                    <button class="btn btn-maps" onclick="abrirGoogleMaps()">📍 Mapa Cliente</button>
+                </div>
+                <div class="grid">
+                    <button class="btn btn-wpp-entrega" onclick="enviarWppEntregador()">📲 Enviar Motoboy</button>
+                    <button class="btn btn-limpar" onclick="limparCampos()">🧹 Limpar Tudo</button>
+                </div>
             </div>
 
-            <div class="section-title">Notificações WhatsApp</div>
+            <div class="section-title">Dados da Nota</div>
             <div class="grid">
-                <button class="btn btn-wpp" onclick="notificar('preparo')">👨‍🍳 Preparo</button>
-                <button class="btn btn-wpp" onclick="notificar('entrega')">🚀 Entrega</button>
+                <div class="form-group"><label>Nome</label><input type="text" id="nome"></div>
+                <div class="form-group"><label>Data/Hora</label><input type="text" id="data-hora"></div>
+                <div class="form-group"><label>WhatsApp</label><input type="text" id="whatsapp"></div>
+                <div class="form-group"><label>CPF / Ref</label><input type="text" id="CPF"></div>
             </div>
-            
-            <button class="btn btn-gerar" onclick="gerarCupomFinal()">✨ FINALIZAR E GERAR CUPOM</button>
+
+            <div class="section-title">Endereço de Entrega</div>
+            <div class="grid">
+                <div class="form-group"><label>Rua/Avenida</label><input type="text" id="rua"></div>
+                <div class="form-group"><label>Nº/QD/LOTE</label><input type="text" id="numero"></div>
+                <div class="form-group"><label>Bairro</label><input type="text" id="bairro"></div>
+                <div class="form-group"><label>CEP</label><input type="text" id="cep"></div>
+            </div>
+            <div class="form-group"><label>Complemento</label><input type="text" id="complemento"></div>
+
+            <div class="section-title">Pagamento e Coleta</div>
+            <div class="grid">
+                <div class="form-group"><label>Forma de Pagamento</label><input type="text" id="pagamento"></div>
+                <div class="form-group"><label>Coleta</label><input type="text" id="coleta"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Produtos (Ex: 2x Gin)</label>
+                <textarea id="produtos-texto" style="height: 80px;"></textarea>
+            </div>
+
+            <div class="grid">
+                <div class="form-group"><label>Total (R$)</label><input type="text" id="valor-total" style="font-weight: bold; color: var(--primary);"></div>
+                <div class="form-group"><label>Observações</label><input type="text" id="obs"></div>
+            </div>
+
+            <button class="btn btn-gerar" onclick="finalizarEGerar()">FINALIZAR E GERAR CUPOM</button>
         </div>
 
         <div class="panel-right">
             <div id="area-cupom">
-                <center>
-                    <h2 style="margin:0">NUANCE DRINKS</h2>
-                    <small>Comprovante de Pedido</small>
-                </center>
-                <div style="border-top: 1px dashed #000; margin: 10px 0;"></div>
-                <div id="cupom-conteudo" style="font-size: 12px; line-height: 1.4;"></div>
-                <div style="border-top: 1px dashed #000; margin: 10px 0;"></div>
-                <div id="cupom-total" style="font-weight: bold; font-size: 15px; text-align: right;"></div>
-                <div style="text-align: center; margin-top: 20px; font-size: 11px; font-style: italic;">
-                    "O Senhor é meu pastor, nada me faltará."
+                <div class="empresa-nome">NUANCE</div>
+                <div class="cupom-header"><strong>COMPROVANTE DE PEDIDO</strong></div>
+                <div style="font-size: 12px; margin: 10px 0;">
+                    DATA: <span id="view-data"></span><br>
+                    CLIENTE: <span id="view-nome"></span><br>
+                    ENDEREÇO: <span id="view-endereco"></span><br>
+                    COLETA: <span id="view-coleta"></span>
                 </div>
+                <div class="divisor"></div>
+                <div style="font-size: 12px;"><div id="view-produtos" style="white-space: pre-wrap;"></div></div>
+                <div class="divisor"></div>
+                <div class="total-cupom"><span>TOTAL:</span><span id="view-total"></span></div>
+                <div id="view-obs" style="font-size: 11px; margin-top: 10px; white-space: pre-wrap;"></div>
+                <div id="view-versiculo" class="versiculo-box"></div>
+                <div class="contato-rodape">Instagram: Nuance_drinks<br>62995679219</div>
             </div>
-            <button class="btn" style="background:var(--dark); width:200px; margin-top:15px; display:none;" id="btn-imprimir" onclick="window.print()">🖨️ IMPRIMIR AGORA</button>
+            <div id="acoes-cupom" style="margin-top: 20px; display: none; gap: 10px;">
+                <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir</button>
+                <button class="btn btn-pdf" onclick="baixarPDF()">💾 PDF</button>
+            </div>
         </div>
     </div>
 </div>
 
+<div id="modalGestao" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalGestao')">×</span><h3>Histórico</h3><div id="lista-notas"></div></div></div>
+<div id="modalRankingClientes" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalRankingClientes')">×</span><h3>Ranking Clientes</h3><div id="lista-ranking-clientes"></div></div></div>
+<div id="modalRankingProdutos" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalRankingProdutos')">×</span><h3>Ranking Produtos</h3><div id="lista-ranking-produtos"></div></div></div>
+
 <script>
-    // ==========================================
-    // CONFIGURAÇÃO: COLE SEU LINK /EXEC ABAIXO
-    // ==========================================
-    const URL_SCRIPT = "SEU_LINK_AQUI"; 
+    // URL DA SUA PLANILHA (O LINK /EXEC DA IMPLANTAÇÃO)
+    const URL_PLANILHA = "COLE_AQUI_SEU_LINK_EXEC"; 
 
-    let ultimoPedidoID = ""; 
+    const versiculos = ["O Senhor é o meu pastor, nada me faltará.", "Tudo posso naquele que me fortalece.", "O Senhor te abençoe e te guarde.", "Confia no Senhor de todo o teu coração.", "O amor nunca falha."];
 
-    // RADAR: Verifica a planilha a cada 10 segundos
-    async function radarNuance() {
-        if(URL_SCRIPT === "SEU_LINK_AQUI") return;
-        
-        document.getElementById('radar-loader').innerText = "Radar: Sincronizando...";
-        
+    // FUNÇÃO PARA O RADAR DA PLANILHA (VIGIA A PASTA)
+    let ultimoPedidoID = "";
+    async function radarPlanilha() {
+        if(URL_PLANILHA.includes("COLE_AQUI")) return;
         try {
-            const response = await fetch(URL_SCRIPT);
-            const pedido = await response.json();
-
-            // Verifica se o pedido é realmente novo (baseado no nome e hora)
-            let idAtual = pedido.nome + pedido.data_hora;
-            
+            const resp = await fetch(URL_PLANILHA);
+            const p = await resp.json();
+            const idAtual = p.nome + p.data_hora;
             if (idAtual !== ultimoPedidoID) {
                 ultimoPedidoID = idAtual;
-                adicionarPedidoNaPasta(pedido);
+                const lista = document.getElementById('lista-planilha');
+                if(lista.innerText.includes("Aguardando")) lista.innerHTML = "";
+                
+                const card = document.createElement('div');
+                card.className = 'card-planilha';
+                card.onclick = () => preencherDosDados(p);
+                card.innerHTML = `<div class="status-new"></div><b>${p.nome}</b><span>${p.data_hora}</span>`;
+                lista.prepend(card);
                 tocarBip();
             }
-            document.getElementById('radar-loader').innerText = "Radar: Aguardando...";
-        } catch (error) {
-            document.getElementById('radar-loader').innerText = "Radar: Erro de conexão";
-        }
+        } catch (e) { console.log("Buscando..."); }
     }
+    setInterval(radarPlanilha, 10000); // Checa a cada 10 segundos
 
-    // Inicia o radar
-    setInterval(radarNuance, 10000);
-
-    function adicionarPedidoNaPasta(p) {
-        const lista = document.getElementById('lista-pedidos');
-        
-        // Remove a mensagem de "Aguardando" se for o primeiro pedido
-        if(lista.innerText.includes("Aguardando")) lista.innerHTML = "";
-
-        const card = document.createElement('div');
-        card.className = 'card-pedido novo';
-        card.onclick = () => preencherPDV(p, card);
-        card.innerHTML = `
-            <span style="color:var(--success); font-size:9px; font-weight:bold;">● NOVO RECEBIDO</span>
-            <span class="nome">${p.nome}</span>
-            <span class="hora">${p.data_hora}</span>
-        `;
-        lista.prepend(card);
-    }
-
-    function preencherPDV(p, elemento) {
+    function preencherDosDados(p) {
         document.getElementById('nome').value = p.nome || "";
+        document.getElementById('data-hora').value = p.data_hora || "";
         document.getElementById('whatsapp').value = p.whatsapp || "";
-        document.getElementById('rua').value = p.rua || "";
+        document.getElementById('cep').value = p.cep || "";
         document.getElementById('numero').value = p.numero || "";
         document.getElementById('bairro').value = p.bairro || "";
-        document.getElementById('cep').value = p.cep || "";
+        document.getElementById('rua').value = p.rua || "";
         document.getElementById('complemento').value = p.complemento || "";
+        document.getElementById('pagamento').value = p.pagamento || "";
+        document.getElementById('coleta').value = p.coleta || "";
         document.getElementById('produtos-texto').value = (p.pedido || "").replace(/(\d+x)/g, '\n$1').trim();
         document.getElementById('valor-total').value = p.total || "";
-        document.getElementById('pagamento').value = p.pagamento || "";
-        
-        // Tira o efeito de "piscar" após clicar
-        elemento.classList.remove('novo');
-        alert("Pedido de " + p.nome + " carregado!");
-    }
-
-    function gerarCupomFinal() {
-        const nome = document.getElementById('nome').value;
-        if(!nome) return alert("Selecione ou digite um pedido!");
-
-        const dados = `
-            <b>CLIENTE:</b> ${nome.toUpperCase()}<br>
-            <b>CONTATO:</b> ${document.getElementById('whatsapp').value}<br>
-            <b>ENDEREÇO:</b> ${document.getElementById('rua').value}, ${document.getElementById('numero').value}<br>
-            <b>BAIRRO:</b> ${document.getElementById('bairro').value}<br>
-            <b>REF:</b> ${document.getElementById('complemento').value}<br>
-            <br>
-            <b>ITENS DO PEDIDO:</b><br>
-            ${document.getElementById('produtos-texto').value.replace(/\n/g, '<br>')}
-            <br>
-            <b>FORMA DE PAGAMENTO:</b> ${document.getElementById('pagamento').value}
-        `;
-        
-        document.getElementById('cupom-conteudo').innerHTML = dados;
-        document.getElementById('cupom-total').innerHTML = "TOTAL A PAGAR: R$ " + document.getElementById('valor-total').value;
-        document.getElementById('area-cupom').style.display = 'block';
-        document.getElementById('btn-imprimir').style.display = 'block';
-    }
-
-    function notificar(status) {
-        const nome = document.getElementById('nome').value;
-        const tel = document.getElementById('whatsapp').value.replace(/\D/g, '');
-        let msg = status === 'preparo' ? `Olá ${nome}, seu pedido Nuance já está em preparo! 👨‍🍳` : `Boa notícia ${nome}! Seu pedido saiu para entrega. 🚀`;
-        if(tel) window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(msg)}`);
+        alert("Dados da planilha carregados!");
     }
 
     function tocarBip() {
-        const context = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = context.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, context.currentTime);
-        osc.connect(context.destination);
-        osc.start();
-        osc.stop(context.currentTime + 0.2);
+        const audio = new Audio('https://www.soundjay.com/buttons/beep-07a.mp3');
+        audio.play().catch(e => {});
+    }
+
+    function removerEmojis(texto) { return texto.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, ''); }
+
+    function processarTexto() {
+        let texto = document.getElementById('input-importacao').value;
+        if(!texto) return;
+        texto = removerEmojis(texto);
+        
+        const map = { 
+            '0. DATA\/HORA:': 'data-hora', 
+            '1. PEDIDO:': 'produtos-texto', 
+            '2. NOME:': 'nome', 
+            '3. WHATSAPP:': 'whatsapp', 
+            '4. CEP:': 'cep', 
+            '5. Nº\/QD\/LOTE:': 'numero',
+            '6. BAIRRO:': 'bairro',
+            '7. RUA\/AVENIDA:': 'rua',
+            '8. COMPLEMENTO:': 'complemento',
+            '10. FORMA DE PAGAMENTO:': 'pagamento',
+            '11. TIPO DE COLETA:': 'coleta', 
+            '12. VALOR PRODUTOS:': 'valor-total' 
+        };
+
+        Object.keys(map).forEach(key => {
+            const regex = new RegExp(key + " (.*)");
+            const match = texto.match(regex);
+            if(match) {
+                let val = match[1].trim();
+                if(key === '1. PEDIDO:') val = val.replace(/(\d+x)/g, '\n$1').trim();
+                document.getElementById(map[key]).value = val;
+            }
+        });
+        alert("Mensagem processada!");
+    }
+
+    function abrirGoogleMaps() {
+        const rua = document.getElementById('rua').value;
+        const num = document.getElementById('numero').value;
+        const bairro = document.getElementById('bairro').value;
+        const cep = document.getElementById('cep').value;
+        
+        if (rua || cep) {
+            const enderecoCompleto = `${rua}, ${num}, ${bairro}, ${cep}`;
+            window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(enderecoCompleto), '_blank');
+        } else {
+            alert("⚠️ Dados de endereço insuficientes.");
+        }
+    }
+
+    function finalizarEGerar() {
+        if(!document.getElementById('nome').value) return alert("Preencha os dados.");
+        const end = `${document.getElementById('rua').value}, ${document.getElementById('numero').value} - ${document.getElementById('bairro').value}`;
+        document.getElementById('view-nome').innerText = document.getElementById('nome').value.toUpperCase();
+        document.getElementById('view-data').innerText = document.getElementById('data-hora').value;
+        document.getElementById('view-endereco').innerText = end;
+        document.getElementById('view-coleta').innerText = document.getElementById('coleta').value.toUpperCase();
+        document.getElementById('view-produtos').innerText = document.getElementById('produtos-texto').value;
+        document.getElementById('view-total').innerText = document.getElementById('valor-total').value;
+        document.getElementById('view-versiculo').innerText = versiculos[Math.floor(Math.random() * versiculos.length)];
+        document.getElementById('area-cupom').style.display = 'block';
+        document.getElementById('acoes-cupom').style.display = 'flex';
+    }
+
+    function fecharModal(id) { document.getElementById(id).style.display="none"; }
+    function baixarPDF() { html2pdf().from(document.getElementById('area-cupom')).save(); }
+    function limparCampos() { 
+        ['input-importacao','nome','data-hora','whatsapp','CPF','rua','numero','bairro','cep','complemento','pagamento','coleta','produtos-texto','valor-total','obs'].forEach(id => {
+            if(document.getElementById(id)) document.getElementById(id).value = "";
+        });
+        document.getElementById('area-cupom').style.display = 'none';
+        document.getElementById('acoes-cupom').style.display = 'none';
+    }
+
+    function enviarWppEntregador() { 
+        const end = `${document.getElementById('rua').value}, ${document.getElementById('numero').value}, ${document.getElementById('bairro').value} (Ref: ${document.getElementById('complemento').value})`;
+        const msg = `🚀 ENTREGA\n👤 ${document.getElementById('nome').value}\n📍 ${end}\n📦 ${document.getElementById('produtos-texto').value}\n💰 PAGAMENTO: ${document.getElementById('pagamento').value}`; 
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank'); 
     }
 </script>
-
 </body>
 </html>
