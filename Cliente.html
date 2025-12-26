@@ -78,6 +78,7 @@
         .product-folder { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
         .folder-header { background: #f8fafc; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; }
         .folder-content { padding: 12px; background: #fff; border-top: 1px solid #eee; }
+        .sub-folder { border-top: 1px solid #f1f5f9; padding: 5px 10px; font-size: 12px; }
 
         #area-cupom, #area-etiqueta { 
             width: 80mm; padding: 5mm; background: white; color: #000;
@@ -87,6 +88,10 @@
         #area-etiqueta { min-height: 50mm; display: none; border: 2px solid #000; }
         .empresa-nome { text-align: center; font-family: 'Trebuchet MS', sans-serif; font-size: 26px; font-weight: 900; letter-spacing: 2px; margin-bottom: 2px; }
         .divisor { border-top: 1px dashed #000; margin: 5px 0; }
+
+        .tipo-badge { text-align: center; font-weight: bold; padding: 6px; margin: 5px 0; font-size: 13px; text-transform: uppercase; }
+        .badge-mesa { background: #000; color: #fff; }
+        .badge-retirada { border: 2px dashed #000; color: #000; }
 
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); overflow-y: auto; }
         .modal-content { background: white; margin: 2% auto; padding: 20px; width: 95%; max-width: 600px; border-radius: 12px; position: relative; }
@@ -130,8 +135,8 @@
             <div class="grid">
                 <div class="form-group"><label>Nome</label><input type="text" id="nome" oninput="atualizarCupom()"></div>
                 <div class="form-group"><label>Data/Hora</label><input type="text" id="data-hora" oninput="atualizarCupom()"></div>
-                <div class="form-group"><label>WhatsApp</label><input type="text" id="whatsapp"></div>
-                <div class="form-group"><label>CPF / Ref</label><input type="text" id="CPF"></div>
+                <div class="form-group"><label>WhatsApp</label><input type="text" id="whatsapp" oninput="atualizarCupom()"></div>
+                <div class="form-group"><label>CPF / Ref</label><input type="text" id="CPF" oninput="atualizarCupom()"></div>
             </div>
 
             <div class="section-title">Endereço de Entrega</div>
@@ -139,13 +144,13 @@
                 <div class="form-group"><label>Rua/Avenida</label><input type="text" id="rua" oninput="atualizarCupom()"></div>
                 <div class="form-group"><label>Nº/QD/LOTE</label><input type="text" id="numero" oninput="atualizarCupom()"></div>
                 <div class="form-group"><label>Bairro</label><input type="text" id="bairro" oninput="atualizarCupom()"></div>
-                <div class="form-group"><label>CEP</label><input type="text" id="cep"></div>
+                <div class="form-group"><label>CEP</label><input type="text" id="cep" oninput="atualizarCupom()"></div>
             </div>
-            <div class="form-group"><label>Complemento</label><input type="text" id="complemento"></div>
+            <div class="form-group"><label>Complemento</label><input type="text" id="complemento" oninput="atualizarCupom()"></div>
 
             <div class="section-title">Pagamento e Produtos</div>
             <div class="grid">
-                <div class="form-group"><label>Forma de Pagamento</label><input type="text" id="pagamento"></div>
+                <div class="form-group"><label>Forma de Pagamento</label><input type="text" id="pagamento" oninput="atualizarCupom()"></div>
                 <div class="form-group"><label>Coleta</label><input type="text" id="coleta" oninput="atualizarCupom()"></div>
             </div>
             <div class="form-group"><label>Produtos (Ex: 2x Gin)</label><textarea id="produtos-texto" style="height: 80px;" oninput="atualizarCupom()"></textarea></div>
@@ -173,11 +178,15 @@
             <div id="area-cupom">
                 <div class="empresa-nome">NUANCE</div>
                 <div style="text-align: center; font-size: 12px; border-bottom: 1px dashed #000; margin-bottom: 5px;"><strong>COMPROVANTE DE PEDIDO</strong></div>
-                <div style="font-size: 12px; margin: 10px 0;">
+                <div id="badge-container"></div>
+                <div style="font-size: 12px; margin: 10px 0; line-height: 1.4;">
                     DATA: <span id="view-data"></span><br>
                     CLIENTE: <span id="view-nome"></span><br>
-                    ENDEREÇO: <span id="view-endereco"></span><br>
-                    COLETA: <span id="view-coleta"></span>
+                    <div id="view-endereco-bloco">ENDEREÇO: <span id="view-endereco"></span><br></div>
+                    COLETA: <span id="view-coleta"></span><br>
+                    <div id="view-zap-bloco">ZAP: <span id="view-zap"></span><br></div>
+                    <div id="view-cpf-bloco">CPF/REF: <span id="view-cpf"></span><br></div>
+                    <div id="view-pag-bloco">PAGAMENTO: <span id="view-pag"></span></div>
                 </div>
                 <div class="divisor"></div>
                 <div id="view-produtos" style="font-size: 12px; white-space: pre-wrap;"></div>
@@ -216,7 +225,7 @@
     <div class="modal-content">
         <span class="close" onclick="fecharModal('modalGestao')">×</span>
         <h3>Histórico e Status</h3>
-        <input type="text" id="busca-nota" placeholder="Busca: Nome * Zap * CPF" onkeyup="filtrarNotas()" style="margin-bottom:15px;">
+        <input type="text" id="busca-nota" placeholder="Busca: Nome * Zap" onkeyup="filtrarNotas()" style="margin-bottom:15px;">
         <div id="lista-notas"></div>
     </div>
 </div>
@@ -227,15 +236,7 @@
         <h3>🚀 Realizar Lançamento</h3>
         <p id="lancar-info-cliente" style="font-weight: bold; color: var(--primary);"></p>
         <div id="lista-produtos-lancar"></div>
-        <button class="btn btn-gerar" onclick="confirmarLancamento()">REALIZAR LANÇAMENTO</button>
-    </div>
-</div>
-
-<div id="modalRankingClientes" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="fecharModal('modalRankingClientes')">×</span>
-        <h3>Ranking Clientes & Recompra</h3>
-        <div id="lista-ranking-clientes"></div>
+        <button class="btn btn-gerar" onclick="confirmarLancamento()">CONFIRMAR VALORES</button>
     </div>
 </div>
 
@@ -244,63 +245,76 @@
         <span class="close" onclick="fecharModal('modalRankingProdutos')">×</span>
         <h3>📦 Controle de Produtos</h3>
         <div style="background:#0f172a; color:white; padding:15px; border-radius:8px; margin-bottom:15px;">
-            Lucro Total: <span id="fin-total-lucro" style="color:#4ade80; font-weight:bold;">R$ 0,00</span>
+            Total Lançado: <span id="fin-total-lucro" style="color:#4ade80; font-weight:bold;">R$ 0,00</span>
         </div>
         <div id="lista-ranking-produtos"></div>
     </div>
 </div>
 
-<script>
-    const versiculos = [
-        "O Senhor é o meu pastor, nada me faltará. (Salmos 23:1)", 
-        "Tudo posso naquele que me fortalece. (Filipenses 4:13)", 
-        "O Senhor te abençoe e te guarde. (Números 6:24)", 
-        "Confia no Senhor de todo o teu coração. (Provérbios 3:5)", 
-        "O amor nunca falha. (1 Coríntios 13:8)"
-    ];
+<div id="modalRankingClientes" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="fecharModal('modalRankingClientes')">×</span>
+        <h3>Ranking Clientes</h3>
+        <div id="lista-ranking-clientes"></div>
+    </div>
+</div>
 
-    function getSaudacao() {
-        const h = new Date().getHours();
-        return h >= 5 && h < 12 ? "Bom dia" : h >= 12 && h < 18 ? "Boa tarde" : "Boa noite";
-    }
+<script>
+    const versiculos = ["O Senhor é o meu pastor, nada me faltará.", "Tudo posso naquele que me fortalece.", "O Senhor te abençoe e te guarde.", "O amor nunca falha.", "Confia no Senhor de todo o teu coração."];
 
     function atualizarCupom() {
         const nome = document.getElementById('nome').value.toUpperCase();
-        const end = `${document.getElementById('rua').value}, ${document.getElementById('numero').value} - ${document.getElementById('bairro').value}`;
+        const rua = document.getElementById('rua').value;
+        const num = document.getElementById('numero').value;
+        const bairro = document.getElementById('bairro').value;
+        const zap = document.getElementById('whatsapp').value;
+        const cpf = document.getElementById('CPF').value;
+        const pag = document.getElementById('pagamento').value;
+        const coleta = (document.getElementById('coleta').value || "").toUpperCase();
         const prod = document.getElementById('produtos-texto').value;
         const obs = document.getElementById('obs').value;
+        const cupomV = document.getElementById('cupom-input').value;
+
+        const endFormatado = `${rua}${num ? ', ' + num : ''}${bairro ? ' - ' + bairro : ''}`;
+
+        // LÓGICA DE DISFARCE
+        const badgeBox = document.getElementById('badge-container');
+        const endBloco = document.getElementById('view-endereco-bloco');
+        badgeBox.innerHTML = '';
+        endBloco.style.display = 'block';
+
+        if(coleta.includes("MESA")) {
+            badgeBox.innerHTML = `<div class="tipo-badge badge-mesa">ATENDIMENTO EM MESA</div>`;
+            endBloco.style.display = 'none';
+        } else if(coleta.includes("RETIRADA")) {
+            badgeBox.innerHTML = `<div class="tipo-badge badge-retirada">RETIRADA NO LOCAL</div>`;
+            endBloco.style.display = 'none';
+        }
 
         document.getElementById('view-nome').innerText = nome || "...";
         document.getElementById('view-data').innerText = document.getElementById('data-hora').value || "...";
-        document.getElementById('view-endereco').innerText = end.includes(",  -") ? "..." : end;
-        document.getElementById('view-coleta').innerText = (document.getElementById('coleta').value || "...").toUpperCase();
+        document.getElementById('view-endereco').innerText = endFormatado || "...";
+        document.getElementById('view-coleta').innerText = coleta || "...";
+        document.getElementById('view-zap').innerText = zap || "";
+        document.getElementById('view-zap-bloco').style.display = zap ? 'block' : 'none';
+        document.getElementById('view-cpf').innerText = cpf || "";
+        document.getElementById('view-cpf-bloco').style.display = cpf ? 'block' : 'none';
+        document.getElementById('view-pag').innerText = pag.toUpperCase() || "";
+        document.getElementById('view-pag-bloco').style.display = pag ? 'block' : 'none';
         document.getElementById('view-produtos').innerText = prod || "Nenhum produto";
         document.getElementById('view-total').innerText = "R$ " + (document.getElementById('valor-total').value || "0.00");
-        document.getElementById('view-obs').innerText = obs;
+        document.getElementById('view-obs').innerText = obs ? "OBS: " + obs : "";
         
+        const vC = document.getElementById('view-cupom-aplicado');
+        if(cupomV) { vC.style.display = "block"; vC.innerText = "CUPOM: " + cupomV.toUpperCase(); }
+        else vC.style.display = "none";
+
         document.getElementById('etiq-nome').innerText = nome;
-        document.getElementById('etiq-end').innerText = end;
+        document.getElementById('etiq-end').innerText = (coleta.includes("MESA") || coleta.includes("RETIRADA")) ? coleta : endFormatado;
         document.getElementById('etiq-obs').innerText = obs;
         document.getElementById('etiq-prod').innerText = prod;
 
-        const cupom = document.getElementById('cupom-input').value;
-        const vC = document.getElementById('view-cupom-aplicado');
-        if(cupom) { vC.style.display = "block"; vC.innerText = "Próxima compra use o cupom: " + cupom.toUpperCase(); }
-        else vC.style.display = "none";
-        
-        if(!document.getElementById('view-versiculo').innerText) {
-            document.getElementById('view-versiculo').innerText = versiculos[Math.floor(Math.random() * versiculos.length)];
-        }
-    }
-
-    function imprimirEtiqueta() {
-        document.getElementById('area-cupom').style.display = 'none';
-        document.getElementById('area-etiqueta').style.display = 'block';
-        window.print();
-        setTimeout(() => {
-            document.getElementById('area-cupom').style.display = 'block';
-            document.getElementById('area-etiqueta').style.display = 'none';
-        }, 1000);
+        if(!document.getElementById('view-versiculo').innerText) document.getElementById('view-versiculo').innerText = versiculos[Math.floor(Math.random() * versiculos.length)];
     }
 
     function processarTexto() {
@@ -318,187 +332,95 @@
             if(match) {
                 let val = match[1].trim();
                 if(key === '1. PEDIDO:') val = val.replace(/(\d+x)/g, '\n$1').trim();
-                if(key === '10. VALOR PRODUTOS:') val = val.replace(/R\$\s*/gi, '').trim();
                 document.getElementById(map[key]).value = val;
             }
         });
         atualizarCupom();
-        alert("Mensagem processada!");
     }
 
     function finalizarEGerar() {
-        const nome = document.getElementById('nome').value;
-        if(!nome) return alert("Preencha o nome.");
-        const dados = { 
-            id: Date.now(), 
-            nome: nome, 
-            data: document.getElementById('data-hora').value || "", 
-            whatsapp: document.getElementById('whatsapp').value || "",
-            cpf: document.getElementById('CPF').value || "",
-            rua: document.getElementById('rua').value || "",
-            numero: document.getElementById('numero').value || "", 
-            bairro: document.getElementById('bairro').value || "",
-            coleta: document.getElementById('coleta').value || "NÃO INFORMADO",
-            produtos: document.getElementById('produtos-texto').value || "", 
-            total: document.getElementById('valor-total').value || "0.00",
-            status: 'pendente', 
-            data_criacao: new Date().toISOString()
+        const dados = {
+            id: Date.now(),
+            nome: document.getElementById('nome').value,
+            data: document.getElementById('data-hora').value,
+            whatsapp: document.getElementById('whatsapp').value,
+            cpf: document.getElementById('CPF').value,
+            rua: document.getElementById('rua').value,
+            numero: document.getElementById('numero').value,
+            bairro: document.getElementById('bairro').value,
+            cep: document.getElementById('cep').value,
+            complemento: document.getElementById('complemento').value,
+            coleta: document.getElementById('coleta').value,
+            produtos: document.getElementById('produtos-texto').value,
+            total: document.getElementById('valor-total').value,
+            pagamento: document.getElementById('pagamento').value,
+            obs: document.getElementById('obs').value,
+            status: 'pendente'
         };
         let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
         notas.push(dados);
         localStorage.setItem('notas_nuance', JSON.stringify(notas));
-        alert("Pedido salvo!");
-        filtrarNotas();
+        alert("Salvo com sucesso!");
     }
 
     function filtrarNotas() {
-        const busca = (document.getElementById('busca-nota').value || "").toLowerCase();
-        const partes = busca.split('*').map(p => p.trim());
+        const busca = document.getElementById('busca-nota').value.toLowerCase();
         const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
         const lista = document.getElementById('lista-notas');
-        
-        if (!lista) return;
-
-        const filtradas = notas.slice().reverse().filter(n => {
-            const matchNome = (n.nome || "").toLowerCase().includes(partes[0] || "");
-            const matchWhats = partes[1] ? (n.whatsapp || "").includes(partes[1]) : true;
-            const matchCPF = partes[2] ? (n.cpf || "").includes(partes[2]) : true;
-            return matchNome && matchWhats && matchCPF;
-        });
-
-        let html = "";
-        if (filtradas.length === 0) {
-            html = "<p style='text-align:center; color:#64748b;'>Nenhum pedido encontrado.</p>";
-        } else {
-            filtradas.forEach(n => {
-                const tipoColeta = (n.coleta || "NÃO INFORMADO").toUpperCase();
-                html += `
-                <div class="nota-card">
-                    <div class="nota-header">
-                        <div class="nota-cliente-info">
-                            <b>${n.nome || "CLIENTE SEM NOME"}</b>
-                            <span>📍 ${tipoColeta} | 📅 ${n.data || 'Sem data'} | 💰 R$ ${n.total}</span>
-                        </div>
-                        <div class="nota-actions">
-                            <button class="btn btn-lancar" onclick="abrirModalLancar(${n.id})">🚀 LANÇAR</button>
-                            <button class="btn btn-reabrir" onclick="reabrirNota(${n.id})">👁️</button>
-                            <button class="btn btn-delete" onclick="excluirNota(${n.id})">🗑️</button>
-                        </div>
+        lista.innerHTML = notas.slice().reverse().filter(n => (n.nome||"").toLowerCase().includes(busca)).map(n => `
+            <div class="nota-card">
+                <div class="nota-header">
+                    <div class="nota-cliente-info">
+                        <b>${n.nome}</b>
+                        <span style="color:#2563eb; font-weight:bold; font-size:10px;">📌 ${ (n.coleta || "DELIVERY").toUpperCase() }</span>
+                        <span>💰 R$ ${n.total}</span>
                     </div>
-                    <div class="nota-status-row">
-                        <div style="flex: 1;">
-                            <select onchange="mudarStatus(${n.id}, this.value)" class="status-badge st-${n.status}" style="width: auto; cursor:pointer;">
-                                <option value="pendente" ${n.status==='pendente'?'selected':''}>Pendente</option>
-                                <option value="preparando" ${n.status==='preparando'?'selected':''}>Preparando</option>
-                                <option value="rua" ${n.status==='rua'?'selected':''}>Na Rua</option>
-                                <option value="entregue" ${n.status==='entregue'?'selected':''}>Entregue</option>
-                            </select>
-                        </div>
-                        <button onclick="enviarAcompanhamento(${n.id})" class="btn-icon-wpp">
-                            <span>📲</span> AVISAR CLIENTE
-                        </button>
+                    <div class="nota-actions">
+                        <button class="btn btn-lancar" onclick="abrirModalLancar(${n.id})">🚀 LANÇAR</button>
+                        <button class="btn btn-reabrir" onclick="reabrirNota(${n.id})">👁️</button>
+                        <button class="btn btn-delete" onclick="excluirNota(${n.id})">🗑️</button>
                     </div>
-                </div>`;
-            });
-        }
-        lista.innerHTML = html;
+                </div>
+                <div class="nota-status-row">
+                    <select onchange="mudarStatus(${n.id}, this.value)" class="status-badge st-${n.status}">
+                        <option value="pendente" ${n.status==='pendente'?'selected':''}>Pendente</option>
+                        <option value="preparando" ${n.status==='preparando'?'selected':''}>Preparo</option>
+                        <option value="rua" ${n.status==='rua'?'selected':''}>Na Rua</option>
+                        <option value="entregue" ${n.status==='entregue'?'selected':''}>Entregue</option>
+                    </select>
+                    <button onclick="enviarMensagemHistorico(${n.id})" class="btn-icon-wpp">📲 AVISAR</button>
+                </div>
+            </div>
+        `).join('');
     }
 
-    function abrirGestao() { 
-        document.getElementById('modalGestao').style.display = 'block';
-        filtrarNotas(); 
-    }
-
-    function enviarAcompanhamento(id) {
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const n = notas.find(x => x.id === id);
-        if(!n || !n.whatsapp) return alert("WhatsApp não encontrado.");
-        
-        const primeiroNome = (n.nome || "Cliente").split(' ')[0];
-        const saudacao = getSaudacao();
-        let msg = "";
-        
-        if(n.status === 'pendente') {
-            msg = `Olá, ${primeiroNome}, ${saudacao.toLowerCase()}!\n Percebemos que seu pedido de: \n${n.produtos}\nFicou no seu carrinho!\n\n 🤗 Que tal finalizar essa compra com esse Cupom: FRETEGRATIS\n\n Link Oficial NUANCE 👇\n https://seguromj.github.io/Nuance-/`;
-        } else if(n.status === 'preparando') {
-            msg = `Olá, ${primeiroNome}!\n Sou uns dos Barman da Nuance! 👨‍🍳\nSeu pedido chegou em nossa cozinha e já estamos dando os últimos detalhes, para seu pedido chegar em boas condições e com qualidade! 😍`;
-        } else if(n.status === 'rua') {
-            msg = `Notícia boa, ${primeiroNome}! Seu pedido acabou de sair para entrega. 🚀\nO motoboy está indo para ${n.rua || n.bairro}.\n.🥂`;
-        } else if(n.status === 'entregue') {
-            msg = `Olá, ${primeiroNome}! Notamos que seu pedido foi entregue. 😍\n\nEspero que goste! Se puder nos marcar no Instagram isso nos ajuda muito!\n😉\n\n Saúde! 🥂✨`;
-        }
-
-        if(msg) {
-            window.open(`https://api.whatsapp.com/send?phone=55${n.whatsapp.replace(/\D/g,'')}&text=${encodeURIComponent(msg)}`, '_blank');
-        }
-    }
-
-    function mudarStatus(id, novoStatus) {
-        let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const nota = notas.find(n => n.id === id);
-        if(nota) {
-            nota.status = novoStatus;
-            localStorage.setItem('notas_nuance', JSON.stringify(notas));
-            filtrarNotas();
-        }
-    }
-
-    function abrirRankingClientes() {
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const clientes = {};
-        const hoje = new Date();
-        notas.forEach(n => {
-            if(!n.nome) return;
-            if(!clientes[n.nome]) { clientes[n.nome] = { qtd: 0, ultima: n.data_criacao, tel: n.whatsapp }; }
-            clientes[n.nome].qtd++;
-            if(new Date(n.data_criacao) > new Date(clientes[n.nome].ultima)) { clientes[n.nome].ultima = n.data_criacao; }
-        });
-        const lista = document.getElementById('lista-ranking-clientes');
-        lista.innerHTML = Object.entries(clientes).sort((a,b)=>b[1].qtd - a[1].qtd).map(([nome, dados]) => {
-            const diasSemComprar = Math.floor((hoje - new Date(dados.ultima)) / (1000 * 60 * 60 * 24));
-            const precisaAviso = diasSemComprar >= 10;
-            return `
-                <div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                    <div><strong>${nome}</strong> (${dados.qtd} pedidos)<br><small>Último: ${diasSemComprar} dias atrás</small></div>
-                    ${precisaAviso ? `<button class="btn btn-crm" onclick="enviarCupomSaudade('${nome}', '${dados.tel}')" style="width:auto; background:var(--warning); padding: 5px 10px;">⚠️ SAUDADE</button>` : '✅'}
-                </div>`;
-        }).join("");
-        document.getElementById('modalRankingClientes').style.display = 'block';
-    }
-
-    function enviarCupomSaudade(nome, tel) {
-        if(!tel) return alert("WhatsApp não cadastrado.");
-        const msg = `Olá ${nome.split(' ')[0]}! Notamos que você está sumido da Nuance Drinks. 🥺\nPara matar a saudade, use o cupom *SAUDADE10* e ganhe 10% OFF no próximo drink! 🥂`;
-        window.open(`https://api.whatsapp.com/send?phone=55${tel.replace(/\D/g,'')}&text=${encodeURIComponent(msg)}`, '_blank');
+    function mudarStatus(id, s) {
+        let n = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        const item = n.find(x => x.id === id);
+        if(item) { item.status = s; localStorage.setItem('notas_nuance', JSON.stringify(n)); filtrarNotas(); }
     }
 
     function abrirModalLancar(id) {
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const n = notas.find(item => item.id === id);
-        if(!n) return;
-        document.getElementById('lancar-info-cliente').innerText = `Lançar para: ${n.nome}`;
+        const nota = JSON.parse(localStorage.getItem('notas_nuance') || '[]').find(x => x.id === id);
+        if(!nota) return;
+        document.getElementById('lancar-info-cliente').innerText = `Pedido: ${nota.nome}`;
         const lista = document.getElementById('lista-produtos-lancar');
         const valoresSalvos = JSON.parse(localStorage.getItem('nuance_valores_individuais') || '{}');
-        let html = "";
-        if(n.produtos) {
-            let itemIndex = 0;
-            n.produtos.split('\n').forEach(linha => {
-                const m = linha.match(/(\d+)x\s*(.*)/i);
-                if(m) {
-                    const qtd = parseInt(m[1]);
-                    const nomeProd = m[2].trim().toUpperCase();
-                    for(let i=0; i < qtd; i++) {
-                        const chave = `${nomeProd}_${n.id}_${itemIndex}`;
-                        html += `
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:#f8fafc; padding:8px;">
-                                <span style="font-size:12px;">${nomeProd}</span>
-                                <input type="number" step="0.01" class="input-valor-lancar" data-chave="${chave}" value="${valoresSalvos[chave]||0}" style="width:80px;">
-                            </div>`;
-                        itemIndex++;
-                    }
+        let html = ""; let itemIndex = 0;
+        nota.produtos.split('\n').forEach(linha => {
+            const m = linha.match(/(\d+)x\s*(.*)/i);
+            if(m) {
+                const qtd = parseInt(m[1]); const nomeProd = m[2].trim().toUpperCase();
+                for(let i=0; i<qtd; i++) {
+                    const chave = `${nomeProd}_${nota.id}_${itemIndex}`;
+                    html += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span>${nomeProd}</span>
+                        <input type="number" class="input-valor-lancar" data-chave="${chave}" value="${valoresSalvos[chave]||0}" style="width:80px;">
+                    </div>`;
+                    itemIndex++;
                 }
-            });
-        }
+            }
+        });
         lista.innerHTML = html;
         document.getElementById('modalLancar').style.display = 'block';
     }
@@ -509,89 +431,106 @@
             valores[input.getAttribute('data-chave')] = parseFloat(input.value) || 0;
         });
         localStorage.setItem('nuance_valores_individuais', JSON.stringify(valores));
-        fecharModal('modalLancar');
-        alert("Lançado!");
+        fecharModal('modalLancar'); alert("Lançado!");
     }
 
     function abrirRankingProdutos() {
         const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
         const valoresSalvos = JSON.parse(localStorage.getItem('nuance_valores_individuais') || '{}');
-        const pastas = {};
+        const pastas = {}; let totalGeral = 0;
         notas.forEach(nota => {
-            if(nota.produtos) {
-                let itemIndex = 0;
-                nota.produtos.split('\n').forEach(linha => {
-                    const m = linha.match(/(\d+)x\s*(.*)/i);
-                    if(m) {
-                        const qtd = parseInt(m[1]);
-                        const nomeProd = m[2].trim().toUpperCase();
-                        if(!pastas[nomeProd]) pastas[nomeProd] = [];
-                        for(let i=0; i < qtd; i++) {
-                            const chave = `${nomeProd}_${nota.id}_${itemIndex}`;
-                            pastas[nomeProd].push({ chave, cliente: nota.nome, data: nota.data, valor: valoresSalvos[chave] || 0 });
-                            itemIndex++;
-                        }
+            let itemIndex = 0;
+            if(nota.produtos) nota.produtos.split('\n').forEach(linha => {
+                const m = linha.match(/(\d+)x\s*(.*)/i);
+                if(m) {
+                    const nomeProd = m[2].trim().toUpperCase();
+                    if(!pastas[nomeProd]) pastas[nomeProd] = [];
+                    for(let i=0; i<parseInt(m[1]); i++) {
+                        const chave = `${nomeProd}_${nota.id}_${itemIndex}`;
+                        const v = valoresSalvos[chave] || 0;
+                        pastas[nomeProd].push({ cliente: nota.nome, valor: v });
+                        totalGeral += parseFloat(v); itemIndex++;
                     }
-                });
-            }
+                }
+            });
         });
-        let lucroGeral = 0;
-        document.getElementById('lista-ranking-produtos').innerHTML = Object.entries(pastas).map(([nomeProd, lista]) => {
-            const subs = lista.map(item => {
-                lucroGeral += parseFloat(item.valor);
-                return `<div class="sub-folder"><div class="sub-folder-header" onclick="togglePasta(this)"><span>📂 Venda - ${item.cliente}</span><span>R$ ${parseFloat(item.valor).toFixed(2)}</span></div><div class="sub-folder-content" style="display:none;"><input type="number" step="0.01" value="${item.valor}" onchange="salvarValorIndividual('${item.chave}', this.value)" style="width:100%;"></div></div>`;
-            }).join("");
-            return `<div class="product-folder"><div class="folder-header" onclick="togglePasta(this)"><span>📁 ${nomeProd}</span><span>${lista.length} un</span></div><div class="folder-content" style="display:none;">${subs}</div></div>`;
-        }).join("");
-        document.getElementById('fin-total-lucro').innerText = "R$ " + lucroGeral.toFixed(2);
+        document.getElementById('fin-total-lucro').innerText = "R$ " + totalGeral.toFixed(2);
+        document.getElementById('lista-ranking-produtos').innerHTML = Object.entries(pastas).map(([nome, itens]) => `
+            <div class="product-folder">
+                <div class="folder-header" onclick="togglePasta(this)"><span>📁 ${nome}</span> <span>${itens.length} un</span></div>
+                <div class="folder-content" style="display:none;">
+                    ${itens.map(it => `<div class="sub-folder">${it.cliente}: R$ ${parseFloat(it.valor).toFixed(2)}</div>`).join('')}
+                </div>
+            </div>
+        `).join('');
         document.getElementById('modalRankingProdutos').style.display = 'block';
     }
 
-    function salvarValorIndividual(chave, valor) {
-        let v = JSON.parse(localStorage.getItem('nuance_valores_individuais') || '{}');
-        v[chave] = parseFloat(valor) || 0;
-        localStorage.setItem('nuance_valores_individuais', JSON.stringify(v));
-        abrirRankingProdutos();
+    function abrirRankingClientes() {
+        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        const clientes = {};
+        notas.forEach(n => { if(n.nome) clientes[n.nome] = (clientes[n.nome] || 0) + 1; });
+        document.getElementById('lista-ranking-clientes').innerHTML = Object.entries(clientes).sort((a,b)=>b[1]-a[1]).map(([nome, q]) => `
+            <div style="padding:10px; border-bottom:1px solid #eee;"><strong>${nome}</strong>: ${q} pedidos</div>
+        `).join('');
+        document.getElementById('modalRankingClientes').style.display = 'block';
     }
 
-    function togglePasta(e) { const c = e.nextElementSibling; c.style.display = c.style.display==='none'?'block':'none'; event.stopPropagation(); }
-    function fecharModal(id) { document.getElementById(id).style.display="none"; }
-    
-    function reabrirNota(id) {
+    function enviarMensagemRapida() {
+        const tel = document.getElementById('whatsapp').value.replace(/\D/g, '');
+        const tipo = document.getElementById('select-mensagem').value;
+        dispararWhatsApp(tel, tipo);
+    }
+
+    function enviarMensagemHistorico(id) {
         const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
         const n = notas.find(x => x.id === id);
-        if(n) {
-            document.getElementById('nome').value = n.nome || "";
-            document.getElementById('whatsapp').value = n.whatsapp || "";
-            document.getElementById('CPF').value = n.cpf || "";
-            document.getElementById('produtos-texto').value = n.produtos || "";
-            document.getElementById('valor-total').value = n.total || "";
-            document.getElementById('rua').value = n.rua || "";
-            document.getElementById('bairro').value = n.bairro || "";
-            document.getElementById('numero').value = n.numero || "";
-            document.getElementById('coleta').value = n.coleta || "";
-            atualizarCupom();
-            fecharModal('modalGestao');
+        const tipo = document.getElementById('select-mensagem').value;
+        if(n && n.whatsapp) {
+            dispararWhatsApp(n.whatsapp, tipo);
+        } else {
+            alert("WhatsApp não cadastrado para esta nota.");
         }
     }
-    function excluirNota(id) { if(confirm("Excluir?")) { let n = JSON.parse(localStorage.getItem('notas_nuance') || '[]').filter(x=>x.id!==id); localStorage.setItem('notas_nuance', JSON.stringify(n)); filtrarNotas(); } }
+
+    function dispararWhatsApp(tel, tipo) {
+        let msg = "";
+        const telLimpo = tel.replace(/\D/g, '');
+        if(tipo=="1") msg = "Olá! Vimos que você iniciou um pedido mas não finalizou. Alguma dúvida? Estarei aqui para te ajudar!";
+        if(tipo=="2") msg = "Seu pedido já entrou em preparo! 👨‍🍳 Em breve sairá para você!";
+        if(tipo=="3") msg = "Seu pedido acabou de sair para entrega! 🚀 Logo o motoboy chegará aí!";
+        if(tipo=="4") msg = "Pedido entregue! O que achou da experiência? ✅ Sua avaliação nos ajuda muito!";
+        
+        if(telLimpo) {
+            window.open(`https://api.whatsapp.com/send?phone=55${telLimpo}&text=${encodeURIComponent(msg)}`, '_blank');
+        } else {
+            alert("Número de WhatsApp inválido.");
+        }
+    }
+
+    function reabrirNota(id) {
+        const n = JSON.parse(localStorage.getItem('notas_nuance') || '[]').find(x => x.id === id);
+        if(n) {
+            document.getElementById('nome').value = n.nome||""; document.getElementById('data-hora').value = n.data||"";
+            document.getElementById('whatsapp').value = n.whatsapp||""; document.getElementById('CPF').value = n.cpf||"";
+            document.getElementById('rua').value = n.rua||""; document.getElementById('numero').value = n.numero||"";
+            document.getElementById('bairro').value = n.bairro||""; document.getElementById('cep').value = n.cep||"";
+            document.getElementById('coleta').value = n.coleta||""; document.getElementById('produtos-texto').value = n.produtos||"";
+            document.getElementById('valor-total').value = n.total||""; document.getElementById('pagamento').value = n.pagamento||"";
+            document.getElementById('obs').value = n.obs||"";
+            atualizarCupom(); fecharModal('modalGestao');
+        }
+    }
+
+    function togglePasta(e) { const c = e.nextElementSibling; c.style.display = c.style.display==='none'?'block':'none'; }
+    function fecharModal(id) { document.getElementById(id).style.display='none'; }
+    function abrirGestao() { document.getElementById('modalGestao').style.display='block'; filtrarNotas(); }
     function limparCampos() { document.querySelectorAll('input, textarea').forEach(i => i.value = ""); atualizarCupom(); }
     function baixarPDF() { html2pdf().from(document.getElementById('area-cupom')).save(); }
+    function imprimirEtiqueta() { document.getElementById('area-cupom').style.display='none'; document.getElementById('area-etiqueta').style.display='block'; window.print(); setTimeout(()=> {document.getElementById('area-cupom').style.display='block'; document.getElementById('area-etiqueta').style.display='none';}, 1000); }
+    function excluirNota(id) { if(confirm("Excluir?")) { let n = JSON.parse(localStorage.getItem('notas_nuance') || '[]').filter(x=>x.id!==id); localStorage.setItem('notas_nuance', JSON.stringify(n)); filtrarNotas(); } }
     function abrirGoogleMaps() { const end = `${document.getElementById('rua').value}, ${document.getElementById('numero').value}`; window.open("https://www.google.com/maps/search/" + encodeURIComponent(end)); }
     function enviarWppEntregador() { const msg = `🚀 ENTREGA\n👤 ${document.getElementById('nome').value}\n📍 ${document.getElementById('rua').value}`; window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`); }
-    function enviarMensagemRapida() {
-        const nomeCompleto = document.getElementById('nome').value || "Cliente";
-        const telefone = document.getElementById('whatsapp').value.replace(/\D/g, '');
-        const saudacao = getSaudacao();
-        const opcao = document.getElementById('select-mensagem').value;
-        let msg = "";
-        if (opcao === "1") msg = `Olá ${nomeCompleto.split(' ')[0]}, ${saudacao.toLowerCase()}!\nVi que não finalizou seu pedido. Cupom: *FRETE-10* para você agora! 🥂`;
-        else if (opcao === "2") msg = `${saudacao}, ${nomeCompleto.split(' ')[0]}.\nSeu pedido está nos preparos finais! 😍`;
-        else if (opcao === "3") msg = `Seu pedido já está em rota! 🚀 Prepare a taça!`;
-        else if (opcao === "4") msg = `Drink entregue! 😍 Gostou? Posta e marca a gente! Saúde! 🥂`;
-        if (!telefone) return alert("Preencha o WhatsApp.");
-        window.open(`https://api.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(msg)}`, '_blank');
-    }
 </script>
 </body>
 </html>
