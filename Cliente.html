@@ -3,191 +3,259 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Cupom Profissional com Produtos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emissor Nuance - Cupom Inteligente</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #e9ecef; color: #333; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        :root { --primary: #2563eb; --danger: #dc2626; --success: #16a34a; --bg: #f1f5f9; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); margin: 0; padding: 10px; color: #1e293b; }
+        .container { max-width: 700px; margin: 10px auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); box-sizing: border-box; }
+        h2 { margin-top: 0; font-size: 20px; text-align: center; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
+        .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; margin: 20px 0 10px; }
         
-        h2, h3 { text-align: center; color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
-        input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; }
-        
-        .produto-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        .produto-row input[type="text"] { flex: 3; }
-        .produto-row input[type="number"] { flex: 1; }
+        .import-box { background: #fffbeb; border: 2px dashed #f59e0b; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        textarea#input-importacao { width: 100%; height: 120px; font-size: 13px; margin-bottom: 10px; }
 
-        button { width: 100%; padding: 12px; margin-top: 10px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; text-transform: uppercase; }
-        .btn-add { background-color: #f39c12; color: white; margin-bottom: 20px; }
-        .btn-gerar { background-color: #2ecc71; color: white; }
-        .btn-pdf { background-color: #34495e; color: white; display: none; margin-top: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+        
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: 500; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 16px; box-sizing: border-box; font-family: inherit; }
+        
+        .btn { border: none; border-radius: 8px; padding: 14px; font-weight: 600; cursor: pointer; font-size: 14px; width: 100%; display: block; margin-bottom: 10px; text-transform: uppercase; }
+        .btn-importar { background: #f59e0b; color: white; }
+        .btn-gerar { background: var(--primary); color: white; margin-top: 20px; }
+        .btn-print { background: var(--success); color: white; display: none; }
+        .btn-pdf { background: #334155; color: white; display: none; }
+        .btn-gestao { background: #8b5cf6; color: white; }
 
-        /* Estilo do Cupom */
+        /* ESTILO DO MODAL DE GESTÃO */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); overflow-y: auto; }
+        .modal-content { background: white; margin: 5% auto; padding: 20px; width: 90%; max-width: 500px; border-radius: 12px; position: relative; }
+        .close { position: absolute; right: 20px; top: 10px; font-size: 28px; cursor: pointer; }
+        .lista-notas { margin-top: 20px; }
+        .item-nota { background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 8px; cursor: pointer; font-weight: 600; text-align: left; width: 100%; }
+
+        /* ESTILO DO CUPOM TÉRMICO (80mm) */
         #area-cupom { 
-            margin-top: 30px; 
-            padding: 20px; 
-            background: #fff; 
-            display: none; 
-            font-family: 'Courier New', Courier, monospace;
-            color: #000;
-            border: 1px solid #ddd;
-            width: 320px;
-            margin-left: auto;
-            margin-right: auto;
+            width: 80mm; padding: 5mm; background: white; display: none; color: #000;
+            font-family: 'Courier New', Courier, monospace; margin: 20px auto; border: 1px solid #eee;
         }
-
-        .cupom-header { text-align: center; margin-bottom: 10px; }
-        .divisor { border-top: 1px dashed #000; margin: 10px 0; }
+        .empresa-nome { text-align: center; font-family: 'Trebuchet MS', sans-serif; font-size: 26px; font-weight: 900; letter-spacing: 2px; margin-bottom: 2px; }
+        .cupom-header { text-align: center; border-bottom: 1px dashed #000; margin-bottom: 5px; padding-bottom: 5px; }
+        .divisor { border-top: 1px dashed #000; margin: 5px 0; }
+        .total-cupom { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; }
+        .versiculo-box { margin-top: 15px; font-size: 11px; text-align: center; font-style: italic; border-top: 1px dashed #000; padding-top: 10px; }
+        .contato-rodape { text-align: center; margin-top: 10px; font-size: 11px; font-weight: bold; }
+        .cupom-proxima { text-align: center; margin-top: 10px; font-size: 11px; border: 1px solid #000; padding: 5px; }
         
-        table { width: 100%; font-size: 13px; border-collapse: collapse; }
-        th { text-align: left; border-bottom: 1px solid #000; }
-        .text-right { text-align: right; }
-        .total-row { font-size: 16px; font-weight: bold; margin-top: 10px; display: flex; justify-content: space-between; }
-        
-        .rodape { text-align: center; margin-top: 20px; font-size: 12px; }
+        @media print {
+            body * { visibility: hidden; }
+            #area-cupom, #area-cupom * { visibility: visible; }
+            #area-cupom { position: absolute; left: 0; top: 0; width: 100%; border: none; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Emissor de Cupom</h2>
+    <h2>Sistema de Emissão Nuance</h2>
+
+    <button class="btn btn-gestao" onclick="abrirGestao()">📁 GESTÃO DE NOTAS SALVAS</button>
+
+    <div class="import-box">
+        <label>📦 Colar Pedido Completo Aqui:</label>
+        <textarea id="input-importacao" placeholder="Cole a mensagem aqui..."></textarea>
+        <button class="btn btn-importar" onclick="processarTexto()">Processar Mensagem</button>
+    </div>
     
-    <div class="form-group">
-        <label>Nome do Cliente:</label>
-        <input type="text" id="nome" placeholder="Nome completo">
+    <div class="section-title">Dados da Nota</div>
+    <div class="grid">
+        <div class="form-group"><label>Nome do Cliente</label><input type="text" id="nome"></div>
+        <div class="form-group"><label>Data/Hora</label><input type="text" id="data-hora"></div>
+        <div class="form-group"><label>WhatsApp</label><input type="text" id="whatsapp"></div>
+        <div class="form-group"><label>CPF</label><input type="text" id="CPF"></div>
+        <div class="form-group"><label>Tipo de Coleta</label><input type="text" id="coleta"></div>
+        <div class="form-group"><label>Cupom de Desconto</label><input type="text" id="cupom-input" placeholder="Ex: NUANCE10"></div>
     </div>
 
     <div class="form-group">
-        <label>CPF:</label>
-        <input type="text" id="cpf" placeholder="000.000.000-00">
+        <label>Produtos</label>
+        <textarea id="produtos-texto" style="height: 100px;"></textarea>
     </div>
 
     <div class="form-group">
-        <label>WhatsApp / E-mail:</label>
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="whatsapp" placeholder="WhatsApp">
-            <input type="email" id="email" placeholder="E-mail">
-        </div>
+        <label>Valor Total (R$)</label>
+        <input type="text" id="valor-total">
     </div>
 
-    <div class="divisor"></div>
-    <h3>Produtos</h3>
-    <div id="lista-inputs-produtos">
-        <div class="produto-row">
-            <input type="text" class="p-nome" placeholder="Nome do produto">
-            <input type="number" class="p-preco" placeholder="Preço (0.00)" step="0.01">
-        </div>
+    <div class="form-group">
+        <label>Observações</label>
+        <textarea id="obs" placeholder="Alguma observação importante?"></textarea>
     </div>
-    <button class="btn-add" onclick="adicionarCampoProduto()">+ Adicionar Outro Produto</button>
 
-    <button class="btn-gerar" onclick="gerarCupom()">Visualizar Nota</button>
+    <button class="btn btn-gerar" onclick="gerarCupom()">GERAR CUPOM NUANCE</button>
 
     <div id="area-cupom">
-        <div class="cupom-header">
-            <strong>RECIBO DE VENDA</strong><br>
-            <small>Não possui valor fiscal</small>
+        <div class="empresa-nome">NUANCE</div>
+        <div class="cupom-header"><strong>COMPROVANTE DE PEDIDO</strong><br><small>Documento de Controle Interno</small></div>
+        <div style="font-size: 12px; margin: 10px 0;">
+            DATA: <span id="view-data"></span><br>
+            CLIENTE: <span id="view-nome"></span><br>
+            <div id="row-cpf" style="display:none;">CPF: <span id="view-cpf"></span></div>
+            CONTATO: <span id="view-contato"></span><br>
+            COLETA: <span id="view-coleta"></span>
         </div>
-
         <div class="divisor"></div>
         <div style="font-size: 12px;">
-            <strong>DATA:</strong> <span id="view-data"></span><br>
-            <strong>CLIENTE:</strong> <span id="view-nome"></span><br>
-            <strong>CPF:</strong> <span id="view-cpf"></span>
+            <strong>ITENS DO PEDIDO:</strong><br>
+            <div id="view-produtos" style="white-space: pre-wrap; margin-top: 5px;"></div>
         </div>
         <div class="divisor"></div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>ITEM</th>
-                    <th class="text-right">VALOR</th>
-                </tr>
-            </thead>
-            <tbody id="tabela-itens">
-                </tbody>
-        </table>
-
-        <div class="divisor"></div>
-        <div class="total-row">
+        <div class="total-cupom">
             <span>TOTAL:</span>
-            <span id="view-total">R$ 0,00</span>
+            <span id="view-total"></span>
+        </div>
+        
+        <div id="view-obs" style="font-size: 11px; margin-top: 10px; white-space: pre-wrap;"></div>
+
+        <div id="view-proxima-compra" class="cupom-proxima" style="display:none;">
+            Na sua próxima compra, use esse Cupom:<br>
+            <strong id="view-cupom-texto" style="font-size: 14px;"></strong>
         </div>
 
-        <div class="rodape">
-            <strong>OBRIGADO PELA PREFERÊNCIA!</strong>
+        <div id="view-versiculo" class="versiculo-box"></div>
+
+        <div style="text-align: center; margin-top: 15px; font-size: 10px;">
+            ********************************<br>
+            OBRIGADO PELA PREFERÊNCIA!<br>
+            ********************************
+        </div>
+
+        <div class="contato-rodape">
+            Instagram: Nuance_drinks<br>
+            Whatsapp: 62995679219
         </div>
     </div>
 
-    <button id="btn-download" class="btn-pdf" onclick="baixarPDF()">Baixar PDF do Cupom</button>
+    <button id="btn-print" class="btn btn-print" onclick="window.print()">IMPRIMIR AGORA</button>
+    <button id="btn-download" class="btn btn-pdf" onclick="baixarPDF()">SALVAR PDF</button>
+</div>
+
+<div id="modalGestao" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="fecharGestao()">&times;</span>
+        <h3>Notas Salvas</h3>
+        <div id="lista-notas" class="lista-notas"></div>
+    </div>
 </div>
 
 <script>
-    function adicionarCampoProduto() {
-        const container = document.getElementById('lista-inputs-produtos');
-        const novaLinha = document.createElement('div');
-        novaLinha.className = 'produto-row';
-        novaLinha.innerHTML = `
-            <input type="text" class="p-nome" placeholder="Nome do produto">
-            <input type="number" class="p-preco" placeholder="Preço (0.00)" step="0.01">
-        `;
-        container.appendChild(novaLinha);
+    const versiculos = ["O Senhor é o meu pastor, nada me faltará. (Salmos 23:1)", "Tudo posso naquele que me fortalece. (Filipenses 4:13)", "O Senhor te abençoe e te guarde. (Números 6:24)", "Confia no Senhor de todo o teu coração. (Provérbios 3:5)", "Alegrem-se na esperança, sejam pacientes na tribulação. (Romanos 12:12)", "Mil cairão ao teu lado, mas tu não serás atingido. (Salmos 91:7)", "O amor nunca falha. (1 Coríntios 13:8)", "Se Deus é por nós, quem será contra nós? (Romanos 8:31)", "Deem graças ao Senhor, porque ele é bom. (Salmos 136:1)", "Lâmpada para os meus pés é tua palavra. (Salmos 119:105)"];
+
+    function removerEmojis(texto) { return texto.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, ''); }
+
+    function processarTexto() {
+        let texto = document.getElementById('input-importacao').value;
+        texto = removerEmojis(texto);
+        const dataMatch = texto.match(/0\. DATA\/HORA: (.*)/);
+        const pedidoMatch = texto.match(/1\. PEDIDO: (.*)/);
+        const nomeMatch = texto.match(/2\. NOME: (.*)/);
+        const whatsappMatch = texto.match(/3\. WHATSAPP: (.*)/);
+        const cpfMatch = texto.match(/4\. CEP: (.*)/);
+        const coletaMatch = texto.match(/9\. TIPO DE COLETA: (.*)/);
+        const totalMatch = texto.match(/10\. VALOR PRODUTOS: (.*)/);
+        if (dataMatch) document.getElementById('data-hora').value = dataMatch[1].trim();
+        if (pedidoMatch) {
+            let produtosRaw = pedidoMatch[1].trim();
+            document.getElementById('produtos-texto').value = produtosRaw.replace(/(\d+x)/g, '\n$1').trim();
+        }
+        if (nomeMatch) document.getElementById('nome').value = nomeMatch[1].trim();
+        if (whatsappMatch) document.getElementById('whatsapp').value = whatsappMatch[1].trim();
+        if (cpfMatch) document.getElementById('CPF').value = cpfMatch[1].trim();
+        if (coletaMatch) document.getElementById('coleta').value = coletaMatch[1].trim();
+        if (totalMatch) document.getElementById('valor-total').value = totalMatch[1].trim();
+        alert("Mensagem processada!");
     }
 
     function gerarCupom() {
-        const nome = document.getElementById('nome').value;
-        if(!nome) { alert("Informe o nome do cliente."); return; }
-
-        // Dados do Cliente
-        document.getElementById('view-nome').innerText = nome;
-        document.getElementById('view-cpf').innerText = document.getElementById('cpf').value || "ISENTO";
-        document.getElementById('view-data').innerText = new Date().toLocaleString('pt-BR');
-
-        // Processar Produtos
-        const nomes = document.getElementsByClassName('p-nome');
-        const precos = document.getElementsByClassName('p-preco');
-        const tabela = document.getElementById('tabela-itens');
-        tabela.innerHTML = "";
-        let total = 0;
-
-        for (let i = 0; i < nomes.length; i++) {
-            if (nomes[i].value && precos[i].value) {
-                const valor = parseFloat(precos[i].value);
-                total += valor;
-                
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${nomes[i].value.toUpperCase()}</td>
-                    <td class="text-right">R$ ${valor.toFixed(2)}</td>
-                `;
-                tabela.appendChild(tr);
-            }
-        }
-
-        document.getElementById('view-total').innerText = "R$ " + total.toFixed(2);
-        
-        // Mostrar Cupom
-        document.getElementById('area-cupom').style.display = 'block';
-        document.getElementById('btn-download').style.display = 'block';
-    }
-
-    function baixarPDF() {
-        const elemento = document.getElementById('area-cupom');
-        const nomeCli = document.getElementById('nome').value;
-
-        const opcoes = {
-            margin:       0.2,
-            filename:     'cupom_' + nomeCli + '.pdf',
-            image:        { type: 'jpeg', quality: 1.0 },
-            html2canvas:  { scale: 3 },
-            jsPDF:        { unit: 'in', format: [3.5, 6], orientation: 'portrait' }
+        const dados = {
+            nome: document.getElementById('nome').value,
+            data: document.getElementById('data-hora').value,
+            whatsapp: document.getElementById('whatsapp').value,
+            cpf: document.getElementById('CPF').value,
+            coleta: document.getElementById('coleta').value,
+            produtos: document.getElementById('produtos-texto').value,
+            total: document.getElementById('valor-total').value,
+            obs: document.getElementById('obs').value,
+            cupomProxima: document.getElementById('cupom-input').value,
+            versiculo: versiculos[Math.floor(Math.random() * versiculos.length)]
         };
 
-        html2pdf().set(opcoes).from(elemento).save();
+        if(!dados.nome) { alert("Preencha os dados."); return; }
+        exibirCupom(dados);
+        salvarNoBanco(dados);
+    }
+
+    function exibirCupom(dados) {
+        document.getElementById('view-nome').innerText = dados.nome.toUpperCase();
+        document.getElementById('view-data').innerText = dados.data;
+        document.getElementById('view-contato').innerText = dados.whatsapp;
+        document.getElementById('view-coleta').innerText = dados.coleta.toUpperCase();
+        document.getElementById('view-produtos').innerText = dados.produtos;
+        document.getElementById('view-total').innerText = dados.total;
+        document.getElementById('view-versiculo').innerText = dados.versiculo;
+
+        const rowCpf = document.getElementById('row-cpf');
+        if(dados.cpf && (dados.cpf.length === 11 || dados.cpf.length === 14)) {
+            document.getElementById('view-cpf').innerText = dados.cpf;
+            rowCpf.style.display = "block";
+        } else { rowCpf.style.display = "none"; }
+
+        // Lógica do Cupom Próxima Compra
+        const divProxima = document.getElementById('view-proxima-compra');
+        if(dados.cupomProxima) {
+            document.getElementById('view-cupom-texto').innerText = dados.cupomProxima.toUpperCase();
+            divProxima.style.display = "block";
+        } else {
+            divProxima.style.display = "none";
+        }
+
+        document.getElementById('view-obs').innerHTML = dados.obs ? "<strong>OBSERVAÇÕES:</strong><br>" + dados.obs : "";
+        document.getElementById('area-cupom').style.display = 'block';
+        document.getElementById('btn-download').style.display = 'block';
+        document.getElementById('btn-print').style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    function salvarNoBanco(dados) {
+        let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        notas.push(dados);
+        localStorage.setItem('notas_nuance', JSON.stringify(notas));
+    }
+
+    function abrirGestao() {
+        const modal = document.getElementById('modalGestao');
+        const lista = document.getElementById('lista-notas');
+        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        
+        lista.innerHTML = notas.length === 0 ? "Nenhuma nota salva." : "";
+        notas.forEach((nota, index) => {
+            const btn = document.createElement('button');
+            btn.className = "item-nota";
+            btn.innerText = `${nota.nome} - ${nota.data}`;
+            btn.onclick = () => { exibirCupom(nota); fecharGestao(); };
+            lista.appendChild(btn);
+        });
+        modal.style.display = "block";
+    }
+
+    function fecharGestao() { document.getElementById('modalGestao').style.display = "none"; }
+    function baixarPDF() {
+        html2pdf().set({ margin: 0, filename: 'Pedido_Nuance.pdf', image: { type: 'jpeg', quality: 1.0 }, html2canvas: { scale: 3 }, jsPDF: { unit: 'mm', format: [80, 220], orientation: 'portrait' } }).from(document.getElementById('area-cupom')).save();
     }
 </script>
-
 </body>
 </html>
