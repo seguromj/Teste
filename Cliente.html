@@ -58,12 +58,10 @@
         .btn-lancar { background: #10b981; color: white; padding: 4px 8px; width: auto; font-size: 10px; border-radius: 4px; }
         .btn-etiqueta { background: #f59e0b; color: white; padding: 4px 8px; width: auto; font-size: 10px; border-radius: 4px; }
 
-        /* Estilos do Modal de Notas Organizado */
         #lista-notas { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
         .nota-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .nota-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         
-        /* Ajuste: Nome Verde */
         .nota-cliente-info b { font-size: 15px; color: #16a34a; display: block; text-transform: uppercase; }
         .nota-cliente-info span { font-size: 11px; color: #64748b; }
         
@@ -77,7 +75,6 @@
         .st-rua { background: #f59e0b; }
         .st-entregue { background: #10b981; }
 
-        /* Pastas de Produtos */
         .product-folder { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
         .folder-header { background: #f8fafc; padding: 12px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; }
         .folder-content { padding: 12px; background: #fff; border-top: 1px solid #eee; }
@@ -336,14 +333,19 @@
         const nome = document.getElementById('nome').value;
         if(!nome) return alert("Preencha o nome.");
         const dados = { 
-            id: Date.now(), nome, data: document.getElementById('data-hora').value, 
+            id: Date.now(), 
+            nome: nome, 
+            data: document.getElementById('data-hora').value, 
             whatsapp: document.getElementById('whatsapp').value,
             cpf: document.getElementById('CPF').value || "",
             rua: document.getElementById('rua').value,
-            numero: document.getElementById('numero').value, bairro: document.getElementById('bairro').value,
+            numero: document.getElementById('numero').value, 
+            bairro: document.getElementById('bairro').value,
             coleta: document.getElementById('coleta').value || "NÃO INFORMADO",
-            produtos: document.getElementById('produtos-texto').value, total: document.getElementById('valor-total').value,
-            status: 'pendente', data_criacao: new Date().toISOString()
+            produtos: document.getElementById('produtos-texto').value, 
+            total: document.getElementById('valor-total').value,
+            status: 'pendente', 
+            data_criacao: new Date().toISOString()
         };
         let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
         notas.push(dados);
@@ -354,17 +356,20 @@
     function filtrarNotas() {
         const busca = document.getElementById('busca-nota').value.toLowerCase();
         const partes = busca.split('*').map(p => p.trim());
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        const notasRaw = localStorage.getItem('notas_nuance') || '[]';
+        const notas = JSON.parse(notasRaw);
         const lista = document.getElementById('lista-notas');
         
-        const filtradas = notas.reverse().filter(n => {
-            const matchNome = n.nome.toLowerCase().includes(partes[0] || "");
+        const filtradas = notas.slice().reverse().filter(n => {
+            const matchNome = (n.nome || "").toLowerCase().includes(partes[0] || "");
             const matchWhats = partes[1] ? (n.whatsapp || "").includes(partes[1]) : true;
             const matchCPF = partes[2] ? (n.cpf || "").includes(partes[2]) : true;
             return matchNome && matchWhats && matchCPF;
         });
 
-        lista.innerHTML = filtradas.map(n => `
+        let html = "";
+        filtradas.forEach(n => {
+            html += `
             <div class="nota-card">
                 <div class="nota-header">
                     <div class="nota-cliente-info">
@@ -390,8 +395,14 @@
                         <span>📲</span> AVISAR CLIENTE
                     </button>
                 </div>
-            </div>
-        `).join("");
+            </div>`;
+        });
+        lista.innerHTML = html;
+    }
+
+    function abrirGestao() { 
+        document.getElementById('modalGestao').style.display = 'block';
+        filtrarNotas(); 
     }
 
     function enviarAcompanhamento(id) {
@@ -540,7 +551,7 @@
 
     function togglePasta(e) { const c = e.nextElementSibling; c.style.display = c.style.display==='none'?'block':'none'; event.stopPropagation(); }
     function fecharModal(id) { document.getElementById(id).style.display="none"; }
-    function abrirGestao() { filtrarNotas(); document.getElementById('modalGestao').style.display = 'block'; }
+    
     function reabrirNota(id) {
         const n = JSON.parse(localStorage.getItem('notas_nuance')).find(x => x.id === id);
         if(n) {
