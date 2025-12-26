@@ -400,13 +400,15 @@
         let msg = "";
         
         if(n.status === 'pendente') {
-            msg = `Olá ${primeiroNome}, ${saudacao.toLowerCase()}!\nRecebemos seu pedido de: \n${n.produtos}\nEle já caiu aqui no nosso sistema e em breve daremos início ao preparo! 🥂`;
+            msg = `Olá, ${primeiroNome}, ${saudacao.toLowerCase()}!\n Percebemos que seu pedido de: \n${n.produtos}\nFicou no seu carrinho!\n\n 🤗 Que tal finalizar essa compra com esse Cupom: FRETEGRATIS\n\n 
+            Link Oficial NUANCE 👇\n 
+            https://seguromj.github.io/Nuance-/`;
         } else if(n.status === 'preparando') {
-            msg = `Oi ${primeiroNome}, sou o Barman da Nuance! 👨‍🍳\nSeu pedido já está em preparo e as frutas estão fresquinhas! 😍`;
+            msg = `Olá, ${primeiroNome}!\n Sou uns dos Barman da Nuance! 👨‍🍳\nSeu pedido chegou em nossa cozinha e já estamos fazendo os últimos detalhes, para seu pedido chegar em boas e com qualidade! 😍`;
         } else if(n.status === 'rua') {
-            msg = `Notícia boa, ${primeiroNome}! Seu pedido acabou de sair para entrega. 🚀\nO motoboy está indo para ${n.rua || n.bairro}.\nPrepare a taça! 🥂`;
+            msg = `Notícia boa, ${primeiroNome}! Seu pedido acabou de sair para entrega. 🚀\nO motoboy está indo para ${n.rua || n.bairro}.\n.🥂`;
         } else if(n.status === 'entregue') {
-            msg = `Olá ${primeiroNome}! Notamos que seu pedido foi entregue. 😍\nEspero que goste! Se puder nos marcar no Instagram ajuda muito! Saúde! 🥂✨`;
+            msg = `Olá, ${primeiroNome}! Notamos que seu pedido foi entregue. 😍\n\nEspero que goste! Se puder nos marcar no Instagram isso nos ajuda muito!\n😉\n\n Saúde! 🥂✨`;
         }
 
         if(msg) {
@@ -565,7 +567,7 @@
         let msg = "";
         if (opcao === "1") msg = `Olá ${nomeCompleto.split(' ')[0]}, ${saudacao.toLowerCase()}!\nVi que não finalizou seu pedido. Cupom: *FRETE-10* para você agora! 🥂`;
         else if (opcao === "2") msg = `${saudacao}, ${nomeCompleto.split(' ')[0]}.\nSeu pedido está nos preparos finais! 😍`;
-        else if (opcao === "3") msg = `Seu drink está a caminho! 🚀 Prepare a taça!`;
+        else if (opcao === "3") msg = `Seu pedido já está em rota! 🚀 Prepare a taça!`;
         else if (opcao === "4") msg = `Drink entregue! 😍 Gostou? Posta e marca a gente! Saúde! 🥂`;
         if (!telefone) return alert("Preencha o WhatsApp.");
         window.open(`https://api.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(msg)}`, '_blank');
