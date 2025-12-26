@@ -485,9 +485,15 @@
     function enviarMensagemHistorico(id) {
         const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
         const n = notas.find(x => x.id === id);
-        const tipo = document.getElementById('select-mensagem').value;
+        
         if(n && n.whatsapp) {
-            dispararWhatsApp(n.whatsapp, tipo);
+            // Mapeia o status da nota para o ID da mensagem correspondente
+            let tipoMsg = "1"; // default pendente
+            if(n.status === "preparando") tipoMsg = "2";
+            if(n.status === "rua") tipoMsg = "3";
+            if(n.status === "entregue") tipoMsg = "4";
+            
+            dispararWhatsApp(n.whatsapp, tipoMsg);
         } else {
             alert("WhatsApp não cadastrado para esta nota.");
         }
@@ -496,7 +502,7 @@
     function dispararWhatsApp(tel, tipo) {
         let msg = "";
         const telLimpo = tel.replace(/\D/g, '');
-        if(tipo=="1") msg = "Olá! Vimos que você iniciou um pedido mas não finalizou. Alguma dúvida? Estarei aqui para te ajudar!";
+        if(tipo=="1") msg = "Olá! Recebemos seu pedido e ele está em nossa fila de espera. Alguma dúvida? Estarei aqui para te ajudar!";
         if(tipo=="2") msg = "Seu pedido já entrou em preparo! 👨‍🍳 Em breve sairá para você!";
         if(tipo=="3") msg = "Seu pedido acabou de sair para entrega! 🚀 Logo o motoboy chegará aí!";
         if(tipo=="4") msg = "Pedido entregue! O que achou da experiência? ✅ Sua avaliação nos ajuda muito!";
