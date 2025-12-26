@@ -46,6 +46,7 @@
         .btn-print { background: var(--success); color: white; width: 200px; }
         .btn-pdf { background: #334155; color: white; width: 200px; }
         .btn-nav { background: #334155; color: white; padding: 8px 12px; width: auto; font-size: 11px; margin-left: 4px; }
+        .btn-crm { background: var(--whatsapp); color: white; margin-top: 5px; }
 
         #area-cupom { 
             width: 80mm; min-height: 120mm; padding: 5mm; background: white; color: #000;
@@ -130,6 +131,17 @@
                 <div class="form-group"><label>Observações</label><input type="text" id="obs"></div>
             </div>
 
+            <div class="section-title">💬 Mensagens Rápidas</div>
+            <div class="form-group">
+                <select id="select-mensagem">
+                    <option value="1">⚠️ Carrinho Abandonado</option>
+                    <option value="2">👨‍🍳 Pedido em Preparo</option>
+                    <option value="3">🚀 Saiu para Entrega</option>
+                    <option value="4">✅ Entregue / Feedback</option>
+                </select>
+                <button class="btn btn-crm" onclick="enviarMensagemRapida()">Enviar para Cliente</button>
+            </div>
+
             <button class="btn btn-gerar" onclick="finalizarEGerar()">FINALIZAR E GERAR CUPOM</button>
         </div>
 
@@ -167,6 +179,13 @@
     const versiculos = ["O Senhor é o meu pastor, nada me faltará.", "Tudo posso naquele que me fortalece.", "O Senhor te abençoe e te guarde.", "Confia no Senhor de todo o teu coração.", "O amor nunca falha."];
 
     function removerEmojis(texto) { return texto.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, ''); }
+
+    function getSaudacao() {
+        const hora = new Date().getHours();
+        if (hora >= 5 && hora < 12) return "Bom dia";
+        if (hora >= 12 && hora < 18) return "Boa tarde";
+        return "Boa noite";
+    }
 
     function processarTexto() {
         let texto = document.getElementById('input-importacao').value;
@@ -208,10 +227,26 @@
         
         if (rua || cep) {
             const enderecoCompleto = `${rua}, ${num}, ${bairro}, ${cep}`;
-            window.open("https://www.google.com/maps/search/" + encodeURIComponent(enderecoCompleto), '_blank');
+            window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(enderecoCompleto), '_blank');
         } else {
             alert("⚠️ Dados de endereço insuficientes para abrir o mapa.");
         }
+    }
+
+    function enviarMensagemRapida() {
+        const nome = document.getElementById('nome').value || "Cliente";
+        const telefone = document.getElementById('whatsapp').value.replace(/\D/g, '');
+        const saudacao = getSaudacao();
+        const opcao = document.getElementById('select-mensagem').value;
+        let msg = "";
+        
+        if (opcao === "1") msg = `Olá ${nome}, ${saudacao.toLowerCase()}!\nRecebemos seu pedido e vimos que não finalizou a compra.\nCupom: *FRETEGRATIS*\nhttps://seguromj.github.io/Nuance-/`;
+        else if (opcao === "2") msg = `${saudacao}, ${nome}.\nSeu pedido acabou de chegar em nossa cozinha e os Barmans já estão dando os últimos preparos! 😍`;
+        else if (opcao === "3") msg = `😍 Notícia boa; o motoboy acabou de sair com o seu pedido, ${nome}!`;
+        else if (opcao === "4") msg = `😍 Que maravilha!! Acabamos de ser notificados que seu produto foi entregue.\nNuance agradece a preferência!\nSaúde! 🥂`;
+
+        if (!telefone) return alert("Preencha o WhatsApp.");
+        window.open(`https://api.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     function finalizarEGerar() {
@@ -226,15 +261,48 @@
         document.getElementById('view-versiculo').innerText = versiculos[Math.floor(Math.random() * versiculos.length)];
         document.getElementById('area-cupom').style.display = 'block';
         document.getElementById('acoes-cupom').style.display = 'flex';
+        
+        // Salva no LocalStorage
+        const dados = { id: Date.now(), nome: document.getElementById('nome').value, data: document.getElementById('data-hora').value, produtos: document.getElementById('produtos-texto').value };
+        let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        notas.push(dados);
+        localStorage.setItem('notas_nuance', JSON.stringify(notas));
     }
 
-    function abrirGestao() { /* Lógica de histórico simplificada */ }
+    function abrirGestao() { 
+        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        const lista = document.getElementById('lista-notas');
+        lista.innerHTML = notas.reverse().map(n => `<div style="padding:10px; border-bottom:1px solid #eee;">${n.nome} - ${n.data}</div>`).join("");
+        document.getElementById('modalGestao').style.display = 'block';
+    }
+
+    function abrirRankingClientes() {
+        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        const freq = {};
+        notas.forEach(n => { const key = n.nome; freq[key] = (freq[key] || 0) + 1; });
+        const lista = document.getElementById('lista-ranking-clientes');
+        lista.innerHTML = Object.entries(freq).sort((a,b)=>b[1]-a[1]).map(([n, q])=>`<div style="padding:10px; border-bottom:1px solid #eee;">${n}: <strong>${q} pedidos</strong></div>`).join("");
+        document.getElementById('modalRankingClientes').style.display = 'block';
+    }
+
+    function abrirRankingProdutos() {
+        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        const ranking = {};
+        notas.forEach(n => { if(n.produtos) n.produtos.split('\n').forEach(l => { const m = l.match(/(\d+)x\s*(.*)/i); if(m) ranking[m[2].trim().toUpperCase()] = (ranking[m[2].trim().toUpperCase()] || 0) + parseInt(m[1]); }); });
+        const lista = document.getElementById('lista-ranking-produtos');
+        lista.innerHTML = Object.entries(ranking).sort((a,b)=>b[1]-a[1]).map(([p, q])=>`<div style="padding:10px; border-bottom:1px solid #eee;">${p}: <strong>${q}x</strong></div>`).join("");
+        document.getElementById('modalRankingProdutos').style.display = 'block';
+    }
+
     function fecharModal(id) { document.getElementById(id).style.display="none"; }
     function baixarPDF() { html2pdf().from(document.getElementById('area-cupom')).save(); }
+    
     function limparCampos() { 
         ['input-importacao','nome','data-hora','whatsapp','CPF','rua','numero','bairro','cep','complemento','pagamento','coleta','produtos-texto','valor-total','obs'].forEach(id => {
             if(document.getElementById(id)) document.getElementById(id).value = "";
         });
+        document.getElementById('area-cupom').style.display = 'none';
+        document.getElementById('acoes-cupom').style.display = 'none';
     }
 
     function enviarWppEntregador() { 
@@ -245,4 +313,3 @@
 </script>
 </body>
 </html>
-a
