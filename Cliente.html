@@ -11,7 +11,6 @@
         :root { --primary: #2563eb; --danger: #dc2626; --success: #16a34a; --bg: #f1f5f9; --whatsapp: #25d366; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: #1e293b; }
         
-        /* ESTRUTURA PDV DESKTOP */
         .main-wrapper { display: flex; flex-direction: column; height: 100vh; }
         .top-bar { background: #0f172a; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
@@ -20,7 +19,6 @@
         .panel-left { flex: 1.2; background: white; border-radius: 12px; padding: 20px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .panel-right { flex: 0.8; background: #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; border: 2px inset #cbd5e1; }
 
-        /* RESPONSIVIDADE CELULAR */
         @media (max-width: 900px) {
             .pdv-container { flex-direction: column; overflow: visible; height: auto; padding: 10px; }
             .panel-left, .panel-right { flex: none; width: 100%; overflow: visible; box-sizing: border-box; }
@@ -48,8 +46,7 @@
         .btn-print { background: var(--success); color: white; width: 200px; }
         .btn-pdf { background: #334155; color: white; width: 200px; }
         .btn-nav { background: #334155; color: white; padding: 8px 12px; width: auto; font-size: 11px; margin-left: 4px; }
-        .btn-excluir { background: #fee2e2; color: #dc2626; padding: 8px; border-radius: 6px; width: auto; margin-left: 10px; border: 1px solid #fecaca; }
-        .btn-crm { background: #25d366; color: white; margin-top: 10px; }
+        .btn-crm { background: var(--whatsapp); color: white; margin-top: 5px; }
 
         #area-cupom { 
             width: 80mm; min-height: 120mm; padding: 5mm; background: white; color: #000;
@@ -62,15 +59,10 @@
         .total-cupom { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; }
         .versiculo-box { margin-top: 15px; font-size: 11px; text-align: center; font-style: italic; border-top: 1px dashed #000; padding-top: 10px; }
         .contato-rodape { text-align: center; margin-top: 10px; font-size: 11px; font-weight: bold; }
-        .cupom-proxima { text-align: center; margin-top: 10px; font-size: 11px; border: 1px solid #000; padding: 5px; }
 
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); overflow-y: auto; }
         .modal-content { background: white; margin: 2% auto; padding: 20px; width: 95%; max-width: 500px; border-radius: 12px; position: relative; }
         .close { position: absolute; right: 20px; top: 10px; font-size: 28px; cursor: pointer; }
-        .item-nota-container { display: flex; align-items: center; margin-bottom: 8px; }
-        .item-nota { background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; flex-grow: 1; text-align: left; }
-        .badge-count { background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; }
-        .badge-qty { background: #0ea5e9; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
 
         @media print {
             body * { visibility: hidden; }
@@ -86,7 +78,7 @@
         <h2>PDV NUANCE</h2>
         <div style="display:flex;">
             <button class="btn btn-nav" onclick="abrirGestao()">📁 NOTAS</button>
-            <button class="btn btn-nav" onclick="abrirRanking()">👤 CLIENTES</button>
+            <button class="btn btn-nav" onclick="abrirRankingClientes()">👤 CLIENTES</button>
             <button class="btn btn-nav" style="background:#0ea5e9;" onclick="abrirRankingProdutos()">📦 PRODUTOS</button>
         </div>
     </div>
@@ -111,13 +103,26 @@
                 <div class="form-group"><label>Nome</label><input type="text" id="nome"></div>
                 <div class="form-group"><label>Data/Hora</label><input type="text" id="data-hora"></div>
                 <div class="form-group"><label>WhatsApp</label><input type="text" id="whatsapp"></div>
-                <div class="form-group"><label>CPF</label><input type="text" id="CPF"></div>
+                <div class="form-group"><label>CPF / Ref</label><input type="text" id="CPF"></div>
+            </div>
+
+            <div class="section-title">Endereço de Entrega</div>
+            <div class="grid">
+                <div class="form-group"><label>Rua/Avenida</label><input type="text" id="rua"></div>
+                <div class="form-group"><label>Nº/QD/LOTE</label><input type="text" id="numero"></div>
+                <div class="form-group"><label>Bairro</label><input type="text" id="bairro"></div>
+                <div class="form-group"><label>CEP</label><input type="text" id="cep"></div>
+            </div>
+            <div class="form-group"><label>Complemento</label><input type="text" id="complemento"></div>
+
+            <div class="section-title">Pagamento e Coleta</div>
+            <div class="grid">
+                <div class="form-group"><label>Forma de Pagamento</label><input type="text" id="pagamento"></div>
                 <div class="form-group"><label>Coleta</label><input type="text" id="coleta"></div>
-                <div class="form-group"><label>Cupom</label><input type="text" id="cupom-input"></div>
             </div>
 
             <div class="form-group">
-                <label>Produtos</label>
+                <label>Produtos (Ex: 2x Gin)</label>
                 <textarea id="produtos-texto" style="height: 80px;"></textarea>
             </div>
 
@@ -126,18 +131,18 @@
                 <div class="form-group"><label>Observações</label><input type="text" id="obs"></div>
             </div>
 
-            <div class="section-title">💬 Mensagens Rápidas (WhatsApp)</div>
+            <div class="section-title">💬 Mensagens Rápidas</div>
             <div class="form-group">
                 <select id="select-mensagem">
-                    <option value="1">⚠️ Carrinho Abandonado (Cupom Frete)</option>
+                    <option value="1">⚠️ Carrinho Abandonado</option>
                     <option value="2">👨‍🍳 Pedido em Preparo</option>
                     <option value="3">🚀 Saiu para Entrega</option>
-                    <option value="4">✅ Confirmar Entrega / Pós-Venda</option>
+                    <option value="4">✅ Entregue / Feedback</option>
                 </select>
                 <button class="btn btn-crm" onclick="enviarMensagemRapida()">Enviar para Cliente</button>
             </div>
 
-            <button class="btn btn-gerar" onclick="gerarCupom()">FINALIZAR E GERAR CUPOM</button>
+            <button class="btn btn-gerar" onclick="finalizarEGerar()">FINALIZAR E GERAR CUPOM</button>
         </div>
 
         <div class="panel-right">
@@ -147,8 +152,7 @@
                 <div style="font-size: 12px; margin: 10px 0;">
                     DATA: <span id="view-data"></span><br>
                     CLIENTE: <span id="view-nome"></span><br>
-                    <div id="row-cpf" style="display:none;">CPF: <span id="view-cpf"></span></div>
-                    CONTATO: <span id="view-contato"></span><br>
+                    ENDEREÇO: <span id="view-endereco"></span><br>
                     COLETA: <span id="view-coleta"></span>
                 </div>
                 <div class="divisor"></div>
@@ -156,7 +160,6 @@
                 <div class="divisor"></div>
                 <div class="total-cupom"><span>TOTAL:</span><span id="view-total"></span></div>
                 <div id="view-obs" style="font-size: 11px; margin-top: 10px; white-space: pre-wrap;"></div>
-                <div id="view-proxima-compra" class="cupom-proxima" style="display:none;">Próxima Compra: <strong id="view-cupom-texto"></strong></div>
                 <div id="view-versiculo" class="versiculo-box"></div>
                 <div class="contato-rodape">Instagram: Nuance_drinks<br>62995679219</div>
             </div>
@@ -168,8 +171,8 @@
     </div>
 </div>
 
-<div id="modalGestao" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalGestao')">×</span><h3>Histórico</h3><input type="text" id="input-pesquisa" onkeyup="filtrarNotas()" placeholder="Buscar..." class="search-input" style="width:100%;"><div id="lista-notas"></div></div></div>
-<div id="modalRanking" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalRanking')">×</span><h3>Ranking Clientes</h3><div id="lista-ranking"></div></div></div>
+<div id="modalGestao" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalGestao')">×</span><h3>Histórico</h3><div id="lista-notas"></div></div></div>
+<div id="modalRankingClientes" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalRankingClientes')">×</span><h3>Ranking Clientes</h3><div id="lista-ranking-clientes"></div></div></div>
 <div id="modalRankingProdutos" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalRankingProdutos')">×</span><h3>Ranking Produtos</h3><div id="lista-ranking-produtos"></div></div></div>
 
 <script>
@@ -184,83 +187,129 @@
         return "Boa noite";
     }
 
-    function enviarMensagemRapida() {
-        const nome = document.getElementById('nome').value || "Cliente";
-        const telefone = document.getElementById('whatsapp').value.replace(/\D/g, '');
-        const saudacao = getSaudacao();
-        const opcao = document.getElementById('select-mensagem').value;
-        let msg = "";
-
-        if (opcao === "1") {
-            msg = `Olá ${nome}, ${saudacao.toLowerCase()}!\nRecebemos seu pedido em nossa cozinha e vimos que você não finalizou a sua compra.\n\nQue tal finalizar agora com esse cupom de: *FRETEGRATIS*\n\n👇 Nosso link do site oficial 👇\nhttps://seguromj.github.io/Nuance-/`;
-        } else if (opcao === "2") {
-            msg = `${saudacao}, ${nome}.\nSeu pedido acabou de chegar em nossa cozinha e os Barmans já estão dando os últimos preparos.\n\nAssim que seu pedido estiver em rota com o motoboy, nós o avisaremos. 😍`;
-        } else if (opcao === "3") {
-            msg = `😍 Notícia boa; o motoboy acabou de sair com o seu pedido, ${nome}!`;
-        } else if (opcao === "4") {
-            msg = `😍 Que maravilha!! 😍\nAcabamos de ser notificados que seu produto foi entregue.\n\nNuance agradece a preferência!\nE sua opinião é muito importante pra nós, assim que puder, compartilhe com a gente.\n\nSaúde! 🥂`;
-        }
-
-        if (!telefone) return alert("Por favor, preencha o WhatsApp do cliente.");
-        window.open(`https://api.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
-    function limparCampos() {
-        ['input-importacao','nome','data-hora','whatsapp','CPF','coleta','cupom-input','produtos-texto','valor-total','obs'].forEach(id => document.getElementById(id).value = "");
-        document.getElementById('area-cupom').style.display = 'none';
-        document.getElementById('acoes-cupom').style.display = 'none';
-    }
-
     function processarTexto() {
         let texto = document.getElementById('input-importacao').value;
+        if(!texto) return;
         texto = removerEmojis(texto);
-        const map = { '0. DATA\/HORA:': 'data-hora', '1. PEDIDO:': 'produtos-texto', '2. NOME:': 'nome', '3. WHATSAPP:': 'whatsapp', '4. CEP:': 'CPF', '9. TIPO DE COLETA:': 'coleta', '10. VALOR PRODUTOS:': 'valor-total' };
+        
+        const map = { 
+            '0. DATA\/HORA:': 'data-hora', 
+            '1. PEDIDO:': 'produtos-texto', 
+            '2. NOME:': 'nome', 
+            '3. WHATSAPP:': 'whatsapp', 
+            '4. CEP:': 'cep', 
+            '5. Nº\/QD\/LOTE:': 'numero',
+            '6. BAIRRO:': 'bairro',
+            '7. RUA\/AVENIDA:': 'rua',
+            '8. COMPLEMENTO:': 'complemento',
+            '10. FORMA DE PAGAMENTO:': 'pagamento',
+            '11. TIPO DE COLETA:': 'coleta', 
+            '12. VALOR PRODUTOS:': 'valor-total' 
+        };
+
         Object.keys(map).forEach(key => {
-            const match = texto.match(new RegExp(key + " (.*)"));
+            const regex = new RegExp(key + " (.*)");
+            const match = texto.match(regex);
             if(match) {
                 let val = match[1].trim();
                 if(key === '1. PEDIDO:') val = val.replace(/(\d+x)/g, '\n$1').trim();
                 document.getElementById(map[key]).value = val;
             }
         });
-        const dados = { id: Date.now() + Math.random(), nome: document.getElementById('nome').value, data: document.getElementById('data-hora').value, whatsapp: document.getElementById('whatsapp').value.replace(/\D/g,''), whatsappExibicao: document.getElementById('whatsapp').value, cpf: document.getElementById('CPF').value, coleta: document.getElementById('coleta').value, produtos: document.getElementById('produtos-texto').value, total: document.getElementById('valor-total').value, obs: document.getElementById('obs').value, cupomProxima: document.getElementById('cupom-input').value, versiculo: versiculos[Math.floor(Math.random() * versiculos.length)] };
-        let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        notas.push(dados);
-        localStorage.setItem('notas_nuance', JSON.stringify(notas));
-        alert("Nota salva!");
+        alert("Mensagem processada!");
     }
 
-    function gerarCupom() {
+    function abrirGoogleMaps() {
+        const rua = document.getElementById('rua').value;
+        const num = document.getElementById('numero').value;
+        const bairro = document.getElementById('bairro').value;
+        const cep = document.getElementById('cep').value;
+        
+        if (rua || cep) {
+            const enderecoCompleto = `${rua}, ${num}, ${bairro}, ${cep}`;
+            window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(enderecoCompleto), '_blank');
+        } else {
+            alert("⚠️ Dados de endereço insuficientes para abrir o mapa.");
+        }
+    }
+
+    function enviarMensagemRapida() {
+        const nome = document.getElementById('nome').value || "Cliente";
+        const telefone = document.getElementById('whatsapp').value.replace(/\D/g, '');
+        const saudacao = getSaudacao();
+        const opcao = document.getElementById('select-mensagem').value;
+        let msg = "";
+        
+        if (opcao === "1") msg = `Olá ${nome}, ${saudacao.toLowerCase()}!\nRecebemos seu pedido e vimos que não finalizou a compra.\nCupom: *FRETEGRATIS*\nhttps://seguromj.github.io/Nuance-/`;
+        else if (opcao === "2") msg = `${saudacao}, ${nome}.\nSeu pedido acabou de chegar em nossa cozinha e os Barmans já estão dando os últimos preparos! 😍`;
+        else if (opcao === "3") msg = `😍 Notícia boa; o motoboy acabou de sair com o seu pedido, ${nome}!`;
+        else if (opcao === "4") msg = `😍 Que maravilha!! Acabamos de ser notificados que seu produto foi entregue.\nNuance agradece a preferência!\nSaúde! 🥂`;
+
+        if (!telefone) return alert("Preencha o WhatsApp.");
+        window.open(`https://api.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function finalizarEGerar() {
+        if(!document.getElementById('nome').value) return alert("Preencha os dados.");
+        const end = `${document.getElementById('rua').value}, ${document.getElementById('numero').value} - ${document.getElementById('bairro').value}`;
         document.getElementById('view-nome').innerText = document.getElementById('nome').value.toUpperCase();
         document.getElementById('view-data').innerText = document.getElementById('data-hora').value;
-        document.getElementById('view-contato').innerText = document.getElementById('whatsapp').value;
+        document.getElementById('view-endereco').innerText = end;
         document.getElementById('view-coleta').innerText = document.getElementById('coleta').value.toUpperCase();
         document.getElementById('view-produtos').innerText = document.getElementById('produtos-texto').value;
         document.getElementById('view-total').innerText = document.getElementById('valor-total').value;
-        document.getElementById('view-versiculo').innerText = versiculos[0];
+        document.getElementById('view-versiculo').innerText = versiculos[Math.floor(Math.random() * versiculos.length)];
         document.getElementById('area-cupom').style.display = 'block';
         document.getElementById('acoes-cupom').style.display = 'flex';
+        
+        // Salva no LocalStorage
+        const dados = { id: Date.now(), nome: document.getElementById('nome').value, data: document.getElementById('data-hora').value, produtos: document.getElementById('produtos-texto').value };
+        let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        notas.push(dados);
+        localStorage.setItem('notas_nuance', JSON.stringify(notas));
     }
 
-    function abrirGestao() { renderizarListaNotas(JSON.parse(localStorage.getItem('notas_nuance') || '[]')); document.getElementById('modalGestao').style.display="block"; }
-    function renderizarListaNotas(notas) {
+    function abrirGestao() { 
+        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
         const lista = document.getElementById('lista-notas');
-        lista.innerHTML = "";
-        [...notas].reverse().forEach(n => {
-            const div = document.createElement('div'); div.className = "item-nota-container";
-            div.innerHTML = `<div class="item-nota" onclick='carregarNota(${JSON.stringify(n)})'><strong>${n.nome}</strong><br><small>${n.data}</small></div><button class="btn-excluir" onclick='excluirNota(${n.id})'>🗑️</button>`;
-            lista.appendChild(div);
-        });
+        lista.innerHTML = notas.reverse().map(n => `<div style="padding:10px; border-bottom:1px solid #eee;">${n.nome} - ${n.data}</div>`).join("");
+        document.getElementById('modalGestao').style.display = 'block';
     }
 
-    function carregarNota(n) { document.getElementById('nome').value = n.nome; document.getElementById('whatsapp').value = n.whatsappExibicao; document.getElementById('produtos-texto').value = n.produtos; gerarCupom(); fecharModal('modalGestao'); }
-    function excluirNota(id) { if(confirm("Excluir?")) { let n = JSON.parse(localStorage.getItem('notas_nuance') || '[]').filter(x => x.id !== id); localStorage.setItem('notas_nuance', JSON.stringify(n)); abrirGestao(); } }
-    function abrirRankingProdutos() { document.getElementById('modalRankingProdutos').style.display = 'block'; }
+    function abrirRankingClientes() {
+        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        const freq = {};
+        notas.forEach(n => { const key = n.nome; freq[key] = (freq[key] || 0) + 1; });
+        const lista = document.getElementById('lista-ranking-clientes');
+        lista.innerHTML = Object.entries(freq).sort((a,b)=>b[1]-a[1]).map(([n, q])=>`<div style="padding:10px; border-bottom:1px solid #eee;">${n}: <strong>${q} pedidos</strong></div>`).join("");
+        document.getElementById('modalRankingClientes').style.display = 'block';
+    }
+
+    function abrirRankingProdutos() {
+        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
+        const ranking = {};
+        notas.forEach(n => { if(n.produtos) n.produtos.split('\n').forEach(l => { const m = l.match(/(\d+)x\s*(.*)/i); if(m) ranking[m[2].trim().toUpperCase()] = (ranking[m[2].trim().toUpperCase()] || 0) + parseInt(m[1]); }); });
+        const lista = document.getElementById('lista-ranking-produtos');
+        lista.innerHTML = Object.entries(ranking).sort((a,b)=>b[1]-a[1]).map(([p, q])=>`<div style="padding:10px; border-bottom:1px solid #eee;">${p}: <strong>${q}x</strong></div>`).join("");
+        document.getElementById('modalRankingProdutos').style.display = 'block';
+    }
+
     function fecharModal(id) { document.getElementById(id).style.display="none"; }
-    function abrirRanking() { document.getElementById('modalRanking').style.display="block"; }
-    function abrirGoogleMaps() { alert("Maps..."); }
-    function enviarWppEntregador() { alert("Enviado Motoboy"); }
     function baixarPDF() { html2pdf().from(document.getElementById('area-cupom')).save(); }
+    
+    function limparCampos() { 
+        ['input-importacao','nome','data-hora','whatsapp','CPF','rua','numero','bairro','cep','complemento','pagamento','coleta','produtos-texto','valor-total','obs'].forEach(id => {
+            if(document.getElementById(id)) document.getElementById(id).value = "";
+        });
+        document.getElementById('area-cupom').style.display = 'none';
+        document.getElementById('acoes-cupom').style.display = 'none';
+    }
+
+    function enviarWppEntregador() { 
+        const end = `${document.getElementById('rua').value}, ${document.getElementById('numero').value}, ${document.getElementById('bairro').value} (Ref: ${document.getElementById('complemento').value})`;
+        const msg = `🚀 ENTREGA\n👤 ${document.getElementById('nome').value}\n📍 ${end}\n📦 ${document.getElementById('produtos-texto').value}\n💰 PAGAMENTO: ${document.getElementById('pagamento').value}`; 
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank'); 
+    }
 </script>
 </body>
 </html>
