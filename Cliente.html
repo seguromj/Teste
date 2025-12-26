@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-        :root { --primary: #2563eb; --danger: #dc2626; --success: #16a34a; --bg: #f1f5f9; --whatsapp: #25d366; }
+        :root { --primary: #2563eb; --danger: #dc2626; --success: #16a34a; --bg: #f1f5f9; --whatsapp: #25d366; --purple: #8b5cf6; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: #1e293b; }
         
         .main-wrapper { display: flex; flex-direction: column; height: 100vh; }
@@ -30,7 +30,7 @@
         .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin: 15px 0 10px; border-left: 3px solid var(--primary); padding-left: 8px; }
         
         .import-box { background: #fffbeb; border: 2px dashed #f59e0b; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        textarea#input-importacao { width: 100%; height: 100px; font-size: 13px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ddd; padding: 8px; box-sizing: border-box; }
+        textarea#input-importacao { width: 100%; height: 80px; font-size: 13px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ddd; padding: 8px; box-sizing: border-box; }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .form-group { margin-bottom: 10px; }
@@ -39,6 +39,7 @@
         
         .btn { border: none; border-radius: 8px; padding: 12px; font-weight: 600; cursor: pointer; font-size: 13px; width: 100%; display: block; margin-bottom: 8px; text-transform: uppercase; transition: opacity 0.2s; }
         .btn-importar { background: #f59e0b; color: white; }
+        .btn-planilha { background: var(--purple); color: white; }
         .btn-maps { background: #16a34a; color: white; }
         .btn-wpp-entrega { background: var(--whatsapp); color: white; }
         .btn-limpar { background: #64748b; color: white; }
@@ -86,16 +87,17 @@
     <div class="pdv-container">
         <div class="panel-left">
             <div class="import-box">
-                <label>📦 IMPORTAR PEDIDO:</label>
-                <textarea id="input-importacao" placeholder="Cole a mensagem aqui..."></textarea>
+                <label>📦 IMPORTAR / PLANILHA:</label>
+                <textarea id="input-importacao" placeholder="Cole a mensagem aqui ou use o botão roxo..."></textarea>
                 <div class="grid">
-                    <button class="btn btn-importar" onclick="processarTexto()">Processar Mensagem</button>
+                    <button class="btn btn-planilha" onclick="puxarDadosDaPlanilha()">🔄 Puxar da Planilha</button>
+                    <button class="btn btn-importar" onclick="processarTexto()">Processar Texto</button>
+                </div>
+                <div class="grid">
                     <button class="btn btn-maps" onclick="abrirGoogleMaps()">📍 Mapa Cliente</button>
-                </div>
-                <div class="grid">
                     <button class="btn btn-wpp-entrega" onclick="enviarWppEntregador()">📲 Enviar Motoboy</button>
-                    <button class="btn btn-limpar" onclick="limparCampos()">🧹 Limpar Tudo</button>
                 </div>
+                <button class="btn btn-limpar" onclick="limparCampos()">🧹 Limpar Tudo</button>
             </div>
 
             <div class="section-title">Dados da Nota</div>
@@ -172,11 +174,44 @@
 </div>
 
 <div id="modalGestao" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalGestao')">×</span><h3>Histórico</h3><div id="lista-notas"></div></div></div>
-<div id="modalRankingClientes" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalRankingClientes')">×</span><h3>Ranking Clientes</h3><div id="lista-ranking-clientes"></div></div></div>
-<div id="modalRankingProdutos" class="modal"><div class="modal-content"><span class="close" onclick="fecharModal('modalRankingProdutos')">×</span><h3>Ranking Produtos</h3><div id="lista-ranking-produtos"></div></div></div>
 
 <script>
+    // COLE SEU LINK DA PLANILHA AQUI ABAIXO:
+    const URL_DA_PLANILHA = "SEU_LINK_AQUI";
+
     const versiculos = ["O Senhor é o meu pastor, nada me faltará.", "Tudo posso naquele que me fortalece.", "O Senhor te abençoe e te guarde.", "Confia no Senhor de todo o teu coração.", "O amor nunca falha."];
+
+    async function puxarDadosDaPlanilha() {
+        if(URL_DA_PLANILHA === "SEU_LINK_AQUI") return alert("Por favor, cole o link da sua planilha no código primeiro!");
+        
+        const btn = document.querySelector('.btn-planilha');
+        btn.innerText = "⏳ BUSCANDO...";
+        
+        try {
+            const response = await fetch(URL_DA_PLANILHA);
+            const dados = await response.json();
+            
+            document.getElementById('data-hora').value = dados.data_hora || "";
+            document.getElementById('produtos-texto').value = (dados.pedido || "").replace(/(\d+x)/g, '\n$1').trim();
+            document.getElementById('nome').value = dados.nome || "";
+            document.getElementById('whatsapp').value = dados.whatsapp || "";
+            document.getElementById('cep').value = dados.cep || "";
+            document.getElementById('numero').value = dados.numero || "";
+            document.getElementById('bairro').value = dados.bairro || "";
+            document.getElementById('rua').value = dados.rua || "";
+            document.getElementById('complemento').value = dados.complemento || "";
+            document.getElementById('pagamento').value = dados.pagamento || "";
+            document.getElementById('coleta').value = dados.coleta || "";
+            document.getElementById('valor-total').value = dados.total || "";
+            
+            alert("✅ Dados sincronizados com a planilha!");
+        } catch (e) {
+            console.error(e);
+            alert("❌ Erro de conexão. Verifique se a implantação está como 'Qualquer Pessoa'.");
+        } finally {
+            btn.innerText = "🔄 Puxar da Planilha";
+        }
+    }
 
     function removerEmojis(texto) { return texto.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, ''); }
 
@@ -208,8 +243,7 @@
         };
 
         Object.keys(map).forEach(key => {
-            const regex = new RegExp(key + " (.*)");
-            const match = texto.match(regex);
+            const match = texto.match(new RegExp(key + " (.*)"));
             if(match) {
                 let val = match[1].trim();
                 if(key === '1. PEDIDO:') val = val.replace(/(\d+x)/g, '\n$1').trim();
@@ -224,12 +258,10 @@
         const num = document.getElementById('numero').value;
         const bairro = document.getElementById('bairro').value;
         const cep = document.getElementById('cep').value;
-        
         if (rua || cep) {
-            const enderecoCompleto = `${rua}, ${num}, ${bairro}, ${cep}`;
-            window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(enderecoCompleto), '_blank');
+            window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(`${rua}, ${num}, ${bairro}, ${cep}`), '_blank');
         } else {
-            alert("⚠️ Dados de endereço insuficientes para abrir o mapa.");
+            alert("⚠️ Endereço incompleto!");
         }
     }
 
@@ -241,16 +273,16 @@
         let msg = "";
         
         if (opcao === "1") msg = `Olá ${nome}, ${saudacao.toLowerCase()}!\nRecebemos seu pedido e vimos que não finalizou a compra.\nCupom: *FRETEGRATIS*\nhttps://seguromj.github.io/Nuance-/`;
-        else if (opcao === "2") msg = `${saudacao}, ${nome}.\nSeu pedido acabou de chegar em nossa cozinha e os Barmans já estão dando os últimos preparos! 😍`;
-        else if (opcao === "3") msg = `😍 Notícia boa; o motoboy acabou de sair com o seu pedido, ${nome}!`;
-        else if (opcao === "4") msg = `😍 Que maravilha!! Acabamos de ser notificados que seu produto foi entregue.\nNuance agradece a preferência!\nSaúde! 🥂`;
+        else if (opcao === "2") msg = `${saudacao}, ${nome}.\nSeu pedido está em preparo! 😍`;
+        else if (opcao === "3") msg = `🚀 ${nome}, seu pedido saiu para entrega!`;
+        else if (opcao === "4") msg = `✅ Entregue! Obrigado pela preferência, ${nome}! 🥂`;
 
-        if (!telefone) return alert("Preencha o WhatsApp.");
-        window.open(`https://api.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(msg)}`, '_blank');
+        if (telefone) window.open(`https://api.whatsapp.com/send?phone=55${telefone}&text=${encodeURIComponent(msg)}`, '_blank');
+        else alert("WhatsApp não informado.");
     }
 
     function finalizarEGerar() {
-        if(!document.getElementById('nome').value) return alert("Preencha os dados.");
+        if(!document.getElementById('nome').value) return alert("Preencha o nome.");
         const end = `${document.getElementById('rua').value}, ${document.getElementById('numero').value} - ${document.getElementById('bairro').value}`;
         document.getElementById('view-nome').innerText = document.getElementById('nome').value.toUpperCase();
         document.getElementById('view-data').innerText = document.getElementById('data-hora').value;
@@ -259,13 +291,12 @@
         document.getElementById('view-produtos').innerText = document.getElementById('produtos-texto').value;
         document.getElementById('view-total').innerText = document.getElementById('valor-total').value;
         document.getElementById('view-versiculo').innerText = versiculos[Math.floor(Math.random() * versiculos.length)];
+        
         document.getElementById('area-cupom').style.display = 'block';
         document.getElementById('acoes-cupom').style.display = 'flex';
         
-        // Salva no LocalStorage
-        const dados = { id: Date.now(), nome: document.getElementById('nome').value, data: document.getElementById('data-hora').value, produtos: document.getElementById('produtos-texto').value };
         let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        notas.push(dados);
+        notas.push({ id: Date.now(), nome: document.getElementById('nome').value, data: document.getElementById('data-hora').value });
         localStorage.setItem('notas_nuance', JSON.stringify(notas));
     }
 
@@ -276,31 +307,11 @@
         document.getElementById('modalGestao').style.display = 'block';
     }
 
-    function abrirRankingClientes() {
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const freq = {};
-        notas.forEach(n => { const key = n.nome; freq[key] = (freq[key] || 0) + 1; });
-        const lista = document.getElementById('lista-ranking-clientes');
-        lista.innerHTML = Object.entries(freq).sort((a,b)=>b[1]-a[1]).map(([n, q])=>`<div style="padding:10px; border-bottom:1px solid #eee;">${n}: <strong>${q} pedidos</strong></div>`).join("");
-        document.getElementById('modalRankingClientes').style.display = 'block';
-    }
-
-    function abrirRankingProdutos() {
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const ranking = {};
-        notas.forEach(n => { if(n.produtos) n.produtos.split('\n').forEach(l => { const m = l.match(/(\d+)x\s*(.*)/i); if(m) ranking[m[2].trim().toUpperCase()] = (ranking[m[2].trim().toUpperCase()] || 0) + parseInt(m[1]); }); });
-        const lista = document.getElementById('lista-ranking-produtos');
-        lista.innerHTML = Object.entries(ranking).sort((a,b)=>b[1]-a[1]).map(([p, q])=>`<div style="padding:10px; border-bottom:1px solid #eee;">${p}: <strong>${q}x</strong></div>`).join("");
-        document.getElementById('modalRankingProdutos').style.display = 'block';
-    }
-
     function fecharModal(id) { document.getElementById(id).style.display="none"; }
     function baixarPDF() { html2pdf().from(document.getElementById('area-cupom')).save(); }
     
     function limparCampos() { 
-        ['input-importacao','nome','data-hora','whatsapp','CPF','rua','numero','bairro','cep','complemento','pagamento','coleta','produtos-texto','valor-total','obs'].forEach(id => {
-            if(document.getElementById(id)) document.getElementById(id).value = "";
-        });
+        document.querySelectorAll('input, textarea').forEach(i => i.value = "");
         document.getElementById('area-cupom').style.display = 'none';
         document.getElementById('acoes-cupom').style.display = 'none';
     }
