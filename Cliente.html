@@ -153,6 +153,7 @@
                 <div class="form-group"><label>Forma de Pagamento</label><input type="text" id="pagamento" oninput="atualizarCupom()"></div>
                 <div class="form-group"><label>Coleta</label><input type="text" id="coleta" oninput="atualizarCupom()"></div>
             </div>
+            <div class="form-group"><label>Está Pago?</label><input type="text" id="esta-pago" placeholder="Ex: SIM / NÃO / PIX" oninput="atualizarCupom()"></div>
             <div class="form-group"><label>Produtos (Ex: 2x Gin)</label><textarea id="produtos-texto" style="height: 80px;" oninput="atualizarCupom()"></textarea></div>
             <div class="grid">
                 <div class="form-group"><label>Total (R$)</label><input type="text" id="valor-total" oninput="atualizarCupom()"></div>
@@ -191,6 +192,7 @@
                 <div class="divisor"></div>
                 <div id="view-produtos" style="font-size: 12px; white-space: pre-wrap;"></div>
                 <div class="divisor"></div>
+                <div id="view-pago-bloco" style="text-align:center; font-weight:bold; font-size:13px; margin: 5px 0;">ESTÁ PAGO: <span id="view-pago-status"></span></div>
                 <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px;"><span>TOTAL:</span><span id="view-total">R$ 0.00</span></div>
                 <div id="view-cupom-aplicado" style="font-size: 11px; margin-top: 8px; text-align: center; border: 1px dashed #000; padding: 4px; display:none;"></div>
                 <div id="view-obs" style="font-size: 11px; margin-top: 10px; white-space: pre-wrap;"></div>
@@ -274,6 +276,7 @@
         const prod = document.getElementById('produtos-texto').value;
         const obs = document.getElementById('obs').value;
         const cupomV = document.getElementById('cupom-input').value;
+        const estaPago = document.getElementById('esta-pago').value.toUpperCase();
 
         const endFormatado = `${rua}${num ? ', ' + num : ''}${bairro ? ' - ' + bairro : ''}`;
 
@@ -305,6 +308,9 @@
         document.getElementById('view-total').innerText = "R$ " + (document.getElementById('valor-total').value || "0.00");
         document.getElementById('view-obs').innerText = obs ? "OBS: " + obs : "";
         
+        // MOSTRAR STATUS DE PAGAMENTO NO CUPOM
+        document.getElementById('view-pago-status').innerText = estaPago || "---";
+
         const vC = document.getElementById('view-cupom-aplicado');
         if(cupomV) { vC.style.display = "block"; vC.innerText = "CUPOM: " + cupomV.toUpperCase(); }
         else vC.style.display = "none";
@@ -479,33 +485,40 @@
     function enviarMensagemRapida() {
         const tel = document.getElementById('whatsapp').value.replace(/\D/g, '');
         const tipo = document.getElementById('select-mensagem').value;
-        dispararWhatsApp(tel, tipo);
+        const nomeCompleto = document.getElementById('nome').value;
+        const prods = document.getElementById('produtos-texto').value;
+        dispararWhatsApp(tel, tipo, nomeCompleto, prods);
     }
 
     function enviarMensagemHistorico(id) {
         const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
         const n = notas.find(x => x.id === id);
-        
         if(n && n.whatsapp) {
-            // Mapeia o status da nota para o ID da mensagem correspondente
-            let tipoMsg = "1"; // default pendente
+            let tipoMsg = "1";
             if(n.status === "preparando") tipoMsg = "2";
             if(n.status === "rua") tipoMsg = "3";
             if(n.status === "entregue") tipoMsg = "4";
-            
-            dispararWhatsApp(n.whatsapp, tipoMsg);
+            dispararWhatsApp(n.whatsapp, tipoMsg, n.nome, n.produtos);
         } else {
             alert("WhatsApp não cadastrado para esta nota.");
         }
     }
 
-    function dispararWhatsApp(tel, tipo) {
+    function dispararWhatsApp(tel, tipo, nomeFull, prods) {
         let msg = "";
         const telLimpo = tel.replace(/\D/g, '');
-        if(tipo=="1") msg = "Olá! Recebemos seu pedido e ele está em nossa fila de espera. Alguma dúvida? Estarei aqui para te ajudar!";
-        if(tipo=="2") msg = "Seu pedido já entrou em preparo! 👨‍🍳 Em breve sairá para você!";
-        if(tipo=="3") msg = "Seu pedido acabou de sair para entrega! 🚀 Logo o motoboy chegará aí!";
-        if(tipo=="4") msg = "Pedido entregue! O que achou da experiência? ✅ Sua avaliação nos ajuda muito!";
+        const pNome = (nomeFull || "Cliente").split(' ')[0];
+        const saudacao = new Date().getHours() < 12 ? "Bom dia" : "Boa noite";
+        
+        if(tipo=="1") {
+            msg = `Olá, ${pNome}, ${saudacao}! Percebemos que você deixou seu carrinho com pedidos:\n\n${prods || "Não especificado"}\n\nQue tal finalizar essa compra com esse cupom: FRETEGRATIS`;
+        } else if(tipo=="2") {
+            msg = "Seu pedido já entrou em preparo! 👨‍🍳 Em breve sairá para você!";
+        } else if(tipo=="3") {
+            msg = "Seu pedido acabou de sair para entrega! 🚀 Logo o motoboy chegará aí!";
+        } else if(tipo=="4") {
+            msg = "Pedido entregue! O que achou da experiência? ✅ Sua avaliação nos ajuda muito!";
+        }
         
         if(telLimpo) {
             window.open(`https://api.whatsapp.com/send?phone=55${telLimpo}&text=${encodeURIComponent(msg)}`, '_blank');
