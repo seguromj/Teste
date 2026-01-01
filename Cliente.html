@@ -1209,6 +1209,9 @@ function revealText(str) {
             updateUI();
         }
         checkStoreStatus();
+        
+        // --- 3. Sincronização da Planilha ---
+        carregarDadosDaPlanilha();
     };
 
     function saveCart() { localStorage.setItem('beeDrinksCart', JSON.stringify(cart)); }
@@ -1882,7 +1885,7 @@ function renderizarProdutoNovoDaPlanilha(p) {
 document.addEventListener('DOMContentLoaded', () => {
     // Mantendo o preenchimento do ano original
     if(document.getElementById('ano-mini')) document.getElementById('ano-mini').textContent = new Date().getFullYear();
-    carregarDadosDaPlanilha();
+    // A função carregarDadosDaPlanilha também está sendo chamada no window.onload acima
 });
 
 
