@@ -1779,6 +1779,56 @@ function editProduct(pencilEl) {
     
     alert("Alterações aplicadas na tela!");
 }
+
+
+
+
+
+
+
+	// --- CONFIGURAÇÃO DA PLANILHA ---
+const LINK_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRAb5Ou99MR6hD2_t7XPdZRzYBf-4ZE7HkqfSZ7PwU0POKTHfs6232ezYPT3yYzbKLzAX3Muwp4BxPo/pub?gid=0&single=true&output=csv";
+
+async function carregarDadosDaPlanilha() {
+    try {
+        const resposta = await fetch(LINK_CSV);
+        const csvTexto = await resposta.text();
+        
+        // Converte o CSV em array de objetos
+        const linhas = csvTexto.split('\n');
+        const novosProdutos = [];
+
+        // Começa do 1 para pular o cabeçalho (ID, Nome, etc)
+        for (let i = 1; i < linhas.length; i++) {
+            const colunas = linhas[i].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
+            if (colunas.length >= 3) {
+                novosProdutos.push({
+                    id: colunas[0].trim(),
+                    nome: colunas[1].trim(),
+                    preco: parseFloat(colunas[2].replace('R$', '').replace(',', '.').trim()),
+                    imagem: colunas[3] ? colunas[3].trim() : '',
+                    categoria: colunas[4] ? colunas[4].trim() : 'Geral'
+                });
+            }
+        }
+
+        // Atualiza a variável global 'produtos' do seu código original
+        if (novosProdutos.length > 0) {
+            produtos = novosProdutos;
+            // Chama a função que você já tem para desenhar na tela
+            renderizarProdutos(); 
+            console.log("Cardápio sincronizado com a planilha!");
+        }
+    } catch (erro) {
+        console.error("Erro ao carregar dados:", erro);
+    }
+}
+
+// Inicia a carga assim que a página abre
+window.addEventListener('DOMContentLoaded', () => {
+    carregarDadosDaPlanilha();
+});
+
 </script>
 </body>
 </html>
