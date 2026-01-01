@@ -1794,6 +1794,12 @@ async function carregarDadosDaPlanilha() {
         
         const linhas = csvTexto.split('\n').filter(linha => linha.trim() !== '');
         
+        // PROTEÇÃO: Se a planilha estiver vazia ou tiver apenas o cabeçalho, não faz nada para não apagar o site
+        if (linhas.length <= 1) {
+            console.log("Planilha vazia ou sem dados. Mantendo conteúdo atual.");
+            return;
+        }
+
         for (let i = 1; i < linhas.length; i++) {
             const colunas = linhas[i].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
             
@@ -1802,48 +1808,42 @@ async function carregarDadosDaPlanilha() {
                 const pNome = colunas[1].replace(/"/g, '').trim();
                 const pPreco = colunas[2].replace(/"/g, '').trim();
                 const pImagem = colunas[3] ? colunas[3].replace(/"/g, '').trim() : '';
+                // Captura a categoria da planilha (coluna 5)
+                const pCategoria = colunas[4] ? colunas[4].replace(/"/g, '').trim().toLowerCase() : 'alcool';
 
-                // Tenta encontrar o produto já existente no HTML pelo ID
                 const cardExistente = document.querySelector(`.product-card[data-id="${pID}"]`);
                 
                 if (cardExistente) {
-                    // Se o produto já existe, EDITAMOS ele
                     if (pNome) cardExistente.querySelector('h3').innerText = pNome;
                     if (pImagem) cardExistente.querySelector('img').src = pImagem;
                     if (pPreco) {
                         const mlBadge = cardExistente.querySelector('.badge-ml')?.outerHTML || '';
                         cardExistente.querySelector('.price').innerHTML = `R$ ${pPreco} ${mlBadge}`;
                         
-                        // Também precisamos atualizar o evento do botão de compra se o preço mudou
                         const btnAdd = cardExistente.querySelector('.btn-add');
                         if (btnAdd) {
-                            // Extrai o preço numérico para o carrinho
                             const precoNumerico = parseFloat(pPreco.replace('R$', '').replace(',', '.').trim());
                             
-                            // Verifica se é botão de sabor ou simples
                             if (btnAdd.classList.contains('btn-flavor')) {
-                                // Para o modal de sabores, atualizamos o clique de abertura com o novo preço
                                 const onclickOriginal = btnAdd.getAttribute('onclick');
                                 if (onclickOriginal) {
-                                     // Regex simples para trocar o valor numérico dentro da função openFlavorModal
                                      const novoOnclick = onclickOriginal.replace(/,\s*\d+(\.\d+)?\s*,/, `, ${precoNumerico},`);
                                      btnAdd.setAttribute('onclick', novoOnclick);
                                 }
                             } else {
-                                // Para botões simples, atualizamos a função addToCart
                                 btnAdd.setAttribute('onclick', `animateAdd(this); addToCart('${pNome}', ${precoNumerico}, '${pImagem}')`);
                             }
                         }
                     }
                 } else {
-                    // Se o produto NÃO existe no HTML, CRIAMOS um novo (como já estava no seu código)
-                    const categoria = colunas[4] ? colunas[4].replace(/"/g, '').trim().toLowerCase() : 'alcool';
+                    // CRIAÇÃO DE NOVO PRODUTO: Se o ID não existe, ele cria agora um novo card
+                    const precoNumerico = parseFloat(pPreco.replace('R$', '').replace(',', '.').trim()) || 0;
                     renderizarProdutoNovoDaPlanilha({
                         id: pID,
                         nome: pNome,
-                        preco: parseFloat(pPreco.replace('R$', '').replace(',', '.').trim()),
+                        preco: precoNumerico,
                         imagem: pImagem,
-                        categoria: categoria
+                        categoria: pCategoria
                     });
                 }
             }
@@ -1855,7 +1855,14 @@ async function carregarDadosDaPlanilha() {
 }
 
 function renderizarProdutoNovoDaPlanilha(p) {
-    const secao = document.querySelector(`.menu-section[data-category="${p.categoria}"] .carousel-container`);
+    // Busca a seção correta baseada na categoria da planilha
+    let secao = document.querySelector(`.menu-section[data-category="${p.categoria}"] .carousel-container`);
+    
+    // Se a categoria não existir, joga para a primeira seção disponível (alcool)
+    if (!secao) {
+        secao = document.querySelector('.carousel-container');
+    }
+
     if (secao) {
         const card = document.createElement('div');
         card.className = 'product-card';
@@ -1873,8 +1880,11 @@ function renderizarProdutoNovoDaPlanilha(p) {
 
 // Inicia a carga quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
+    // Mantendo o preenchimento do ano original
+    if(document.getElementById('ano-mini')) document.getElementById('ano-mini').textContent = new Date().getFullYear();
     carregarDadosDaPlanilha();
 });
+
 
 </script>
 </body>
