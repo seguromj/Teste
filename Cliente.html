@@ -1784,9 +1784,7 @@ function editProduct(pencilEl) {
 
 
 
-
-
-	// --- CONFIGURAÇÃO DA PLANILHA ---
+// --- CONFIGURAÇÃO DA PLANILHA ---
 const LINK_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRAb5Ou99MR6hD2_t7XPdZRzYBf-4ZE7HkqfSZ7PwU0POKTHfs6232ezYPT3yYzbKLzAX3Muwp4BxPo/pub?gid=0&single=true&output=csv";
 
 async function carregarDadosDaPlanilha() {
@@ -1794,53 +1792,59 @@ async function carregarDadosDaPlanilha() {
         const resposta = await fetch(LINK_CSV);
         const csvTexto = await resposta.text();
         
-        const linhas = csvTexto.split('\n');
+        // Divide as linhas e remove linhas vazias
+        const linhas = csvTexto.split('\n').filter(linha => linha.trim() !== '');
         
-        // Limpar as seções antes de carregar novos dados para não duplicar
-        document.querySelectorAll('.carousel-container').forEach(c => c.innerHTML = '');
-
+        // Começamos do 1 para pular o cabeçalho
         for (let i = 1; i < linhas.length; i++) {
+            // Regex para separar por vírgula mas ignorar vírgulas dentro de aspas
             const colunas = linhas[i].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
+            
             if (colunas.length >= 3) {
                 const produto = {
-                    id: colunas[0].trim().replace(/"/g, ''),
-                    nome: colunas[1].trim().replace(/"/g, ''),
-                    preco: parseFloat(colunas[2].replace('R$', '').replace(',', '.').trim()),
-                    imagem: colunas[3] ? colunas[3].trim().replace(/"/g, '') : '',
-                    categoria: colunas[4] ? colunas[4].trim().replace(/"/g, '').toLowerCase() : 'alcool'
+                    id: colunas[0].replace(/"/g, '').trim(),
+                    nome: colunas[1].replace(/"/g, '').trim(),
+                    preco: parseFloat(colunas[2].replace('R$', '').replace(',', '.').replace(/"/g, '').trim()),
+                    imagem: colunas[3] ? colunas[3].replace(/"/g, '').trim() : '',
+                    categoria: colunas[4] ? colunas[4].replace(/"/g, '').trim().toLowerCase() : 'alcool'
                 };
 
-                renderizarProdutoNaTela(produto);
+                renderizarProdutoDaPlanilha(produto);
             }
         }
-        console.log("Cardápio sincronizado com a planilha!");
+        console.log("Produtos da planilha carregados!");
     } catch (erro) {
-        console.error("Erro ao carregar dados:", erro);
+        console.error("Erro ao carregar planilha:", erro);
     }
 }
 
-function renderizarProdutoNaTela(p) {
-    // Encontra a seção correta baseada na categoria da planilha
+function renderizarProdutoDaPlanilha(p) {
+    // Busca a categoria correta no seu HTML (data-category)
     const secao = document.querySelector(`.menu-section[data-category="${p.categoria}"] .carousel-container`);
     
     if (secao) {
-        const html = `
-            <div class="product-card" data-id="${p.id}">
-                <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
-                <img src="${p.imagem}" onerror="this.src='https://via.placeholder.com/200x180?text=Sem+Foto'">
-                <h3>${p.nome}</h3>
-                <span class="price">R$ ${p.preco.toFixed(2)}</span>
-                <button class="btn-add" onclick="animateAdd(this); addToCart('${p.nome}', ${p.preco}, '${p.imagem}')">Adicionar</button>
-            </div>
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.setAttribute('data-id', p.id);
+        
+        card.innerHTML = `
+            <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
+            <img src="${p.imagem}" onerror="this.src='https://via.placeholder.com/200x180?text=Sem+Foto'">
+            <h3>${p.nome}</h3>
+            <span class="price">R$ ${p.preco.toFixed(2)}</span>
+            <button class="btn-add" onclick="animateAdd(this); addToCart('${p.nome}', ${p.preco}, '${p.imagem}')">Adicionar</button>
         `;
-        secao.innerHTML += html;
+        
+        secao.appendChild(card);
     }
 }
 
-// Inicia a carga assim que a página abre
+// Inicia a carga
 window.addEventListener('DOMContentLoaded', () => {
     carregarDadosDaPlanilha();
 });
+
+
 
 </script>
 </body>
