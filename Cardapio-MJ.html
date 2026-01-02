@@ -1704,17 +1704,14 @@ async function carregarDadosDaPlanilha() {
         for (let i = 1; i < linhas.length; i++) {
             const colunas = linhas[i].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
             
-            if (colunas.length >= 4) { // Garante que tenha colunas suficientes para ler ID até Imagem
-                // Modificado conforme solicitação: ID(B), Nome(C), Valor(D), Imagem(E)
-                // Os índices começam em 0, então: A=0, B=1, C=2, D=3, E=4, F=5...
-                const pID = colunas[1].replace(/"/g, '').trim(); // Coluna B
-                const pNome = colunas[2].replace(/"/g, '').trim(); // Coluna C
-                const pPreco = colunas[3].replace(/"/g, '').trim(); // Coluna D
-                const pImagem = colunas[4] ? colunas[4].replace(/"/g, '').trim() : ''; // Coluna E
-                
-                // Mantém o resto da lógica (Categoria em F, Sabores em G se existirem)
-                const pCategoria = colunas[5] ? colunas[5].replace(/"/g, '').trim().toLowerCase() : 'alcool';
-                const pSaboresRaw = colunas[6] ? colunas[6].replace(/"/g, '').trim() : '';
+            if (colunas.length >= 3) {
+                const pID = colunas[0].replace(/"/g, '').trim();
+                const pNome = colunas[1].replace(/"/g, '').trim();
+                const pPreco = colunas[2].replace(/"/g, '').trim();
+                const pImagem = colunas[3] ? colunas[3].replace(/"/g, '').trim() : '';
+                const pCategoria = colunas[4] ? colunas[4].replace(/"/g, '').trim().toLowerCase() : 'alcool';
+                // Captura a coluna F (índice 5) - Sabores separados por vírgula
+                const pSaboresRaw = colunas[5] ? colunas[5].replace(/"/g, '').trim() : '';
                 const pSaboresArray = pSaboresRaw ? pSaboresRaw.split(',').map(s => s.trim()) : [];
 
                 const cardExistente = document.querySelector(`.product-card[data-id="${pID}"]`);
@@ -1783,6 +1780,7 @@ function renderizarProdutoNovoDaPlanilha(p) {
         }
 
         card.innerHTML = `
+            <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
             <img src="${p.imagem}" onerror="this.src='https://via.placeholder.com/200x180?text=Sem+Foto'">
             <h3>${p.nome}</h3>
             <span class="price">R$ ${p.preco.toFixed(2)}</span>
@@ -1796,6 +1794,7 @@ function renderizarProdutoNovoDaPlanilha(p) {
 document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('ano-mini')) document.getElementById('ano-mini').textContent = new Date().getFullYear();
 });
+
 
 
 </script>
