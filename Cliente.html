@@ -1,9 +1,18 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="imgs/Favicon.jpg" type="image/x-con">
+
+	<link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("NUANCE App configurado com sucesso!"));
+  }
+</script>
 	<title>NUANCE - Cardápio Digital</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -133,7 +142,7 @@
         .carousel-container:active { cursor: grabbing; }
         .carousel-container::-webkit-scrollbar { display: none; }
 
-        .product-card { background: white; min-width: 250px; border-radius: 15px; padding: 15px; box-shadow: var(--shadow); flex-shrink: 0; text-align: center; pointer-events: auto; transition: transform 0.3s;}
+        .product-card { position: relative; background: white; min-width: 250px; border-radius: 15px; padding: 15px; box-shadow: var(--shadow); flex-shrink: 0; text-align: center; pointer-events: auto; transition: transform 0.3s;}
         .product-card:hover { transform: translateY(-5px); } /* Criatividade: leve flutuação ao passar o mouse */
         .product-card img { width: 200px; height: 180px; object-fit: cover; border-radius: 20px; pointer-events: none; }
         .product-card h3 { color: var(--Laranja);}
@@ -468,7 +477,6 @@
     }
 }
 
-
 /* --- NOVA ANIMAÇÃO DO JOINHA --- */
 .thumb-animation {
     position: fixed;
@@ -479,35 +487,45 @@
     transition: all 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* ESTILO DO BOTAO ADMIN FIXO NO RODAPÉ */
-.btn-admin-footer {
-    background: #333;
-    color: #fff;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    font-size: 12px;
+/* --- ESTILOS DO MODO ADMIN --- */
+.admin-float-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--dark);
+    color: var(--primary);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
     cursor: pointer;
-    margin-top: 10px;
+    z-index: 10001;
+    box-shadow: var(--shadow);
+    border: 2px solid var(--primary);
 }
 
-/* MODAL ADMIN */
-#admin-modal {
+.edit-pencil {
     display: none;
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-}
-.admin-content {
+    position: absolute;
+    top: 10px;
+    right: 10px;
     background: white;
-    width: 90%;
-    max-width: 400px;
-    padding: 20px;
-    border-radius: 20px;
-    text-align: center;
+    color: var(--dark);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 10;
+}
+
+.admin-active .edit-pencil {
+    display: flex;
 }
 
    </style>
@@ -515,7 +533,7 @@
 <body>
 
 <div class="top-bar-branding">
-    <h3 class="h3-pegar-cupom"><span class="papaiNoel">🌲🎅</span> Pegue seu <strong>CUPOM</strong></h3>
+    <h3 class="h3-pegar-cupom"><span class="papaiNoel"></span> Pegue seu <strong>CUPOM </strong> a👉</h3>
     
     <div style="display: flex; align-items: center;">
         <a href="Cliente-Nuance.html" class="wave-button" style="padding: 8px 15px; font-size: 12px;">
@@ -563,7 +581,8 @@
                 
             <div class="carousel-container drag-scroll">
                     
-                <div class="product-card">
+                <div class="product-card" data-id="1">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-c-alcool/caipifrutas.jpg">
                     <h3>CaipFrutas</h3>
                         <span class="old-price">R$ 12.00</span> 
@@ -573,7 +592,8 @@
                     <button class="btn-add btn-flavor" onclick="openFlavorModal('CaipFrutas', 10.00, ['🍋‍🟩 Limão 🍋‍🟩', '🍓 Morango 🍓', '🥂 Maracujá 🥂', '🥭 Manga 🥭'], 'img-produtos/Drinks-c-alcool/caipifrutas.jpg')">Escolher Sabor</button>
 				</div>
                     
-                <div class="product-card">
+                <div class="product-card" data-id="2">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-c-alcool/Caipigins.jpg">
                     <h3>GIN's</h3>
                         <span class="old-price">R$ 22.99</span> 
@@ -583,7 +603,8 @@
                     <button class="btn-add btn-flavor" onclick="openFlavorModal('GIN`s', 20.00, ['Gin Tropical', 'Gin Tônica', 'Gin Red-Fruts'], 'img-produtos/Drinks-c-alcool/Caipigins.jpg')">Escolher Fruta</button>
                 </div>
                     
-                <div class="product-card">
+                <div class="product-card" data-id="3">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-c-alcool/Mojitos.jpg">
                     <h3>Mojito</h3>
                         <span class="old-price">R$ 16.99</span> 
@@ -593,16 +614,18 @@
                     <button class="btn-add btn-flavor" onclick="openFlavorModal('Mojito', 15.00, ['🍋‍🟩 Limão 🍋‍🟩', '🍓 Morango 🍓', '🥂 Maracujá 🥂', '🥭 Manga 🥭'], 'img-produtos/Drinks-c-alcool/Mojitos.jpg')">Escolher Sabor</button>
                 </div>
                     
-                <div class="product-card">
+                <div class="product-card" data-id="4">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-c-alcool/Moscow-mule.jpg">
                     <h3>Moscow Mule</h3>
                         <span class="old-price">R$ 22.99</span> 
                         <span class="price">R$ 20.00
-                        <span class="badge-ml">350ml</span>2
+                        <span class="badge-ml">350ml</span>
                         </span>
                     <button class="btn-add" onclick="animateAdd(this); addToCart('Moscow Mule', 20.00, 'img-produtos/Drinks-c-alcool/Moscow-mule.jpg')">Adicionar</button>
                 </div>
-                <div class="product-card">
+                <div class="product-card" data-id="5">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-c-alcool/Jack-limoned.jpg">
                     <h3>Jack Limoned</h3>
                         <span class="old-price">R$ 27.99</span> 
@@ -612,7 +635,8 @@
                     <button class="btn-add" onclick="animateAdd(this); addToCart('Jack Limoned', 25.00, 'img-produtos/Drinks-c-alcool/Jack-limoned.jpg')">Adicionar</button>
                 </div>
                 
-                <div class="product-card">
+                <div class="product-card" data-id="6">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-c-alcool/Joge-amado.jpeg">
                     <h3>Joge Amado</h3>
                         <span class="old-price">R$ 19.99</span> 
@@ -622,7 +646,8 @@
                     <button class="btn-add" onclick="animateAdd(this); addToCart('Joge Amado', 18.00, 'img-produtos/Drinks-c-alcool/Joge-amado.jpeg')">Adicionar</button>
                 </div>
                     
-                <div class="product-card">
+                <div class="product-card" data-id="7">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-c-alcool/Pina-colada.jpg">
                     <h3>Pina Colada</h3>
                         <span class="old-price">R$ 21.99</span> 
@@ -641,7 +666,8 @@
                 
             <div class="carousel-container drag-scroll">
                     
-                <div class="product-card">
+                <div class="product-card" data-id="200">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg">
                     <h3>Soda Italiana</h3>
                      <span class="old-price">R$ 8,00</span> 
@@ -651,7 +677,8 @@
                     <button class="btn-add btn-flavor" onclick="openFlavorModal('Soda Italiana', 8.00, ['🍋‍🟩 Limão Siciliano 🍋‍🟩', '🍎🍓 Red Frits 🍓🍎', '🥂 Maracujá 🥂', '🍏 Maçan Vrede 🍏', '🍍 Abacaxi 🍍'], 'img-produtos/Drinks-s-alcool/Soda-Italiana.jpeg')">Escolher Sabor</button>
                 </div>
                     
-                <div class="product-card">
+                <div class="product-card" data-id="201">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-s-alcool/Mongorango.jpeg">
                     <h3>Mongorango</h3>
                      <span class="old-price">R$ 9,99</span> 
@@ -661,7 +688,8 @@
                     <button class="btn-add" onclick="animateAdd(this); addToCart('Mongorango', 8.00, 'img-produtos/Drinks-s-alcool/Mongorango.jpeg')">Adicionar</button>
                 </div>
                    
-                <div class="product-card">
+                <div class="product-card" data-id="202">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-s-alcool/Abacixi-Hortelã.jpeg">
                     <h3>Abacaxi Hortelã</h3>
                      <span class="old-price">R$ 7,99</span> 
@@ -671,7 +699,8 @@
                     <button class="btn-add" onclick="animateAdd(this); addToCart('Abacaxi Hortelã', 6.00, 'img-produtos/Drinks-s-alcool/Abacixi-Hortelã.jpeg')">Adicionar</button>
                 </div>
                     
-                <div class="product-card">
+                <div class="product-card" data-id="203">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-s-alcool/Cha-tropical.jpeg">
                     <h3>Chá Tropical</h3>
                      <span class="old-price">R$ 11,99</span> 
@@ -681,7 +710,8 @@
                     <button class="btn-add" onclick="animateAdd(this); addToCart('Chá Tropical', 10.00, 'img-produtos/Drinks-s-alcool/Cha-tropical.jpeg')">Adicionar</button>
                 </div>
                     
-                <div class="product-card">
+                <div class="product-card" data-id="204">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-s-alcool/Grape-Fresh.jpeg">
                     <h3>Grape Fresh</h3>
                      <span class="old-price">R$ 7,99</span> 
@@ -691,7 +721,8 @@
                     <button class="btn-add" onclick="animateAdd(this); addToCart('Grape Fresh', 6.00, 'img-produtos/Drinks-s-alcool/Grape-Fresh.jpeg')">Adicionar</button>
                 </div>
                     
-                <div class="product-card">
+                <div class="product-card" data-id="205">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-s-alcool/Hibisco-Spritz.jpeg">
                     <h3>Hibisco Spritz</h3>
                      <span class="old-price)R$ 12,99</span> 
@@ -701,7 +732,8 @@
                     <button class="btn-add" onclick="animateAdd(this); addToCart('Hibisco Spritz', 10.00, 'img-produtos/Drinks-s-alcool/Hibisco-Spritz.jpeg')">Adicionar</button>
                 </div>
                    
-                <div class="product-card">
+                <div class="product-card" data-id="206">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="img-produtos/Drinks-s-alcool/Mocktail.jpeg">
                     <h3>Mocktail</h3>
                      <span class="old-price">R$ 19,99</span> 
@@ -736,7 +768,8 @@
                 
             <div class="carousel-container drag-scroll">
                     
-                <div class="product-card">
+                <div class="product-card" data-id="300">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=300">
                     <h3>Pitu <span class="badge-ml">100ml</span></h3>
                     <h3>Red Bull <span class="badge-ml">350ml</span></h3>
@@ -748,7 +781,8 @@
                     <button class="btn-add btn-flavor" onclick="openFlavorModal('Pitu com Red Bull e Gelo sabor ', 27.00, ['Red Label', 'Jack Daniels', 'Ballantines', 'Passport'], 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=300')">Escolher sabor do Gelo</button>
                 </div>
                     
-                <div class="product-card">
+                <div class="product-card" data-id="301">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=300">
                     <h3>Pitu <span class="badge-ml">100ml</span></h3>
                     <h3>Red Bull <span class="badge-ml">350ml</span></h3>
@@ -760,7 +794,8 @@
                     <button class="btn-add btn-flavor" onclick="openFlavorModal('Pitu com Red Bull e Gelo sabor ', 27.00, ['Red Label', 'Jack Daniels', 'Ballantines', 'Passport'], 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=300')">Escolher sabor do Gelo</button>
                 </div>
                 
-                <div class="product-card">
+                <div class="product-card" data-id="302">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=300">
                     <h3>Pitu <span class="badge-ml">100ml</span></h3>
                     <h3>Red Bull <span class="badge-ml">350ml</span></h3>
@@ -779,27 +814,32 @@
         <div class="menu-section" data-category="combo">
             <h2>Combos</h2>
             <div class="carousel-container drag-scroll">
-                <div class="product-card">
+                <div class="product-card" data-id="400">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="https://images.unsplash.com/photo-1597075095400-b2489955d49f?w=300">
                     <h3>Combo Destilado</h3><span class="price">R$ 100.00</span>
                     <button class="btn-add btn-flavor" onclick="openFlavorModal('Combo Destilado', 100.00, ['Vodka + 4 Energ', 'Gin + 4 Tonic', 'Whisky + 4 Energ', 'Vinho + Suco'], 'https://images.unsplash.com/photo-1597075095400-b2489955d49f?w=300')">Escolher Combo</button>
                 </div>
-                <div class="product-card">
+                <div class="product-card" data-id="401">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300">
                     <h3>Combo Casal</h3><span class="price">R$ 50.00</span>
                     <button class="btn-add btn-flavor" onclick="openFlavorModal('Combo Casal', 50.00, ['2 Gins', '2 Caipirinhas', '2 Mojitos', '2 Sodas'], 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300')">Escolher Bebidas</button>
                 </div>
-                <div class="product-card">
+                <div class="product-card" data-id="402">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="https://images.unsplash.com/photo-1597075095400-b2489955d49f?w=300">
                     <h3>Combo Balde</h3><span class="price">R$ 80.00</span>
                     <button class="btn-add btn-flavor" onclick="openFlavorModal('Combo Balde', 80.00, ['6 Long Necks', '5 Cervejas + Porção', '4 Drinks VIP', '10 Shots'], 'https://images.unsplash.com/photo-1597075095400-b2489955d49f?w=300')">Escolher Itens</button>
                 </div>
-                <div class="product-card">
+                <div class="product-card" data-id="403">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="https://images.unsplash.com/photo-1597075095400-b2489955d49f?w=300">
                     <h3>Combo Amigos Fixo</h3><span class="price">R$ 100.00</span>
                     <button class="btn-add" onclick="animateAdd(this); addToCart('Combo Amigos Fixo', 100.00, 'https://images.unsplash.com/photo-1597075095400-b2489955d49f?w=300')">Adicionar</button>
                 </div>
-                <div class="product-card">
+                <div class="product-card" data-id="404">
+                    <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
                     <img src="https://images.unsplash.com/photo-1597075095400-b2489955d49f?w=300">
                     <h3>Combo Shot Galera</h3><span class="price">R$ 45.00</span>
                     <button class="btn-add" onclick="animateAdd(this); addToCart('Combo Shot Galera', 45.00, 'https://images.unsplash.com/photo-1597075095400-b2489955d49f?w=300')">Adicionar</button>
@@ -948,7 +988,6 @@
     
     <div class="barra-final">
         <p>&copy; <span id="ano-mini"></span> • Nuance <span class="magic">❤️</span></p>
-        <button class="btn-admin-footer" onclick="abrirAdmin()">Admin ⚙️</button>
     </div>
     
     
@@ -971,38 +1010,75 @@
         <br><br><br>
 </footer>
 
-<div id="admin-modal">
-    <div class="admin-content">
-        <h3>Painel Administrativo</h3>
-        <div class="form-group">
-            <label>URL da Imagem:</label>
-            <input type="text" id="admin-img-url" placeholder="https://...">
-        </div>
-        <div class="form-group">
-            <label>Nome do Produto:</label>
-            <input type="text" id="admin-prod-name" placeholder="Ex: Gin Tônica">
-        </div>
-        <div class="form-group">
-            <label>Valor (R$):</label>
-            <input type="number" id="admin-prod-price" placeholder="10.00">
-        </div>
-        <div class="form-group">
-            <label>ID Entrada (Formulário):</label>
-            <input type="text" id="admin-prod-id" placeholder="Ex: 00000ppp">
-        </div>
-        <hr>
-        <p style="font-size: 10px;">Configure os IDs do Google Forms abaixo:</p>
-        <input type="text" id="id-produtos" placeholder="ID Produtos" style="font-size: 10px; margin-bottom: 5px;">
-        <input type="text" id="id-nome" placeholder="ID Nome" style="font-size: 10px; margin-bottom: 5px;">
-        <input type="text" id="id-contato" placeholder="ID Contato" style="font-size: 10px; margin-bottom: 5px;">
-        <input type="text" id="id-total" placeholder="ID Total" style="font-size: 10px; margin-bottom: 5px;">
-
-        <button class="btn-main" onclick="salvarConfigAdmin()">Salvar na Planilha</button>
-        <button class="btn-main" style="background:#999; margin-top:10px" onclick="fecharAdmin()">Cancelar</button>
-    </div>
+<div class="admin-float-btn" onclick="toggleAdminMode()">
+    <i class="fas fa-user-shield"></i>
 </div>
-        
-        
+
+	<div id="container-instalacao" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 300px; background: rgba(0,0,0,0.95); padding: 30px 20px; text-align: center; border: 1px solid #d4af37; border-radius: 15px; z-index: 10000; box-shadow: 0 0 20px rgba(0,0,0,0.8);">
+    <p style="color: #fff; margin: 0 0 20px 0; font-family: sans-serif; font-size: 16px; line-height: 1.5;">Leve a <strong>NUANCE</strong> no seu bolso! <br>Instale nosso App. 🍸</p>
+    
+    <button id="btnInstalarApp" style="width: 100%; background-color: #fff; color: #000; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; margin-bottom: 10px;">
+        Instalar Agora
+    </button>
+    
+    <button id="btnRecusarApp" style="width: 100%; background-color: transparent; color: #aaa; border: none; padding: 10px; cursor: pointer; text-decoration: underline; font-size: 11px;">
+        Agora não
+    </button>
+</div>
+
+<script>
+  let promptDeInstalacao;
+  const areaInstalacao = document.getElementById('container-instalacao');
+  const botaoInstalar = document.getElementById('btnInstalarApp');
+  const botaoRecusar = document.getElementById('btnRecusarApp');
+
+  // Captura o evento do navegador
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    promptDeInstalacao = e;
+
+    // Se o app não estiver instalado, mostra em 5 segundos
+    iniciarContadorAparecer(25000);
+  });
+
+  function iniciarContadorAparecer(tempo) {
+    setTimeout(() => {
+      // Verifica se o usuário já instalou ou se já está no app antes de mostrar
+      const modoApp = window.matchMedia('(display-mode: standalone)').matches;
+      if (!modoApp) {
+        areaInstalacao.style.display = 'block';
+      }
+    }, tempo);
+  }
+
+  botaoInstalar.addEventListener('click', () => {
+    if (promptDeInstalacao) {
+      promptDeInstalacao.prompt();
+      promptDeInstalacao.userChoice.then((escolha) => {
+        if (escolha.outcome === 'accepted') {
+          areaInstalacao.style.display = 'none';
+        }
+      });
+    }
+  });
+
+  botaoRecusar.addEventListener('click', () => {
+    // Esconde o botão imediatamente
+    areaInstalacao.style.display = 'none';
+
+    // Agenda para aparecer novamente em 10 minutos (600.000 ms) 
+    // caso ele não atualize a página
+    iniciarContadorAparecer(600000);
+  });
+
+  window.addEventListener('appinstalled', () => {
+    areaInstalacao.style.display = 'none';
+  });
+</script>
+
+
+
+
 <script>
     const icon = document.getElementById('insta-icon');
 const brandNameContainer = document.getElementById('brand-name');
@@ -1028,6 +1104,30 @@ function revealText(str) {
     
     
     
+    
+    
+    //===•Flocis
+//        document.addEventListener('DOMContentLoaded', function() {
+//    document.getElementById('ano-mini').textContent = new Date().getFullYear();
+    //🚨 Inicia os flocos de neve
+//	createSnowflakes();
+//});
+
+    //🚨 Função para criar flocos de neve dinamicamente
+//    function createSnowflakes() {
+ //       const numberOfSnowflakes = 50;
+   //     for (let i = 0; i < numberOfSnowflakes; i++) {
+//            let snowflake = document.createElement('div');
+ //           snowflake.className = 'snowflake';
+//            snowflake.innerHTML = '❄';
+// snowflake.style.left = Math.random() * 100 + 'vw';
+//            snowflake.style.animationDelay = Math.random() * 10 + 's';
+//            snowflake.style.opacity = Math.random();
+//            snowflake.style.fontSize = Math.random() * 1.5 + 0.5 + 'em';
+//            document.body.appendChild(snowflake);
+ //       }
+//    }
+//===•Termino Flocos
         
         
     let cart = [];
@@ -1040,11 +1140,11 @@ function revealText(str) {
     const CUPONS_POR_BLOCO = {
 	0: ["FRETE-D36S", "FRETE-WEMC", "FRETE-BLXT", "FRETE-G3RB", "FRETE-VXAY", "FRETE-Y8DB", "FRETE-DL7M", "FRETE-48B0", "FRETE-RKX2", "FRETE-8YHH", "FRETE-66X9", "FRETE-RR1C", "FRETE-O7XV", "FRETE-VU6V", "FRETE-V1PC", "FRETE-USJK", "FRETE-DMJA", "FRETE-4F04", "FRETE-ECKO", "FRETE-DO58", "FRETE-OWUC", "FRETE-EKKQ", "FRETE-8AHA", "FRETE-U9Q2", "FRETE-3Z0J", "FRETE-8FGS", "FRETE-HAIR", "FRETE-KTV5", "FRETE-0CYR", "FRETE-LUJZ", "FRETE-1LVV"], // 06:00 - 08:59
 	1: ["FRETE-JC8S", "FRETE-OMXH", "FRETE-N1KM", "FRETE-JD4N", "FRETE-34ZV", "FRETE-VEKY", "FRETE-D3RR", "FRETE-OZSL", "FRETE-L77K", "FRETE-LTZD", "HOY9", "FRETE-URN7", "FRETE-PESK", "FRETE-1SNZ", "FRETE-9EWO", "FRETE-3XNE", "FRETE-M1LK", "FRETE-2A3T", "FRETE-8XI7", "FRETE-X4AJ", "FRETE-LS20", "FRETE-IUF8", "FRETE-XXK1", "FRETE-34HJ", "FRETE-LQND", "FRETE-16PJ", "FRETE-YTTC", "FRETE-Z1UZ", "FRETE-UDVB", "FRETE-NWRL", "FRETE-PQ5E"], // 09:00 - 11:59
-	2: ["FRETE-EFYZ", "FRETE-8SKT", "FRETE-CD95", "FRETE-0WQN", "FRETE-UT01", "FRETE-V8H2", "FRETE-LDB9", "FRETE-23B4", "FRETE-CBIA", "FRETE-T24R", "FRETE-F9ZR", "FRETE-JQKR", "FRETE-OX8X", "FRETE-4BUH", "FRETE-QBBY", "FRETE-Z29A", "FRETE-NNM9", "FRETE-ECMJ", "FRETE-B1UK", "FRETE-1BGU", "FRETE-FGKF", "FRETE-GP2W", "FRETE-C7ML", "FRETE-RK3Q", "FRETE-448P", "FRETE-GXJS", "A8HM", "5B2I", "IB05", "TMZI", "U1Q9"], // 12:00 - 14:59
+	2: ["FRETE-EFYZ", "FRETE-8SKT", "FRETE-CD95", "FRETE-0WQN", "FRETE-UT01", "FRETE-V8H2", "FRETE-LDB9", "FRETE-23B4", "FRETE-CBIA", "FRETE-T24R", "F9ZR", "JQKR", "OX8X", "4BUH", "QBBY", "Z29A", "NNM9", "ECMJ", "B1UK", "1BGU", "FGKF", "GP2W", "C7ML", "RK3Q", "448P", "GXJS", "A8HM", "5B2I", "IB05", "TMZI", "U1Q9"], // 12:00 - 14:59
 	3: ["FRETE-LJLA", "FRETE-Z0P8", "FRETE-OTUY", "FRETE-D91U", "FRETE-LESL", "FRETE-DJ6Z", "FRETE-FPCZ", "FRETE-Q10R", "FRETE-NPDS", "FRETE-BPDQ", "FRETE-6VWR", "FRETE-FBX6", "FRETE-ZCXL", "FRETE-XM5F", "FRETE-M1NN", "FRETE-1GJC", "FRETE-6HBZ", "FRETE-XL6D", "FRETE-KD5H", "FRETE-2C5Q", "FRETE-HM6D", "FRETE-5XVC", "FRETE-OBGG", "FRETE-FK9M", "FRETE-11WJ", "FRETE-9QRS", "FRETE-BMHR", "FRETE-EWEW", "FRETE-MTHA", "FRETE-4WTF", "FRETE-OAJE"], // 15:00 - 17:59
-	4: ["FRETE-AB3G", "FRETE-Z2XD", "FRETE-K6DQ", "FRETE-7P7L", "FRETE-WDSM", "FRETE-Y90I", "FRETE-7V79", "FRETE-4T0Z", "FRETE-I7UH", "FRETE-7A0V", "FRETE-19HY", "FRETE-CRTA", "FRETE-FPHY", "FRETE-I8B8", "FRETE-O23R", "FRETE-BMGE", "FRETE-EDTK", "FRETE-HSFO", "FRETE-T5WE", "FRETE-SYW0", "FRETE-MYF9", "FRETE-0UC2", "MBJW", "7COM", "2WYY", "DI3B", "2AS7", "WJZH", "ZKUY", "TZTL", "Y8YL"], // 18:00 - 20:59
-	5: ["FRETE-XR4X", "FRETE-YC3U", "FRETE-5E54", "FRETE-K89F", "FRETE-QO0Z", "FRETE-4O02", "FRETE-LXX4", "FRETE-CDV0", "FRETE-VY05", "FRETE-0SW8", "FRETE-YL3Z", "FRETE-MCLW", "FRETE-FIRQ", "FRETE-EOGR", "FRETE-BFST", "FRETE-M34F", "FRETE-415A", "FRETE-7MW5", "FRETE-DDFT", "FRETE-F2WJ", "FRETE-0YUJ", "FRETE-ORT4", "FRETE-IVE3", "FRETE-5BQK", "FRETE-Z60P", "FRETE-ZYUY", "FRETE-IIVM", "FRETE-8RD8", "FRETE-EZ0U", "FRETE-JXUW", "SNG2"], // 21:00 - 23:59
-	6: ["FRETE-IFSI", "FRETE-17XK", "FRETE-DHH9", "FRETE-FYTD", "FRETE-Z3HS", "FRETE-YUM8", "FRETE-5WY1", "FRETE-LBFX", "FRETE-ODTD", "FRETE-EJRU", "FRETE-WCC8", "FRETE-CEAH", "FRETE-ZH2R", "FRETE-T7CB", "FRETE-L1Q5", "FRETE-1B8V", "FRETE-OXET", "FRETE-OX5K", "FRETE-B9GR", "FRETE-S2MX", "FRETE-NVHP", "FRETE-WI5L", "FRETE-MD1X", "FRETE-1H6J", "FRETE-NPVR", "FRETE-NTJG", "FRETE-6A25", "FRETE-H13W", "FRETE-JH2L", "FRETE-II3D", "BFXF"], // 00:00 - 02:59
+	4: ["FRETE-AB3G", "FRETE-Z2XD", "FRETE-K6DQ", "FRETE-7P7L", "FRETE-WDSM", "FRETE-Y90I", "FRETE-7V79", "FRETE-4T0Z", "FRETE-I7UH", "FRETE-7A0V", "FRETE-19HY", "FRETE-CRTA", "FRETE-FPHY", "FRETE-I8B8", "FRETE-O23R", "FRETE-BMGE", "FRETE-EDTK", "FRETE-HSFO", "FRETE-T5WE", "FRETE-SYW0", "FRETE-MYF9", "FRETE-0UC2", "FRETE-MBJW", "FRETE-7COM", "FRETE-2WYY", "FRETE-DI3B", "FRETE-2AS7", "FRETE-WJZH", "FRETE-ZKUY", "FRETE-TZTL", "FRETE-Y8YL"], // 18:00 - 20:59
+	5: ["FRETE-XR4X", "FRETE-YC3U", "FRETE-5E54", "FRETE-K89F", "FRETE-QO0Z", "FRETE-4O02", "FRETE-LXX4", "FRETE-CDV0", "VY05", "0SW8", "YL3Z", "MCLW", "FIRQ", "EOGR", "BFST", "M34F", "415A", "7MW5", "DDFT", "F2WJ", "0YUJ", "ORT4", "IVE3", "5BQK", "Z60P", "ZYUY", "IIVM", "8RD8", "EZ0U", "JXUW", "SNG2"], // 21:00 - 23:59
+	6: ["FRETE-IFSI", "FRETE-17XK", "FRETE-DHH9", "FRETE-FYTD", "FRETE-Z3HS", "FRETE-YUM8", "FRETE-5WY1", "FRETE-LBFX", "FRETE-ODTD", "FRETE-EJRU", "WCC8", "CEAH", "ZH2R", "T7CB", "L1Q5", "1B8V", "OXET", "OX5K", "B9GR", "S2MX", "NVHP", "WI5L", "MD1X", "1H6J", "NPVR", "NTJG", "6A25", "H13W", "JH2L", "II3D", "BFXF"], // 00:00 - 02:59
 	7: ["FRETE-AMEG", "FRETE-TXR9", "FRETE-S378", "FRETE-9S9J", "FRETE-XM9L", "FRETE-ZNAM", "FRETE-XK3G", "FRETE-T89O", "FRETE-R68A", "FRETE-D276", "FRETE-3SZK", "FRETE-OJY9", "FRETE-7G17", "FRETE-P5ZK", "FRETE-J6K4", "FRETE-ON49", "FRETE-9H21", "FRETE-MGBE", "FRETE-2OJ8", "FRETE-V0EK", "FRETE-TAPW", "FF0Q", "56T6", "QKN3", "OJAC", "NJ91", "LBRE", "ERCF", "ADRN", "POOF", "ZARX"] // 03:00 - 5:59
 };
 
@@ -1109,6 +1209,9 @@ function revealText(str) {
             updateUI();
         }
         checkStoreStatus();
+        
+        // --- 3. Sincronização da Planilha ---
+        carregarDadosDaPlanilha();
     };
 
     function saveCart() { localStorage.setItem('beeDrinksCart', JSON.stringify(cart)); }
@@ -1545,83 +1648,30 @@ function revealText(str) {
     function closePayment() { document.getElementById('payment-modal').style.display = 'none'; document.getElementById('checkout-modal').style.display = 'block'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-    // NOVA LOGICA DE ENVIO ADMIN
     function enviarParaPlanilha(dados) {
-        const FORM_URL = "URL-do-novo-formulario/formResponse";
+        const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScCadaja6iLfwVL7fH6aVs_iXTJpZgBREY-Ju98Zqg3KKslWg/formResponse";
         const formData = new FormData();
-
-        // Captura os IDs digitados nos campos de configuração
-        const idProd = document.getElementById('id-produtos').value || "00000ppp";
-        const idNome = document.getElementById('id-nome').value || "0000000";
-        const idCont = document.getElementById('id-contato').value || "00000";
-        const idTot = document.getElementById('id-total').value || "0000000";
-
-        formData.append("entry." + idProd, dados.produtos);        
-        formData.append("entry." + idNome, dados.nome);
-        formData.append("entry." + idCont, dados.contato);
-        formData.append("entry." + idTot, dados.total);
-
-        // Campos complementares fixos originais
+        formData.append("entry.62718261", dados.produtos);        
+        formData.append("entry.1278482765", dados.nome);
+        formData.append("entry.1120754933", dados.contato);
+        // Se for delivery envia CEP no campo de CPF da planilha para não quebrar a ordem, ou ajuste conforme sua planilha
         formData.append("entry.143126943", dados.coleta === 'delivery' ? dados.cep : dados.cpf);             
         formData.append("entry.1878038120", dados.bairro);           
         formData.append("entry.1399400806", dados.rua);                 
         formData.append("entry.764712754", dados.numero);           
         formData.append("entry.1697072560", dados.comp);        
         formData.append("entry.1857638858", dados.coleta);          
+        formData.append("entry.1235511550", dados.total);            
         
+        // ACRESCENTADO O LINK DE PAGAMENTO AO CAMPO DE COMPLEMENTO OU QUALQUER OUTRO DESEJADO
+        // Nota: Como não sei o ID exato do campo do Link na sua planilha, 
+        // concatenei ele no campo de "Complemento" (entry.1697072560) para você visualizar
+        // Ou você pode criar um campo novo no forms e colocar o ID dele aqui.
         if(dados.pagamentoLink !== "#") {
              formData.append("entry.1901397709", " | LINK: " + dados.pagamentoLink);
         }
 
         fetch(FORM_URL, { method: "POST", mode: "no-cors", body: formData });
-    }
-
-    // FUNÇÕES ADMIN
-    function abrirAdmin() {
-        const pass = prompt("Digite a senha de acesso:");
-        if(pass === "123") { // Senha exemplo
-            document.getElementById('admin-modal').style.display = 'flex';
-        } else {
-            alert("Senha incorreta!");
-        }
-    }
-    function fecharAdmin() { document.getElementById('admin-modal').style.display = 'none'; }
-    
-    function salvarConfigAdmin() {
-        // Pega os dados digitados no painel de admin
-        const imgUrl = document.getElementById('admin-img-url').value;
-        const prodName = document.getElementById('admin-prod-name').value;
-        const prodPrice = document.getElementById('admin-prod-price').value;
-        const prodId = document.getElementById('admin-prod-id').value;
-
-        if(!prodName || !prodPrice) {
-            alert("Por favor, preencha ao menos o Nome e o Valor.");
-            return;
-        }
-
-        // Prepara os dados para enviar para a planilha como se fosse um pedido
-        let dadosAdmin = {
-            produtos: `CADASTRO: ${prodName} (URL: ${imgUrl})`,
-            nome: "SISTEMA ADMIN",
-            contato: "Cadastro Manual",
-            total: prodPrice,
-            coleta: "ADMIN",
-            cpf: prodId,
-            pagamentoLink: "#"
-        };
-
-        // Envia para a planilha
-        enviarParaPlanilha(dadosAdmin);
-        
-        alert("Dados do produto enviados para a planilha com sucesso!");
-        
-        // Limpa os campos após enviar
-        document.getElementById('admin-img-url').value = "";
-        document.getElementById('admin-prod-name').value = "";
-        document.getElementById('admin-prod-price').value = "";
-        document.getElementById('admin-prod-id').value = "";
-        
-        fecharAdmin();
     }
         
         
@@ -1686,7 +1736,7 @@ function showNextMessage() {
     // 1. Exibe a caixa (Display ON)
     boxElement.style.display = 'flex';
 
-    // 2. Agenda para esconder a caixa após o tempo de exibicao
+    // 2. Agenda para esconder a caixa após o tempo de exibição
     setTimeout(() => {
         boxElement.style.display = 'none';
 
@@ -1700,7 +1750,179 @@ function showNextMessage() {
 
 // Inicia o ciclo de mensagens após um atraso de 4 segundos (4000 ms)
 setTimeout(showNextMessage, 4000);
+
+// --- LÓGICA DE EDIÇÃO (MODO ADMIN) ---
+function toggleAdminMode() {
+    const password = prompt("Digite a senha de administrador:");
+    if (password === "111219") {
+        document.body.classList.toggle('admin-active');
+        alert("Modo de edição ativado/desativado!");
+    } else {
+        alert("Senha incorreta!");
+    }
+}
+
+function editProduct(pencilEl) {
+    const card = pencilEl.parentElement;
+    const title = card.querySelector('h3');
+    const img = card.querySelector('img');
+    const price = card.querySelector('.price');
+    const prodID = card.getAttribute('data-id');
+
+    const novoTitulo = prompt("Novo nome do produto:", title.innerText);
+    if (novoTitulo) title.innerText = novoTitulo;
+
+    const novaImg = prompt("Nova URL da imagem:", img.src);
+    if (novaImg) img.src = novaImg;
+
+    const novoPreco = prompt("Novo preço (Ex: R$ 25.00):", price.innerText);
+    if (novoPreco) {
+        const mlBadge = card.querySelector('.badge-ml')?.innerText || '';
+        price.innerHTML = novoPreco + (mlBadge ? ` <span class="badge-ml">${mlBadge}</span>` : '');
+    }
+    
+    // Dispara o novo formulário de Admin
+    enviarParaPlanilhaAdmin({
+        id: prodID,
+        nome: novoTitulo || title.innerText,
+        preco: novoPreco || price.innerText,
+        imagem: novaImg || img.src
+    });
+    
+    alert("Alterações aplicadas na tela e enviadas ao banco!");
+}
+
+
+
+
+
+// --- CONFIGURAÇÃO DA PLANILHA PARA EDIÇÃO ---
+const LINK_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRAb5Ou99MR6hD2_t7XPdZRzYBf-4ZE7HkqfSZ7PwU0POKTHfs6232ezYPT3yYzbKLzAX3Muwp4BxPo/pub?gid=0&single=true&output=csv";
+
+async function carregarDadosDaPlanilha() {
+    try {
+        const resposta = await fetch(LINK_CSV);
+        const csvTexto = await resposta.text();
+        
+        const linhas = csvTexto.split('\n').filter(linha => linha.trim() !== '');
+        
+        // PROTEÇÃO: Se a planilha estiver vazia ou tiver apenas o cabeçalho, não faz nada para não apagar o site
+        if (linhas.length <= 1) {
+            console.log("Planilha vazia ou sem dados. Mantendo conteúdo atual.");
+            return;
+        }
+
+        for (let i = 1; i < linhas.length; i++) {
+            const colunas = linhas[i].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
+            
+            if (colunas.length >= 3) {
+                const pID = colunas[0].replace(/"/g, '').trim();
+                const pNome = colunas[1].replace(/"/g, '').trim();
+                const pPreco = colunas[2].replace(/"/g, '').trim();
+                const pImagem = colunas[3] ? colunas[3].replace(/"/g, '').trim() : '';
+                const pCategoria = colunas[4] ? colunas[4].replace(/"/g, '').trim().toLowerCase() : 'alcool';
+                // Captura a coluna F (índice 5) - Sabores separados por vírgula
+                const pSaboresRaw = colunas[5] ? colunas[5].replace(/"/g, '').trim() : '';
+                const pSaboresArray = pSaboresRaw ? pSaboresRaw.split(',').map(s => s.trim()) : [];
+
+                const cardExistente = document.querySelector(`.product-card[data-id="${pID}"]`);
+                
+                if (cardExistente) {
+                    if (pNome) cardExistente.querySelector('h3').innerText = pNome;
+                    if (pImagem) cardExistente.querySelector('img').src = pImagem;
+                    if (pPreco) {
+                        const mlBadge = cardExistente.querySelector('.badge-ml')?.outerHTML || '';
+                        cardExistente.querySelector('.price').innerHTML = `R$ ${pPreco} ${mlBadge}`;
+                        
+                        let btnAdd = cardExistente.querySelector('.btn-add');
+                        if (btnAdd) {
+                            const precoNumerico = parseFloat(pPreco.replace('R$', '').replace(',', '.').trim());
+                            
+                            // Se houver sabores na planilha, transforma o botão em "Escolher Sabor"
+                            if (pSaboresArray.length > 0) {
+                                btnAdd.classList.add('btn-flavor');
+                                btnAdd.innerText = "Escolher Sabor";
+                                btnAdd.onclick = () => openFlavorModal(pNome, precoNumerico, pSaboresArray, pImagem);
+                            } else {
+                                // Caso contrário, volta a ser um botão de adição direta
+                                btnAdd.classList.remove('btn-flavor');
+                                btnAdd.innerText = "Adicionar";
+                                btnAdd.onclick = function() { animateAdd(this); addToCart(pNome, precoNumerico, pImagem); };
+                            }
+                        }
+                    }
+                } else {
+                    const precoNumerico = parseFloat(pPreco.replace('R$', '').replace(',', '.').trim()) || 0;
+                    renderizarProdutoNovoDaPlanilha({
+                        id: pID,
+                        nome: pNome,
+                        preco: precoNumerico,
+                        imagem: pImagem,
+                        categoria: pCategoria,
+                        sabores: pSaboresArray
+                    });
+                }
+            }
+        }
+        console.log("Sincronização com planilha concluída!");
+    } catch (erro) {
+        console.error("Erro ao carregar planilha:", erro);
+    }
+}
+
+function renderizarProdutoNovoDaPlanilha(p) {
+    let secao = document.querySelector(`.menu-section[data-category="${p.categoria}"] .carousel-container`);
+    if (!secao) {
+        secao = document.querySelector('.carousel-container');
+    }
+
+    if (secao) {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.setAttribute('data-id', p.id);
+        
+        let botaoHTML = '';
+        if (p.sabores && p.sabores.length > 0) {
+            // Cria botão com modal de sabores
+            botaoHTML = `<button class="btn-add btn-flavor" onclick="openFlavorModal('${p.nome}', ${p.preco}, ${JSON.stringify(p.sabores).replace(/"/g, '&quot;')}, '${p.imagem}')">Escolher Sabor</button>`;
+        } else {
+            // Botão de adição direta
+            botaoHTML = `<button class="btn-add" onclick="animateAdd(this); addToCart('${p.nome}', ${p.preco}, '${p.imagem}')">Adicionar</button>`;
+        }
+
+        card.innerHTML = `
+            <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
+            <img src="${p.imagem}" onerror="this.src='https://via.placeholder.com/200x180?text=Sem+Foto'">
+            <h3>${p.nome}</h3>
+            <span class="price">R$ ${p.preco.toFixed(2)}</span>
+            ${botaoHTML}
+        `;
+        secao.appendChild(card);
+    }
+}
+
+// Inicia a carga quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', () => {
+    if(document.getElementById('ano-mini')) document.getElementById('ano-mini').textContent = new Date().getFullYear();
+});
+
+// NOVA FUNÇÃO PARA O FORMULÁRIO DE ADMIN COM 4 CAMPOS
+function enviarParaPlanilhaAdmin(dados) {
+    // COLOQUE AQUI A URL DO SEU NOVO FORMULÁRIO DE ADMIN
+    const URL_FORM_ADMIN = "SUA_URL_DO_FORM_ADMIN_AQUI/formResponse";
+    const formAdminData = new FormData();
+    
+    // COLOQUE AQUI OS IDS DOS 4 CAMPOS QUE VOCÊ TEM
+    formAdminData.append("entry.ID_CAMPO_1", dados.id);     // ID do produto
+    formAdminData.append("entry.ID_CAMPO_2", dados.nome);   // Nome do produto
+    formAdminData.append("entry.ID_CAMPO_3", dados.preco);  // Preço do produto
+    formAdminData.append("entry.ID_CAMPO_4", dados.imagem); // URL da imagem
+
+    fetch(URL_FORM_ADMIN, { method: "POST", mode: "no-cors", body: formAdminData })
+    .then(() => console.log("Dados do Admin sincronizados com sucesso!"))
+    .catch(err => console.error("Erro ao sincronizar admin:", err));
+}
+
 </script>
 </body>
 </html>
-
