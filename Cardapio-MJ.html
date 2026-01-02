@@ -672,7 +672,7 @@
                 <div class="product-card" data-id="205">
                     <img src="img-produtos/Drinks-s-alcool/Hibisco-Spritz.jpeg">
                     <h3>Hibisco Spritz</h3>
-                     <span class="old-price)R$ 12,99</span> 
+                     <span class="old-price">R$ 12,99</span> 
                      <span class="price">R$ 10,00
                      <span class="badge-ml">350ml</span>
                      </span>
@@ -966,18 +966,14 @@
   const botaoInstalar = document.getElementById('btnInstalarApp');
   const botaoRecusar = document.getElementById('btnRecusarApp');
 
-  // Captura o evento do navegador
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     promptDeInstalacao = e;
-
-    // Se o app não estiver instalado, mostra em 5 segundos
     iniciarContadorAparecer(25000);
   });
 
   function iniciarContadorAparecer(tempo) {
     setTimeout(() => {
-      // Verifica se o usuário já instalou ou se já está no app antes de mostrar
       const modoApp = window.matchMedia('(display-mode: standalone)').matches;
       if (!modoApp) {
         areaInstalacao.style.display = 'block';
@@ -997,11 +993,7 @@
   });
 
   botaoRecusar.addEventListener('click', () => {
-    // Esconde o botão imediatamente
     areaInstalacao.style.display = 'none';
-
-    // Agenda para aparecer novamente em 10 minutos (600.000 ms) 
-    // caso ele não atualize a página
     iniciarContadorAparecer(600000);
   });
 
@@ -1021,9 +1013,7 @@ const text = "nuance _drinks";
 
 function revealText(str) {
     let i = 0;
-    // Limpa o conteúdo antes de começar
     brandNameContainer.innerHTML = "";
-    // Divide o texto em letras e as adiciona uma por uma
     const interval = setInterval(() => {
         if (i < str.length) {
             brandNameContainer.innerHTML += str.charAt(i);
@@ -1031,55 +1021,25 @@ function revealText(str) {
         } else {
             clearInterval(interval);
         }
-    }, 100); // Velocidade do surgimento das letras (100ms)
+    }, 100);
 }
 
     
-    
-    
-    
-    
-    
-    //===•Flocis
-//        document.addEventListener('DOMContentLoaded', function() {
-//    document.getElementById('ano-mini').textContent = new Date().getFullYear();
-    //🚨 Inicia os flocos de neve
-//	createSnowflakes();
-//});
-
-    //🚨 Função para criar flocos de neve dinamicamente
-//    function createSnowflakes() {
- //       const numberOfSnowflakes = 50;
-   //     for (let i = 0; i < numberOfSnowflakes; i++) {
-//            let snowflake = document.createElement('div');
- //           snowflake.className = 'snowflake';
-//            snowflake.innerHTML = '❄';
-// snowflake.style.left = Math.random() * 100 + 'vw';
-//            snowflake.style.animationDelay = Math.random() * 10 + 's';
-//            snowflake.style.opacity = Math.random();
-//            snowflake.style.fontSize = Math.random() * 1.5 + 0.5 + 'em';
-//            document.body.appendChild(snowflake);
- //       }
-//    }
-//===•Termino Flocos
-        
-        
     let cart = [];
     let currentFlavorProduct = null;
     let currentPaymentLink = "#"; 
     let activeDiscount = 0;
     let freeShippingRequested = false;
 
-    // --- NOVA ESTRUTURA DE CUPONS POR BLOCOS ---
     const CUPONS_POR_BLOCO = {
-	0: ["FRETE-D36S", "FRETE-WEMC", "FRETE-BLXT", "FRETE-G3RB", "FRETE-VXAY", "FRETE-Y8DB", "FRETE-DL7M", "FRETE-48B0", "FRETE-RKX2", "FRETE-8YHH", "FRETE-66X9", "FRETE-RR1C", "FRETE-O7XV", "FRETE-VU6V", "FRETE-V1PC", "FRETE-USJK", "FRETE-DMJA", "FRETE-4F04", "FRETE-ECKO", "FRETE-DO58", "FRETE-OWUC", "FRETE-EKKQ", "FRETE-8AHA", "FRETE-U9Q2", "FRETE-3Z0J", "FRETE-8FGS", "FRETE-HAIR", "FRETE-KTV5", "FRETE-0CYR", "FRETE-LUJZ", "FRETE-1LVV"], // 06:00 - 08:59
-	1: ["FRETE-JC8S", "FRETE-OMXH", "FRETE-N1KM", "FRETE-JD4N", "FRETE-34ZV", "FRETE-VEKY", "FRETE-D3RR", "FRETE-OZSL", "FRETE-L77K", "FRETE-LTZD", "HOY9", "FRETE-URN7", "FRETE-PESK", "FRETE-1SNZ", "FRETE-9EWO", "FRETE-3XNE", "FRETE-M1LK", "FRETE-2A3T", "FRETE-8XI7", "FRETE-X4AJ", "FRETE-LS20", "FRETE-IUF8", "FRETE-XXK1", "FRETE-34HJ", "FRETE-LQND", "FRETE-16PJ", "FRETE-YTTC", "FRETE-Z1UZ", "FRETE-UDVB", "FRETE-NWRL", "FRETE-PQ5E"], // 09:00 - 11:59
-	2: ["FRETE-EFYZ", "FRETE-8SKT", "FRETE-CD95", "FRETE-0WQN", "FRETE-UT01", "FRETE-V8H2", "FRETE-LDB9", "FRETE-23B4", "FRETE-CBIA", "FRETE-T24R", "F9ZR", "JQKR", "OX8X", "4BUH", "QBBY", "Z29A", "NNM9", "ECMJ", "B1UK", "1BGU", "FGKF", "GP2W", "C7ML", "RK3Q", "448P", "GXJS", "A8HM", "5B2I", "IB05", "TMZI", "U1Q9"], // 12:00 - 14:59
-	3: ["FRETE-LJLA", "FRETE-Z0P8", "FRETE-OTUY", "FRETE-D91U", "FRETE-LESL", "FRETE-DJ6Z", "FRETE-FPCZ", "FRETE-Q10R", "FRETE-NPDS", "FRETE-BPDQ", "FRETE-6VWR", "FRETE-FBX6", "FRETE-ZCXL", "FRETE-XM5F", "FRETE-M1NN", "FRETE-1GJC", "FRETE-6HBZ", "FRETE-XL6D", "FRETE-KD5H", "FRETE-2C5Q", "FRETE-HM6D", "FRETE-5XVC", "FRETE-OBGG", "FRETE-FK9M", "FRETE-11WJ", "FRETE-9QRS", "FRETE-BMHR", "FRETE-EWEW", "FRETE-MTHA", "FRETE-4WTF", "FRETE-OAJE"], // 15:00 - 17:59
-	4: ["FRETE-AB3G", "FRETE-Z2XD", "FRETE-K6DQ", "FRETE-7P7L", "FRETE-WDSM", "FRETE-Y90I", "FRETE-7V79", "FRETE-4T0Z", "FRETE-I7UH", "FRETE-7A0V", "FRETE-19HY", "FRETE-CRTA", "FRETE-FPHY", "FRETE-I8B8", "FRETE-O23R", "FRETE-BMGE", "FRETE-EDTK", "FRETE-HSFO", "FRETE-T5WE", "FRETE-SYW0", "FRETE-MYF9", "FRETE-0UC2", "FRETE-MBJW", "FRETE-7COM", "FRETE-2WYY", "FRETE-DI3B", "FRETE-2AS7", "FRETE-WJZH", "FRETE-ZKUY", "FRETE-TZTL", "FRETE-Y8YL"], // 18:00 - 20:59
-	5: ["FRETE-XR4X", "FRETE-YC3U", "FRETE-5E54", "FRETE-K89F", "FRETE-QO0Z", "FRETE-4O02", "FRETE-LXX4", "FRETE-CDV0", "VY05", "0SW8", "YL3Z", "MCLW", "FIRQ", "EOGR", "BFST", "M34F", "415A", "7MW5", "DDFT", "F2WJ", "0YUJ", "ORT4", "IVE3", "5BQK", "Z60P", "ZYUY", "IIVM", "8RD8", "EZ0U", "JXUW", "SNG2"], // 21:00 - 23:59
-	6: ["FRETE-IFSI", "FRETE-17XK", "FRETE-DHH9", "FRETE-FYTD", "FRETE-Z3HS", "FRETE-YUM8", "FRETE-5WY1", "FRETE-LBFX", "FRETE-ODTD", "FRETE-EJRU", "WCC8", "CEAH", "ZH2R", "T7CB", "L1Q5", "1B8V", "OXET", "OX5K", "B9GR", "S2MX", "NVHP", "WI5L", "MD1X", "1H6J", "NPVR", "NTJG", "6A25", "H13W", "JH2L", "II3D", "BFXF"], // 00:00 - 02:59
-	7: ["FRETE-AMEG", "FRETE-TXR9", "FRETE-S378", "FRETE-9S9J", "FRETE-XM9L", "FRETE-ZNAM", "FRETE-XK3G", "FRETE-T89O", "FRETE-R68A", "FRETE-D276", "FRETE-3SZK", "FRETE-OJY9", "FRETE-7G17", "FRETE-P5ZK", "FRETE-J6K4", "FRETE-ON49", "FRETE-9H21", "FRETE-MGBE", "FRETE-2OJ8", "FRETE-V0EK", "FRETE-TAPW", "FF0Q", "56T6", "QKN3", "OJAC", "NJ91", "LBRE", "ERCF", "ADRN", "POOF", "ZARX"] // 03:00 - 5:59
+	0: ["FRETE-D36S", "FRETE-WEMC", "FRETE-BLXT", "FRETE-G3RB", "FRETE-VXAY", "FRETE-Y8DB", "FRETE-DL7M", "FRETE-48B0", "FRETE-RKX2", "FRETE-8YHH", "FRETE-66X9", "FRETE-RR1C", "FRETE-O7XV", "FRETE-VU6V", "FRETE-V1PC", "FRETE-USJK", "FRETE-DMJA", "FRETE-4F04", "FRETE-ECKO", "FRETE-DO58", "FRETE-OWUC", "FRETE-EKKQ", "FRETE-8AHA", "FRETE-U9Q2", "FRETE-3Z0J", "FRETE-8FGS", "FRETE-HAIR", "FRETE-KTV5", "FRETE-0CYR", "FRETE-LUJZ", "FRETE-1LVV"],
+	1: ["FRETE-JC8S", "FRETE-OMXH", "FRETE-N1KM", "FRETE-JD4N", "FRETE-34ZV", "FRETE-VEKY", "FRETE-D3RR", "FRETE-OZSL", "FRETE-L77K", "FRETE-LTZD", "HOY9", "FRETE-URN7", "FRETE-PESK", "FRETE-1SNZ", "FRETE-9EWO", "FRETE-3XNE", "FRETE-M1LK", "FRETE-2A3T", "FRETE-8XI7", "FRETE-X4AJ", "FRETE-LS20", "FRETE-IUF8", "FRETE-XXK1", "FRETE-34HJ", "FRETE-LQND", "FRETE-16PJ", "FRETE-YTTC", "FRETE-Z1UZ", "FRETE-UDVB", "FRETE-NWRL", "FRETE-PQ5E"],
+	2: ["FRETE-EFYZ", "FRETE-8SKT", "FRETE-CD95", "FRETE-0WQN", "FRETE-UT01", "FRETE-V8H2", "FRETE-LDB9", "FRETE-23B4", "FRETE-CBIA", "FRETE-T24R", "F9ZR", "JQKR", "OX8X", "4BUH", "QBBY", "Z29A", "NNM9", "ECMJ", "B1UK", "1BGU", "FGKF", "GP2W", "C7ML", "RK3Q", "448P", "GXJS", "A8HM", "5B2I", "IB05", "TMZI", "U1Q9"],
+	3: ["FRETE-LJLA", "FRETE-Z0P8", "FRETE-OTUY", "FRETE-D91U", "FRETE-LESL", "FRETE-DJ6Z", "FRETE-FPCZ", "FRETE-Q10R", "FRETE-NPDS", "FRETE-BPDQ", "FRETE-6VWR", "FRETE-FBX6", "FRETE-ZCXL", "FRETE-XM5F", "FRETE-M1NN", "FRETE-1GJC", "FRETE-6HBZ", "FRETE-XL6D", "FRETE-KD5H", "FRETE-2C5Q", "FRETE-HM6D", "FRETE-5XVC", "FRETE-OBGG", "FRETE-FK9M", "FRETE-11WJ", "FRETE-9QRS", "FRETE-BMHR", "FRETE-EWEW", "FRETE-MTHA", "FRETE-4WTF", "FRETE-OAJE"],
+	4: ["FRETE-AB3G", "FRETE-Z2XD", "FRETE-K6DQ", "FRETE-7P7L", "FRETE-WDSM", "FRETE-Y90I", "FRETE-7V79", "FRETE-4T0Z", "FRETE-I7UH", "FRETE-7A0V", "FRETE-19HY", "FRETE-CRTA", "FRETE-FPHY", "FRETE-I8B8", "FRETE-O23R", "FRETE-BMGE", "FRETE-EDTK", "FRETE-HSFO", "FRETE-T5WE", "FRETE-SYW0", "FRETE-MYF9", "FRETE-0UC2", "FRETE-MBJW", "FRETE-7COM", "FRETE-2WYY", "FRETE-DI3B", "FRETE-2AS7", "FRETE-WJZH", "FRETE-ZKUY", "FRETE-TZTL", "FRETE-Y8YL"],
+	5: ["FRETE-XR4X", "FRETE-YC3U", "FRETE-5E54", "FRETE-K89F", "FRETE-QO0Z", "FRETE-4O02", "FRETE-LXX4", "FRETE-CDV0", "VY05", "0SW8", "YL3Z", "MCLW", "FIRQ", "EOGR", "BFST", "M34F", "415A", "7MW5", "DDFT", "F2WJ", "0YUJ", "ORT4", "IVE3", "5BQK", "Z60P", "ZYUY", "IIVM", "8RD8", "EZ0U", "JXUW", "SNG2"],
+	6: ["FRETE-IFSI", "FRETE-17XK", "FRETE-DHH9", "FRETE-FYTD", "FRETE-Z3HS", "FRETE-YUM8", "FRETE-5WY1", "FRETE-LBFX", "FRETE-ODTD", "FRETE-EJRU", "WCC8", "CEAH", "ZH2R", "T7CB", "L1Q5", "1B8V", "OXET", "OX5K", "B9GR", "S2MX", "NVHP", "WI5L", "MD1X", "1H6J", "NPVR", "NTJG", "6A25", "H13W", "JH2L", "II3D", "BFXF"],
+	7: ["FRETE-AMEG", "FRETE-TXR9", "FRETE-S378", "FRETE-9S9J", "FRETE-XM9L", "FRETE-ZNAM", "FRETE-XK3G", "FRETE-T89O", "FRETE-R68A", "FRETE-D276", "FRETE-3SZK", "FRETE-OJY9", "FRETE-7G17", "FRETE-P5ZK", "FRETE-J6K4", "FRETE-ON49", "FRETE-9H21", "FRETE-MGBE", "FRETE-2OJ8", "FRETE-V0EK", "FRETE-TAPW", "FF0Q", "56T6", "QKN3", "OJAC", "NJ91", "LBRE", "ERCF", "ADRN", "POOF", "ZARX"]
 };
 
     const linksDePagamentoFixos = {
@@ -1119,9 +1079,7 @@ function revealText(str) {
         "100.00": "https://mpago.la/14fLE5V",
     };
 
-    // AQUI ESTÁ A ÚNICA FUNÇÃO ONLOAD QUE IMPORTA:
     window.onload = function() {
-        // --- 1. Lógica da Animação do Instagram com Observer ---
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if(entry.isIntersecting) {
@@ -1129,22 +1087,19 @@ function revealText(str) {
                         icon.classList.add('start-animation');
                         revealText(text);
                     }, 500);
-                    observer.unobserve(entry.target); // Executa apenas uma vez
+                    observer.unobserve(entry.target);
                 }
             });
         }, { threshold: 0.5 });
 
         observer.observe(document.querySelector('.logo-container45'));
 
-        // --- 2. Lógica Original do Carrinho e Loja ---
         const savedCart = localStorage.getItem('beeDrinksCart');
         if (savedCart) {
             cart = JSON.parse(savedCart);
             updateUI();
         }
         checkStoreStatus();
-        
-        // --- 3. Sincronização da Planilha ---
         carregarDadosDaPlanilha();
     };
 
@@ -1175,16 +1130,11 @@ function revealText(str) {
     function checkStoreStatus() {
         const statusElement = document.getElementById('store-status');
         const now = new Date();
-        
-        // Defina aqui o horário de abertura e fechamento
-        const horaAbertura = 00;   //abre
-        const minutoAbertura = 02;
-        const horaFechamento = 23;  //Fecha
+        const horaAbertura = 0;
+        const horaFechamento = 23;
         const minutoFechamento = 59;
-
-        // Converte tudo para minutos totais desde o início do dia
         const minutosAgora = (now.getHours() * 60) + now.getMinutes();
-        const minutosInicio = (horaAbertura * 60) + minutoAbertura;
+        const minutosInicio = (horaAbertura * 60);
         const minutosFim = (horaFechamento * 60) + minutoFechamento;
 
         if (minutosAgora >= minutosInicio && minutosAgora <= minutosFim) {
@@ -1199,57 +1149,38 @@ function revealText(str) {
         return status.includes("Aberto");
     }
 
-    // NOVA FUNÇÃO: Som de Feedback
     function playSuccessSound() {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
-
         oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // Nota lá
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
         oscillator.frequency.exponentialRampToValueAtTime(1100, audioCtx.currentTime + 0.1);
-        
         gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
-
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 0.2);
     }
 
-    // NOVA FUNÇÃO: Animar botão e Joinha Voador
     function animateAdd(btn) {
         playSuccessSound();
-        
-        // Início da animação do Joinha
         const thumb = document.createElement('div');
         thumb.innerHTML = '👍';
         thumb.className = 'thumb-animation';
-        
-        // Pega as posições
         const btnRect = btn.getBoundingClientRect();
         const cartAnchor = document.getElementById('cart-anchor').getBoundingClientRect();
-        
-        // Posiciona no botão inicialmente
         thumb.style.left = btnRect.left + (btnRect.width / 2) + 'px';
         thumb.style.top = btnRect.top + 'px';
-        
         document.body.appendChild(thumb);
-        
-        // Pequeno timeout para o navegador processar a posição inicial antes de animar
         setTimeout(() => {
             thumb.style.left = cartAnchor.left + (cartAnchor.width / 2) + 'px';
             thumb.style.top = cartAnchor.top + 'px';
             thumb.style.opacity = '0';
             thumb.style.transform = 'scale(0.5) rotate(45deg)';
-        }, 100); // Aumentado um pouco o delay inicial para suavidade
-        
-        // Remove o elemento após a animação (aumentado para 1.6s para casar com a transição lenta)
-        setTimeout(() => {
-            thumb.remove();
-        }, 1600);
+        }, 100);
+        setTimeout(() => { thumb.remove(); }, 1600);
 
         const originalText = btn.innerText;
         btn.classList.add('btn-added-success');
@@ -1262,7 +1193,7 @@ function revealText(str) {
 
     function addToCart(name, price, image) {
         if (!isStoreOpen()) {
-            alert("Desculpe, estamos fechados no momento. Não é possível realizar pedidos.");
+            alert("Desculpe, estamos fechados no momento.");
             return;
         }
         const item = cart.find(i => i.name === name);
@@ -1285,13 +1216,9 @@ function revealText(str) {
     }
 
     function addFlavorToCart(flavor, btn) {
-        // Chamamos a animação enviando o botão clicado no modal
         animateAdd(btn);
         addToCart(`${currentFlavorProduct.name} (${flavor})`, currentFlavorProduct.price, currentFlavorProduct.image);
-        // Pequeno atraso para fechar o modal e deixar ver o joinha saindo (Aumentado para acompanhar a lentidão)
-        setTimeout(() => {
-            closeModal('flavor-modal');
-        }, 500);
+        setTimeout(() => { closeModal('flavor-modal'); }, 500);
     }
 
     function applyCoupon() {
@@ -1299,49 +1226,28 @@ function revealText(str) {
         const msg = document.getElementById('coupon-msg');
         activeDiscount = 0;
         freeShippingRequested = false;
-
         const agora = new Date();
         const horaAtual = agora.getHours();
-        
-        let blocoAtual;
-        if (horaAtual >= 6 && horaAtual < 9) blocoAtual = 0;
-        else if (horaAtual >= 9 && horaAtual < 12) blocoAtual = 1;
-        else if (horaAtual >= 12 && horaAtual < 15) blocoAtual = 2;
-        else if (horaAtual >= 15 && horaAtual < 18) blocoAtual = 3;
-        else if (horaAtual >= 18 && horaAtual < 21) blocoAtual = 4;
-        else if (horaAtual >= 21 && horaAtual < 24) blocoAtual = 5;
-        else if (horaAtual >= 0 && horaAtual < 3) blocoAtual = 6;
-        else if (horaAtual >= 3 && horaAtual < 6) blocoAtual = 7;
+        let blocoAtual = Math.floor(horaAtual / 3);
 
-        const cuponsValidosDesteBloco = CUPONS_POR_BLOCO[blocoAtual];
-
-        // VERIFICAÇÃO DE FRETE GRÁTIS (FRETEGRATIS OU BLOCOS 0-7)
-        let cupomDeBlocoDigitado = false;
+        const cuponsValidosDesteBloco = CUPONS_POR_BLOCO[blocoAtual] || [];
+        let cupomDeBlocoDigitado = cuponsValidosDesteBloco.includes(input);
         let cupomDeOutroBloco = false;
 
-        // Verifica se o cupom digitado pertence ao bloco atual
-        if (cuponsValidosDesteBloco.includes(input)) {
-            cupomDeBlocoDigitado = true;
-        } else {
-            // Verifica se pertence a qualquer outro bloco
+        if(!cupomDeBlocoDigitado) {
             for (let b in CUPONS_POR_BLOCO) {
-                if (CUPONS_POR_BLOCO[b].includes(input)) {
-                    cupomDeOutroBloco = true;
-                }
+                if (CUPONS_POR_BLOCO[b].includes(input)) cupomDeOutroBloco = true;
             }
         }
 
         if (input === "FRETEGRATIS" || cupomDeBlocoDigitado) {
             freeShippingRequested = true;
-            msg.innerHTML = "<span style='color:green'>Cupom de frete grátis ativado (Válido apenas para Delivery).</span>";
+            msg.innerHTML = "<span style='color:green'>Cupom de frete grátis ativado!</span>";
         } else if (cupomDeOutroBloco) {
             msg.innerHTML = "<span style='color:orange'>Este cupom não está ativo neste horário.</span>";
         } else if (input === "10%") {
             activeDiscount = 0.10;
             msg.innerHTML = "<span style='color:green'>Desconto de 10% aplicado!</span>";
-        } else if (input === "5%") {
-            activeDiscount = 0.05;
-            msg.innerHTML = "<span style='color:green'>Desconto de 5% aplicado!</span>";
         } else {
             msg.innerHTML = "<span style='color:red'>Cupom inválido.</span>";
         }
@@ -1352,26 +1258,16 @@ function revealText(str) {
         let totalItems = cart.reduce((a, b) => a + b.quantity, 0);
         let subtotal = cart.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
         let totalComDesconto = subtotal - (subtotal * activeDiscount);
-        
         const type = document.getElementById('delivery-type')?.value;
-        
-        if (type === 'delivery') {
-            if (!freeShippingRequested) {
-                totalComDesconto += 10;
-            }
-        }
+        if (type === 'delivery' && !freeShippingRequested) totalComDesconto += 10;
 
-        // Lógica da bolinha do carrinho no topo com quantidade
         const cartDot = document.getElementById('cart-dot');
         if (totalItems > 0) {
             cartDot.style.display = 'flex';
             cartDot.innerText = totalItems;
         } else {
             cartDot.style.display = 'none';
-            // FECHA O CARRINHO SE FICAR VAZIO
-            if(document.getElementById('cart-modal')) document.getElementById('cart-modal').style.display = 'none';
         }
-
         if(document.getElementById('modal-total')) document.getElementById('modal-total').innerText = totalComDesconto.toFixed(2);
     }
 
@@ -1388,9 +1284,7 @@ function revealText(str) {
                     <span>${item.quantity}</span>
                     <button onclick="changeQuantity('${item.name}', 1)">+</button>
                 </div>
-                <button class="btn-remove" onclick="removeItem('${item.name}')">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
+                <button class="btn-remove" onclick="removeItem('${item.name}')"><i class="fas fa-trash-alt"></i></button>
             </div>`).join('');
     }
 
@@ -1417,29 +1311,16 @@ function revealText(str) {
         document.getElementById('fields-mesa').style.display = type === 'mesa' ? 'block' : 'none';
         document.getElementById('fields-retirada').style.display = type === 'retirada' ? 'block' : 'none';
         document.getElementById('fields-delivery').style.display = type === 'delivery' ? 'block' : 'none';
-        
         document.getElementById('delivery-warning').style.display = type === 'delivery' ? 'block' : 'none';
         updateUI();
     }
 
     function validarCPF(cpf) {
         cpf = cpf.replace(/[^\d]+/g,'');
-        if(cpf == '') return false;
-        if (cpf.length != 11 || cpf == "00000000000" || cpf == "11111111111" || cpf == "22222222222" || cpf == "33333333333" || cpf == "44444444444" || cpf == "55555555555" || cpf == "66666666666" || cpf == "77777777777" || cpf == "88888888888" || cpf == "99999999999") return false;
-        let add = 0;
-        for (let i=0; i < 9; i ++) add += parseInt(cpf.charAt(i)) * (10 - i);
-        let rev = 11 - (add % 11);
-        if (rev == 10 || rev == 11) rev = 0;
-        if (rev != parseInt(cpf.charAt(9))) return false;
-        add = 0;
-        for (let i = 0; i < 10; i ++) add += parseInt(cpf.charAt(i)) * (11 - i);
-        rev = 11 - (add % 11);
-        if (rev == 10 || rev == 11) rev = 0;
-        if (rev != parseInt(cpf.charAt(10))) return false;
+        if(cpf.length !== 11) return false;
         return true;
     }
 
-    // Função de validação de CEP simples
     function validarCEP(cep) {
         cep = cep.replace(/[^\d]+/g,'');
         return cep.length === 8;
@@ -1448,54 +1329,19 @@ function revealText(str) {
     function sendWhatsApp() {
         const type = document.getElementById('delivery-type').value;
         const totalStr = document.getElementById('modal-total').innerText;
-        
-        if (type === 'delivery') {
-            const cepInput = document.getElementById('dev-CEP');
-            if (!validarCEP(cepInput.value)) {
-                cepInput.classList.add('input-error');
-                alert("Por favor, insira um CEP válido para o delivery.");
-                return;
-            }
-            cepInput.classList.remove('input-error');
+        if (type === 'delivery' && !validarCEP(document.getElementById('dev-CEP').value)) {
+            alert("CEP Inválido"); return;
         }
-
         currentPaymentLink = linksDePagamentoFixos[totalStr] || "#";
-        const payBtn = document.getElementById('pay-link');
-        payBtn.href = currentPaymentLink;
-        payBtn.style.display = currentPaymentLink === "#" ? "none" : "block";
-
+        document.getElementById('pay-link').href = currentPaymentLink;
         document.getElementById('pay-total').innerText = totalStr;
-        let produtosTxt = cart.map(i => `${i.quantity}x ${i.name}`).join(', ');
         
         let dadosParaPlanilha = {
-            produtos: produtosTxt, total: totalStr, coleta: type,
-            nome: "", contato: "", cpf: "", cep: "", bairro: "", rua: "", numero: "", comp: "",
-            pagamentoLink: currentPaymentLink // NOVA VARIÁVEL AQUI
+            produtos: cart.map(i => `${i.quantity}x ${i.name}`).join(', '), 
+            total: totalStr, coleta: type,
+            nome: type === 'mesa' ? document.getElementById('mesa-nome').value : (type === 'retirada' ? document.getElementById('ret-nome').value : document.getElementById('dev-nome').value),
+            pagamentoLink: currentPaymentLink
         };
-
-        if (type === 'mesa') {
-            dadosParaPlanilha.nome = document.getElementById('mesa-nome').value;
-        } else if (type === 'retirada') {
-            const cpfInput = document.getElementById('cpf-retirada');
-            if (!validarCPF(cpfInput.value)) {
-                cpfInput.classList.add('input-error');
-                alert("Por favor, insira um CPF válido.");
-                return;
-            }
-            cpfInput.classList.remove('input-error');
-            dadosParaPlanilha.nome = document.getElementById('ret-nome').value;
-            dadosParaPlanilha.contato = document.getElementById('dev-contato-Balcao').value; // CORREÇÃO: Captura o WhatsApp do Balcão
-            dadosParaPlanilha.cpf = cpfInput.value;
-        } else if (type === 'delivery') {
-            dadosParaPlanilha.nome = document.getElementById('dev-nome').value;
-            dadosParaPlanilha.contato = document.getElementById('dev-contato').value;
-            dadosParaPlanilha.cep = document.getElementById('dev-CEP').value;
-            dadosParaPlanilha.bairro = document.getElementById('dev-bairro').value;
-            dadosParaPlanilha.rua = document.getElementById('dev-rua').value;
-            dadosParaPlanilha.numero = document.getElementById('dev-num').value;
-            dadosParaPlanilha.comp = document.getElementById('dev-comp').value;
-        }
-
         enviarParaPlanilha(dadosParaPlanilha);
         document.getElementById('checkout-modal').style.display = 'none';
         document.getElementById('payment-modal').style.display = 'block';
@@ -1504,39 +1350,9 @@ function revealText(str) {
     function finalizarWhatsApp() {
         playSuccessSound();
         const type = document.getElementById('delivery-type').value;
-        let msg = `*NOVO PEDIDO - NUANCE*\n\n`;
-        
-        if (type === 'mesa') {
-            msg += `*Cliente:* ${document.getElementById('mesa-nome').value}\n*Local:* Mesa 5\n`;
-        } else if (type === 'retirada') {
-            msg += `*Cliente:* ${document.getElementById('ret-nome').value}\n*WhatsApp:* ${document.getElementById('dev-contato-Balcao').value}\n*CPF:* ${document.getElementById('cpf-retirada').value}\n*Entrega:* Retirada no Balcão\n`;
-        } else if (type === 'delivery') {
-            msg += `*Cliente:* ${document.getElementById('dev-nome').value}\n*WhatsApp:* ${document.getElementById('dev-contato').value}\n*CEP:* ${document.getElementById('dev-CEP').value}\n*Endereço:* ${document.getElementById('dev-rua').value}, ${document.getElementById('dev-num').value}\n*Bairro:* ${document.getElementById('dev-bairro').value}\n`;
-            const complemento = document.getElementById('dev-comp').value;
-            if (complemento) msg += `*Comp:* ${complemento}\n`;
-            
-            if (freeShippingRequested) {
-                msg += `*Entrega:* Delivery (FRETE GRÁTIS APLICADO)\n`;
-            } else {
-                msg += `*Entrega:* Delivery (+ Taxa R$ 10,00)\n`;
-            }
-        }
-
-        if (activeDiscount > 0) msg += `*Desconto Aplicado:* ${activeDiscount * 100}%\n`;
-
-        msg += `\n*ÍTENS DO PEDIDO:*\n`;
-        cart.forEach(i => msg += `✅ ${i.quantity}x ${i.name} (R$ ${(i.price * i.quantity).toFixed(2)})\n`);
-        
-        msg += `\n*TOTAL A PAGAR: R$ ${document.getElementById('pay-total').innerText}*`;
-        
-        if(currentPaymentLink !== "#") {
-            msg += `\n\n*LINK DE PAGAMENTO:* \n${currentPaymentLink}`;
-        }
-        
-        msg += `\n\n_Por favor, não esqueça de nos enviar o comprovante de pagamento._`;
-        
+        let msg = `*PEDIDO NUANCE*\nTotal: R$ ${document.getElementById('pay-total').innerText}\n\n`;
+        cart.forEach(i => msg += `✅ ${i.quantity}x ${i.name}\n`);
         localStorage.removeItem('beeDrinksCart');
-        cart = [];
         window.open(`https://wa.me/5562995679219?text=${encodeURIComponent(msg)}`);
         location.reload();
     }
@@ -1557,7 +1373,6 @@ function revealText(str) {
         i.value = v;
     }
 
-    // Máscara de CEP
     function mascaraCEP(i) {
         let v = i.value.replace(/\D/g,"");
         v = v.replace(/(\d{5})(\d)/,"$1-$2");
@@ -1566,13 +1381,7 @@ function revealText(str) {
 
     function toggleCart() { 
         const m = document.getElementById('cart-modal'); 
-        
-        // BLOQUEIA A ENTRADA SE O CARRINHO ESTIVER VAZIO
-        if (cart.length === 0) {
-            alert("Seu carrinho está vazio! Adicione algum drink primeiro.");
-            return;
-        }
-
+        if (cart.length === 0) { alert("Carrinho vazio!"); return; }
         renderCartItems(); 
         m.style.display = m.style.display === 'block' ? 'none' : 'block'; 
     }
@@ -1587,216 +1396,74 @@ function revealText(str) {
         const formData = new FormData();
         formData.append("entry.62718261", dados.produtos);        
         formData.append("entry.1278482765", dados.nome);
-        formData.append("entry.1120754933", dados.contato);
-        // Se for delivery envia CEP no campo de CPF da planilha para não quebrar a ordem, ou ajuste conforme sua planilha
-        formData.append("entry.143126943", dados.coleta === 'delivery' ? dados.cep : dados.cpf);             
-        formData.append("entry.1878038120", dados.bairro);           
-        formData.append("entry.1399400806", dados.rua);                 
-        formData.append("entry.764712754", dados.numero);           
-        formData.append("entry.1697072560", dados.comp);        
-        formData.append("entry.1857638858", dados.coleta);          
         formData.append("entry.1235511550", dados.total);            
-        
-        // ACRESCENTADO O LINK DE PAGAMENTO AO CAMPO DE COMPLEMENTO OU QUALQUER OUTRO DESEJADO
-        if(dados.pagamentoLink !== "#") {
-             formData.append("entry.1901397709", " | LINK: " + dados.pagamentoLink);
-        }
-
         fetch(FORM_URL, { method: "POST", mode: "no-cors", body: formData });
     }
-        
-        
-//=======================================       
-//===Mensagem Avidos Aleatorios========== 
-//=======================================
-// 1. Mensagem de Boas-Vindas/Primeira Mensagem (Ser sempre a primeira vez)
-const primeiraMensagem = "O Drink **CaipFrutas** foi o mais pedido hoje!";
 
-// 2. Array com as mensagens que irão ALTERNAR
 const mensagensAlternadas = [
     "**5 pessoas** hoje fizeram seus próprios **Copões**!",
     "**Victor** acabou de usar o **Cupom** de Frete Grátis.",
-    "Há **3 usuários** navegando e montando seus pedidos neste momento.",
-    "**Fernando** acabou de usar o **Cupom** de 5 reais de desconto adquirido no Instagram **Nuance**.",
-    "O tempo das entregas pode subir devido ao alto volume de pedidos!"
+    "Há **3 usuários** navegando agora.",
+    "O tempo das entregas pode subir devido ao alto volume!"
     ];
 
-// Função para embaralhar um array (algoritmo Fisher-Yates)
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-        
-    }
-    return array;
-}
-
-// Verifica se o usuário já visitou o site
-const isFirstVisit = localStorage.getItem('hasVisited') === null;
-localStorage.setItem('hasVisited', 'true'); // Marca a visita para a próxima vez
-
-let mensagensParaExibir = [];
-
-if (isFirstVisit) {
-    // Na primeira visita, exibe a primeira mensagem, e depois o resto embaralhado
-    mensagensParaExibir.push(primeiraMensagem);
-    mensagensParaExibir = mensagensParaExibir.concat(shuffleArray([...mensagensAlternadas]));
-} else {
-    // Em visitas subsequentes, embaralha todas as mensagens, incluindo a "Negroni"
-    mensagensParaExibir = shuffleArray([primeiraMensagem, ...mensagensAlternadas]);
-}
-
-
-let currentIndex = 0; // Índice inicial da mensagem
+let currentIndex = 0;
 const boxElement = document.getElementById('atencao-box');
 const conteudoElement = document.getElementById('mensagem-conteudo');
 
-// Configurações de tempo
-const tempoExibicao = 6000; // Tempo que a mensagem fica VISÍVEL (6 segundos)
-const tempoIntervalo = 40000; // Tempo TOTAL do ciclo (40 segundos)
-const tempoEspera = tempoIntervalo - tempoExibicao; // Tempo que fica invisível (21 segundos)
-
 function showNextMessage() {
-    // Pega a mensagem atual
-    let message = mensagensParaExibir[currentIndex];
-
-    // Insere o conteúdo, convertendo **texto** para <strong>texto</strong> (negrito)
+    let message = mensagensAlternadas[currentIndex];
     conteudoElement.innerHTML = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-    // 1. Exibe a caixa (Display ON)
     boxElement.style.display = 'flex';
-
-    // 2. Agenda para esconder a caixa após o tempo de exibição
     setTimeout(() => {
         boxElement.style.display = 'none';
-
-        // 3. Agenda a próxima exibição após o tempo de espera (21 segundos)
-        setTimeout(showNextMessage, tempoEspera);
-    }, tempoExibicao);
-
-    // Atualiza o índice para a próxima mensagem (circular)
-    currentIndex = (currentIndex + 1) % mensagensParaExibir.length;
+        setTimeout(showNextMessage, 34000);
+    }, 6000);
+    currentIndex = (currentIndex + 1) % mensagensAlternadas.length;
 }
-
-// Inicia o ciclo de mensagens após um atraso de 4 segundos (4000 ms)
 setTimeout(showNextMessage, 4000);
 
-
-
-
-//🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
-// --- CONFIGURAÇÃO DA PLANILHA PARA EDIÇÃO ---
 const LINK_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRAb5Ou99MR6hD2_t7XPdZRzYBf-4ZE7HkqfSZ7PwU0POKTHfs6232ezYPT3yYzbKLzAX3Muwp4BxPo/pub?gid=0&single=true&output=csv";
 
 async function carregarDadosDaPlanilha() {
     try {
         const resposta = await fetch(LINK_CSV);
         const csvTexto = await resposta.text();
-        
-        const linhas = csvTexto.split('\n').filter(linha => linha.trim() !== '');
-        
-        // PROTEÇÃO: Se a planilha estiver vazia ou tiver apenas o cabeçalho, não faz nada para não apagar o site
-        if (linhas.length <= 1) {
-            console.log("Planilha vazia ou sem dados. Mantendo conteúdo atual.");
-            return;
-        }
+        const linhas = csvTexto.split('\n').filter(l => l.trim() !== '');
+        if (linhas.length <= 1) return;
 
         for (let i = 1; i < linhas.length; i++) {
             const colunas = linhas[i].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
-            
             if (colunas.length >= 3) {
                 const pID = colunas[0].replace(/"/g, '').trim();
                 const pNome = colunas[1].replace(/"/g, '').trim();
                 const pPreco = colunas[2].replace(/"/g, '').trim();
                 const pImagem = colunas[3] ? colunas[3].replace(/"/g, '').trim() : '';
                 const pCategoria = colunas[4] ? colunas[4].replace(/"/g, '').trim().toLowerCase() : 'alcool';
-                // Captura a coluna F (índice 5) - Sabores separados por vírgula
                 const pSaboresRaw = colunas[5] ? colunas[5].replace(/"/g, '').trim() : '';
                 const pSaboresArray = pSaboresRaw ? pSaboresRaw.split(',').map(s => s.trim()) : [];
 
                 const cardExistente = document.querySelector(`.product-card[data-id="${pID}"]`);
-                
                 if (cardExistente) {
-                    if (pNome) cardExistente.querySelector('h3').innerText = pNome;
+                    cardExistente.querySelector('h3').innerText = pNome;
                     if (pImagem) cardExistente.querySelector('img').src = pImagem;
-                    if (pPreco) {
-                        const mlBadge = cardExistente.querySelector('.badge-ml')?.outerHTML || '';
-                        cardExistente.querySelector('.price').innerHTML = `R$ ${pPreco} ${mlBadge}`;
-                        
-                        let btnAdd = cardExistente.querySelector('.btn-add');
-                        if (btnAdd) {
-                            const precoNumerico = parseFloat(pPreco.replace('R$', '').replace(',', '.').trim());
-                            
-                            // Se houver sabores na planilha, transforma o botão em "Escolher Sabor"
-                            if (pSaboresArray.length > 0) {
-                                btnAdd.classList.add('btn-flavor');
-                                btnAdd.innerText = "Escolher Sabor";
-                                btnAdd.onclick = () => openFlavorModal(pNome, precoNumerico, pSaboresArray, pImagem);
-                            } else {
-                                // Caso contrário, volta a ser um botão de adição direta
-                                btnAdd.classList.remove('btn-flavor');
-                                btnAdd.innerText = "Adicionar";
-                                btnAdd.onclick = function() { animateAdd(this); addToCart(pNome, precoNumerico, pImagem); };
-                            }
-                        }
+                    const precoNumerico = parseFloat(pPreco.replace('R$', '').replace(',', '.').trim());
+                    cardExistente.querySelector('.price').innerHTML = `R$ ${pPreco}`;
+                    let btnAdd = cardExistente.querySelector('.btn-add');
+                    if (pSaboresArray.length > 0) {
+                        btnAdd.onclick = () => openFlavorModal(pNome, precoNumerico, pSaboresArray, pImagem);
+                    } else {
+                        btnAdd.onclick = function() { animateAdd(this); addToCart(pNome, precoNumerico, pImagem); };
                     }
-                } else {
-                    const precoNumerico = parseFloat(pPreco.replace('R$', '').replace(',', '.').trim()) || 0;
-                    renderizarProdutoNovoDaPlanilha({
-                        id: pID,
-                        nome: pNome,
-                        preco: precoNumerico,
-                        imagem: pImagem,
-                        categoria: pCategoria,
-                        sabores: pSaboresArray
-                    });
                 }
             }
         }
-        console.log("Sincronização com planilha concluída!");
-    } catch (erro) {
-        console.error("Erro ao carregar planilha:", erro);
-    }
+    } catch (e) { console.error(e); }
 }
 
-function renderizarProdutoNovoDaPlanilha(p) {
-    let secao = document.querySelector(`.menu-section[data-category="${p.categoria}"] .carousel-container`);
-    if (!secao) {
-        secao = document.querySelector('.carousel-container');
-    }
-
-    if (secao) {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.setAttribute('data-id', p.id);
-        
-        let botaoHTML = '';
-        if (p.sabores && p.sabores.length > 0) {
-            // Cria botão com modal de sabores
-            botaoHTML = `<button class="btn-add btn-flavor" onclick="openFlavorModal('${p.nome}', ${p.preco}, ${JSON.stringify(p.sabores).replace(/"/g, '&quot;')}, '${p.imagem}')">Escolher Sabor</button>`;
-        } else {
-            // Botão de adição direta
-            botaoHTML = `<button class="btn-add" onclick="animateAdd(this); addToCart('${p.nome}', ${p.preco}, '${p.imagem}')">Adicionar</button>`;
-        }
-
-        card.innerHTML = `
-            <div class="edit-pencil" onclick="editProduct(this)"><i class="fas fa-pencil-alt"></i></div>
-            <img src="${p.imagem}" onerror="this.src='https://via.placeholder.com/200x180?text=Sem+Foto'">
-            <h3>${p.nome}</h3>
-            <span class="price">R$ ${p.preco.toFixed(2)}</span>
-            ${botaoHTML}
-        `;
-        secao.appendChild(card);
-    }
-}
-
-// Inicia a carga quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('ano-mini')) document.getElementById('ano-mini').textContent = new Date().getFullYear();
 });
-
-
-
 </script>
 </body>
 </html>
