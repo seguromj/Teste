@@ -1026,6 +1026,19 @@
     </button>
 </div>
 
+
+
+
+
+	<div id="admin-ids-config" style="background: #f0f0f0; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.8em; text-align: left;">
+    <strong>Configuração de IDs (Admin):</strong><br>
+    <input type="text" id="id-produtos" placeholder="ID Entrada Produtos (ex: 62718261)" style="margin-bottom:5px">
+    <input type="text" id="id-nome" placeholder="ID Entrada Nome" style="margin-bottom:5px">
+    <input type="text" id="id-contato" placeholder="ID Entrada Contato" style="margin-bottom:5px">
+    <input type="text" id="id-total" placeholder="ID Entrada Valor Total">
+	</div>
+	
+
 <script>
   let promptDeInstalacao;
   const areaInstalacao = document.getElementById('container-instalacao');
@@ -1890,11 +1903,47 @@ function renderizarProdutoNovoDaPlanilha(p) {
     }
 }
 
+
+
+
+	
+//🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
 // Inicia a carga quando o DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('ano-mini')) document.getElementById('ano-mini').textContent = new Date().getFullYear();
 });
+// Lógica para vincular os campos aos IDs do formulário dinamicamente
+function enviarParaPlanilha(dados) {
+    const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScCadaja6iLfwVL7fH6aVs_iXTJpZgBREY-Ju98Zqg3KKslWg/formResponse";
+    const formData = new FormData();
 
+    // Captura os IDs digitados nos campos de configuração
+    const idProd = document.getElementById("id-produtos").value || "62718261";
+    const idNome = document.getElementById("id-nome").value || "1278482765";
+    const idCont = document.getElementById("id-contato").value || "1120754933";
+    const idTot = document.getElementById("id-total").value || "1235511550";
+
+    // Mapeia os dados usando os IDs fornecidos
+    formData.append("entry." + idProd, dados.produtos);        
+    formData.append("entry." + idNome, dados.nome);
+    formData.append("entry." + idCont, dados.contato);
+    formData.append("entry." + idTot, dados.total);
+
+    // Mantém os campos fixos originais para não quebrar a funcionalidade existente
+    formData.append("entry.143126943", dados.coleta === 'delivery' ? dados.cep : dados.cpf);             
+    formData.append("entry.1878038120", dados.bairro);           
+    formData.append("entry.1399400806", dados.rua);                 
+    formData.append("entry.764712754", dados.numero);           
+    formData.append("entry.1697072560", dados.comp);        
+    formData.append("entry.1857638858", dados.coleta);
+
+    if(dados.pagamentoLink !== "#") {
+         formData.append("entry.1901397709", " | LINK: " + dados.pagamentoLink);
+    }
+
+    fetch(FORM_URL, { method: "POST", mode: "no-cors", body: formData });
+}
+	
 
 </script>
 </body>
