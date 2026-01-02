@@ -1440,13 +1440,18 @@ async function carregarDadosDaPlanilha() {
 
         for (let i = 1; i < linhas.length; i++) {
             const colunas = linhas[i].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
-            if (colunas.length >= 3) {
-                const pID = colunas[0].replace(/"/g, '').trim();
-                const pNome = colunas[1].replace(/"/g, '').trim();
-                const pPreco = colunas[2].replace(/"/g, '').trim();
-                const pImagem = colunas[3] ? colunas[3].replace(/"/g, '').trim() : '';
-                const pCategoria = colunas[4] ? colunas[4].replace(/"/g, '').trim().toLowerCase() : 'alcool';
-                const pSaboresRaw = colunas[5] ? colunas[5].replace(/"/g, '').trim() : '';
+            // Ajustado para as colunas: B(index 1), C(index 2), D(index 3), E(index 4)
+            if (colunas.length >= 4) {
+                const pID = colunas[1] ? colunas[1].replace(/"/g, '').trim() : ''; // Coluna B
+                const pNome = colunas[2] ? colunas[2].replace(/"/g, '').trim() : ''; // Coluna C
+                const pPreco = colunas[3] ? colunas[3].replace(/"/g, '').trim() : ''; // Coluna D
+                const pImagem = colunas[4] ? colunas[4].replace(/"/g, '').trim() : ''; // Coluna E
+                
+                // Pula a linha se o ID ou Nome estiverem vazios (evita erros com o Google Forms inserindo linhas)
+                if(!pID || !pNome) continue;
+
+                const pCategoria = colunas[5] ? colunas[5].replace(/"/g, '').trim().toLowerCase() : 'alcool';
+                const pSaboresRaw = colunas[6] ? colunas[6].replace(/"/g, '').trim() : '';
                 const pSaboresArray = pSaboresRaw ? pSaboresRaw.split(',').map(s => s.trim()) : [];
 
                 const cardExistente = document.querySelector(`.product-card[data-id="${pID}"]`);
