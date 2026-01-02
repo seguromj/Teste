@@ -811,7 +811,9 @@
         
         const endereco = `${rua}, ${num}, ${bairro}, ${cep}`;
         document.getElementById('titulo-mapa').innerText = "📍 Rota: " + nome;
-        document.getElementById('iframe-mapa').src = `https://maps.google.com/maps?q=${encodeURIComponent(endereco)}&output=embed`;
+        document.getElementById('iframe-mapa').src = `https://www.google.com/maps/embed/v1/search?key=SEU_API_KEY_AQUI&q=${encodeURIComponent(endereco)}`;
+        // Nota: O embed do Google requer API Key. Caso não tenha, usa-se a URL de visualização:
+        document.getElementById('iframe-mapa').src = `https://maps.google.com/maps?q=${encodeURIComponent(endereco)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
         document.getElementById('modalMapa').style.display = 'block';
     }
 
@@ -822,7 +824,7 @@
         
         const endereco = `${n.rua}, ${n.numero}, ${n.bairro}, ${n.cep}`;
         document.getElementById('titulo-mapa').innerText = "📍 Entrega: " + n.nome;
-        document.getElementById('iframe-mapa').src = `https://maps.google.com/maps?q=${encodeURIComponent(endereco)}&output=embed`;
+        document.getElementById('iframe-mapa').src = `https://maps.google.com/maps?q=${encodeURIComponent(endereco)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
         document.getElementById('modalMapa').style.display = 'block';
     }
 
@@ -877,7 +879,7 @@
 
     function reabrirNota(id) {
         const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const n = Tree.find(x => x.id === id);
+        const n = notas.find(x => x.id === id);
         if(n) {
             document.getElementById('nome').value = n.nome || "";
             document.getElementById('data-hora').value = n.data || "";
@@ -1265,4 +1267,3 @@
 </script>
 </body>
 </html>
-2
