@@ -1350,8 +1350,14 @@ function revealText(str) {
     function finalizarWhatsApp() {
         playSuccessSound();
         const type = document.getElementById('delivery-type').value;
-        let msg = `*PEDIDO NUANCE*\nTotal: R$ ${document.getElementById('pay-total').innerText}\n\n`;
+        const totalStr = document.getElementById('pay-total').innerText;
+        let msg = `*PEDIDO NUANCE*\nTotal: R$ ${totalStr}\n\n`;
         cart.forEach(i => msg += `✅ ${i.quantity}x ${i.name}\n`);
+        
+        if (currentPaymentLink !== "#") {
+            msg += `\n🔗 *Link de Pagamento:* ${currentPaymentLink}\n`;
+        }
+        
         localStorage.removeItem('beeDrinksCart');
         window.open(`https://wa.me/5562995679219?text=${encodeURIComponent(msg)}`);
         location.reload();
