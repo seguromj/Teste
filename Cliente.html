@@ -1243,11 +1243,11 @@
         if(!c1 || !c2 || !c3 || !c4) return alert("Preencha todos os campos!");
 
         // CONFIGURAÇÃO DO GOOGLE FORMS
-        const formURL = "SUA_URL_DO_GOOGLE_FORM_AQUI/formResponse";
-        const entry1 = "entry.ID_CAMPO_1";
-        const entry2 = "entry.ID_CAMPO_2";
-        const entry3 = "entry.ID_CAMPO_3";
-        const entry4 = "entry.ID_CAMPO_4";
+        const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSfHpe7Idb8cekKYPyOOs8xn5sSfCQhWLKqUYwF4uXaz4QBX9w/formResponse";
+        const entry1 = "entry.1183639703"; // ID
+        const entry2 = "entry.1305746237"; // Nome
+        const entry3 = "entry.204413255"; // Valor
+        const entry4 = "entry.1752078996"; // Imagem
 
         const fullURL = `${formURL}?${entry1}=${encodeURIComponent(c1)}&${entry2}=${encodeURIComponent(c2)}&${entry3}=${encodeURIComponent(c3)}&${entry4}=${encodeURIComponent(c4)}`;
 
