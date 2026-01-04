@@ -4,1266 +4,326 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuance PDV | 7.1.0</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
+    <title>Quantum Stock Pro - JSON FIX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@500;800&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --primary: #6366f1; 
-            --accent: #a855f7;
-            --danger: #ef4444; 
-            --success: #10b981; 
-            --bg: #0f172a; 
-            --card: #1e293b;
-            --whatsapp: #22c55e; 
-            --text: #f8fafc;
-            --text-muted: #94a3b8;
-            --glass: rgba(30, 41, 59, 0.7);
-            /* Variáveis do Jogo */
-            --face-size: 80px;
-            --dot-size: 14px;
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00c1;
+            --neon-yellow: #f3ff00;
+            --dark-bg: #0d1117;
+            --glass-bg: #161b22;
         }
 
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: var(--bg); 
-            margin: 0; 
-            padding: 0; 
-            color: var(--text);
-            background-image: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: #e6edf3;
+            font-family: 'Inter', sans-serif;
+            padding: 15px;
             min-height: 100vh;
         }
 
-        /* ESTILOS DA TELA DE LOGIN E CADASTRO */
-        #tela-bloqueio {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg);
-            z-index: 5000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-image: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+        .container { max-width: 1200px; margin: auto; }
+
+        header { text-align: center; margin-bottom: 20px; }
+        .logo { font-weight: 900; font-size: 1.8rem; color: var(--neon-cyan); letter-spacing: -1px; }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
         }
 
-        .auth-container {
-            background: var(--card);
-            padding: 40px;
-            border-radius: 24px;
-            width: 90%;
-            max-width: 400px;
-            border: 1px solid rgba(255,255,255,0.1);
+        @media (max-width: 768px) { .control-grid { grid-template-columns: 1fr; } }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #8b949e;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            background: #010409;
+            border: 1px solid #30363d;
+            padding: 12px;
+            color: #fff;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+        .btn-cad { background: var(--neon-cyan); color: #000; }
+        .btn-baixa { background: transparent; border: 1px solid var(--neon-pink); color: var(--neon-pink); }
+        .btn-baixa:hover { background: var(--neon-pink); color: #fff; }
+
+        .backup-zone { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .btn-backup { background: #21262d; color: #c9d1d9; font-size: 10px; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        
+        /* Grid e Cards */
+        .grid-container { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 10px; 
+        }
+
+        @media (min-width: 769px) {
+            .grid-container { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        }
+
+        .card {
+            background: #1c2128;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 12px;
             text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            position: relative;
         }
 
-        .auth-logo {
-            font-size: 32px;
+        .edit-icon {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .card-img {
+            width: 60px; height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+            margin-bottom: 8px;
+            border: 2px solid #30363d;
+        }
+
+        .card-nome { font-weight: 700; font-size: 0.85rem; color: #fff; }
+        .card-id { 
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--neon-pink); 
+            font-size: 11px; 
             font-weight: 800;
-            margin-bottom: 30px;
-            background: linear-gradient(to right, #818cf8, #d8b4fe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        #main-app { display: none; } /* Esconde o PDV até o login */
-        
-        .main-wrapper { display: flex; flex-direction: column; min-height: 100vh; }
-        
-        .top-bar { 
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding: 15px 30px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            position: sticky; top: 0; z-index: 1000;
-        }
-
-        .logo-area h2 { 
-            margin: 0; font-weight: 800; font-size: 22px; 
-            background: linear-gradient(to right, #818cf8, #d8b4fe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -1px;
+            background: rgba(255, 0, 193, 0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+            margin: 4px 0;
+            display: inline-block;
         }
         
-        .pdv-container { 
-            display: flex; 
-            flex: 1; 
-            padding: 25px; 
-            gap: 25px; 
-            max-width: 1600px; 
-            margin: 0 auto; 
-            width: 100%; 
-            box-sizing: border-box;
-        }
-        
-        .panel-left { 
-            flex: 1.2; background: var(--card); border-radius: 20px; padding: 25px; 
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-        }
-        
-        .panel-right { 
-            flex: 0.8; background: rgba(15, 23, 42, 0.4); border-radius: 24px; padding: 25px; 
-            display: flex; flex-direction: column; align-items: center; 
-            border: 2px dashed rgba(255,255,255,0.1);
-            position: sticky; top: 100px; height: fit-content;
+        .saldo-box {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--neon-cyan);
+            font-weight: 800;
         }
 
-        /* RESPONSIVIDADE PROFISSIONAL */
-        @media (max-width: 1100px) {
-            .pdv-container { flex-direction: column; padding: 15px; }
-            .panel-left, .panel-right { flex: none; width: 100%; position: static; }
-            .top-bar { flex-direction: column; gap: 15px; padding: 15px; }
-            .top-bar nav { flex-wrap: wrap; justify-content: center; }
+        #customAlert {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #161b22;
+            border: 2px solid var(--neon-pink);
+            padding: 25px;
+            border-radius: 15px;
+            z-index: 1000;
+            text-align: center;
+            width: 300px;
         }
-
-        @media (max-width: 600px) {
-            .grid { grid-template-columns: 1fr; }
-            .auth-container { padding: 20px; }
-            .btn-nav { font-size: 10px; padding: 8px 12px; }
-        }
-
-        .section-title { 
-            font-size: 12px; font-weight: 800; text-transform: uppercase; 
-            color: var(--accent); margin: 25px 0 15px; 
-            display: flex; align-items: center; gap: 10px;
-        }
-        .section-title::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,0.05); }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
-        
-        input, textarea, select { 
-            width: 100%; padding: 12px 15px; background: #0f172a; 
-            border: 1px solid #334155; border-radius: 10px; font-size: 14px; 
-            color: white; transition: all 0.3s;
-            box-sizing: border-box;
-        }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
-        
-        .btn { 
-            border: none; border-radius: 12px; padding: 14px; font-weight: 700; 
-            cursor: pointer; font-size: 13px; transition: all 0.3s;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-
-        .btn-importar { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
-        .btn-gerar { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; font-size: 16px; margin-top: 20px; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); }
-        .btn-nav { background: rgba(255,255,255,0.05); color: white; padding: 10px 18px; font-size: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        
-        #area-cupom { 
-            width: 80mm; padding: 20px; background: #fff; color: #1a1a1a;
-            font-family: 'Courier New', monospace; border-radius: 2px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4); margin-bottom: 30px;
-        }
-        .empresa-nome { text-align: center; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 900; color: #000; margin-bottom: 5px; }
-        .divisor { border-top: 1px dashed #000; margin: 10px 0; }
-
-        .modal { display: none; position: fixed; z-index: 6000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
-        .modal-content { background: var(--card); margin: 5vh auto; padding: 30px; width: 90%; max-width: 650px; border-radius: 24px; position: relative; border: 1px solid rgba(255,255,255,0.1); color: white; overflow-y: auto; max-height: 90vh; }
-        .close { position: absolute; right: 25px; top: 15px; font-size: 28px; cursor: pointer; color: var(--text-muted); z-index: 6001; }
-
-        .nota-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 15px; padding: 18px; margin-bottom: 15px; }
-        
-        .status-badge { padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: white; border: none; cursor: pointer; }
-        .st-pendente { background: #475569; }
-        .st-preparando { background: #3b82f6; }
-        .st-rua { background: #f59e0b; }
-        .st-entregue { background: #10b981; }
-
-        #lista-notas { max-height: 60vh; overflow-y: auto; padding-right: 10px; }
-        #lista-notas::-webkit-scrollbar { width: 5px; }
-        #lista-notas::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-        #contador-cupons { background: var(--primary); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; margin-left: 10px; }
-
-        /* ESTILOS DO JOGO DE DADOS */
-        .scene { width: var(--face-size); height: var(--face-size); perspective: 600px; margin: 20px auto; }
-        .dice { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 2s cubic-bezier(0.17, 0.67, 0.1, 1); }
-        .face { position: absolute; width: var(--face-size); height: var(--face-size); background: white; border: 2px solid #ccc; border-radius: 15px; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr) ; padding: 10px; box-sizing: border-box; }
-        .dot { background-color: #333; border-radius: 50%; width: var(--dot-size); height: var(--dot-size); align-self: center; justify-self: center; }
-        .face-1 { transform: rotateY(0deg) translateZ(calc(var(--face-size) / 2)); }
-        .face-2 { transform: rotateY(90deg) translateZ(calc(var(--face-size) / 2)); }
-        .face-3 { transform: rotateY(180deg) translateZ(calc(var(--face-size) / 2)); }
-        .face-4 { transform: rotateY(-90deg) translateZ(calc(var(--face-size) / 2)); }
-        .face-5 { transform: rotateX(90deg) translateZ(calc(var(--face-size) / 2)); }
-        .face-6 { transform: rotateX(-90deg) translateZ(calc(var(--face-size) / 2)); }
-        .face-1 .dot:nth-child(1) { grid-area: 2/2; }
-        .face-2 .dot:nth-child(1) { grid-area: 1/1; } .face-2 .dot:nth-child(2) { grid-area: 3/3; }
-        .face-3 .dot:nth-child(1) { grid-area: 1/1; } .face-3 .dot:nth-child(2) { grid-area: 2/2; } .face-3 .dot:nth-child(3) { grid-area: 3/3; }
-        .face-4 .dot:nth-child(1) { grid-area: 1/1; } .face-4 .dot:nth-child(2) { grid-area: 1/3; } .face-4 .dot:nth-child(3) { grid-area: 3/1; } .face-4 .dot:nth-child(4) { grid-area: 3/3; }
-        .face-5 .dot:nth-child(1) { grid-area: 1/1; } .face-5 .dot:nth-child(2) { grid-area: 1/3; } .face-5 .dot:nth-child(3) { grid-area: 2/2; } .face-5 .dot:nth-child(4) { grid-area: 3/1; } .face-5 .dot:nth-child(5) { grid-area: 3/3; }
-        .face-6 .dot:nth-child(1) { grid-area: 1/1; } .face-6 .dot:nth-child(2) { grid-area: 2/1; } .face-6 .dot:nth-child(3) { grid-area: 3/1; } .face-6 .dot:nth-child(4) { grid-area: 1/3; } .face-6 .dot:nth-child(5) { grid-area: 2/3; } .face-6 .dot:nth-child(6) { grid-area: 3/3; }
-        @keyframes jump { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-80px); } }
-        .jumping { animation: jump 2s ease-in-out; }
-        .coupon-item { background: rgba(255, 255, 255, 0.05); padding: 10px; border-radius: 12px; border-left: 4px solid var(--primary); display: flex; flex-direction: column; margin-bottom: 8px; }
-        .discount-text { color: #00ff88; font-size: 0.85rem; font-weight: bold; }
-
-        @media print {
-            @page { margin: 0; }
-            body { background: white !important; margin: 0; padding: 0; }
-            body * { visibility: hidden; }
-            #area-cupom, #area-cupom *, #area-etiqueta, #area-etiqueta * { visibility: visible; }
-            #area-cupom, #area-etiqueta { 
-                position: absolute; 
-                left: 0; 
-                top: 0; 
-                width: 80mm; 
-                box-shadow: none; 
-                padding: 5mm;
-                background: white !important;
-                color: black !important;
-            }
-            .btn, .top-bar, .panel-left, #tela-bloqueio, .modal { display: none !important; }
-        }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
     </style>
 </head>
-<body onload="verificarSessao()">
+<body>
 
-<div id="tela-bloqueio">
-    <div id="auth-login" class="auth-container">
-        <div class="auth-logo">NUANCE</div>
-        <p id="auth-title" style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Acesso ao Sistema PDV</p>
-        <div class="form-group">
-            <label>E-mail</label>
-            <input type="email" id="login-email" placeholder="seu@email.com">
-        </div>
-        <div class="form-group">
-            <label>Senha</label>
-            <input type="password" id="login-senha" placeholder="••••••••">
-        </div>
-        <button class="btn btn-gerar" style="width:100%" onclick="fazerLogin()">ENTRAR</button>
-        <p style="text-align: center; margin-top: 20px; font-size: 12px;">
-            <a href="#" onclick="alternarAuth(true)" style="color: var(--accent);">Esqueci a senha</a> | 
-            <a href="#" onclick="abrirModalCadastro(true)" style="color: var(--accent);">Redefinir senha</a> | 
-            <a href="#" onclick="abrirModalCadastro(false)" style="color: var(--primary);">Criar Cadastro</a>
-        </p>
+    <div class="overlay" id="overlay"></div>
+    <div id="customAlert">
+        <p id="alertMsg" style="margin-bottom: 20px; color: #fff;"></p>
+        <button class="btn btn-cad" onclick="closeAlert()">OK</button>
     </div>
 
-    <div id="auth-recuperar" class="auth-container" style="display:none;">
-        <div class="auth-logo">Recuperar</div>
-        <div class="form-group">
-            <label>Digite seu e-mail cadastrado</label>
-            <input type="email" id="email-recuperar" placeholder="seu@email.com">
-        </div>
-        <button class="btn btn-importar" style="width:100%" onclick="recuperarSenha()">ENVIAR SENHA POR E-MAIL</button>
-        <button class="btn btn-nav" style="width:100%; margin-top:10px;" onclick="alternarAuth(false)">VOLTAR</button>
-    </div>
-</div>
-
-<div id="modalNovoAtendente" class="modal">
-    <div class="modal-content" style="max-width: 400px;">
-        <span class="close" onclick="fecharModal('modalNovoAtendente')">×</span>
-        <h3 id="modal-cadastro-titulo" style="margin-top:0">Configuração de Cadastro</h3>
-        <div class="form-group">
-            <label>Nome do Atendente</label>
-            <input type="text" id="cad-nome" placeholder="Nome Completo">
-        </div>
-        <div class="form-group">
-            <label>E-mail do Atendente</label>
-            <input type="email" id="cad-email">
-        </div>
-        <div class="form-group">
-            <label>Crie uma Senha</label>
-            <input type="password" id="cad-senha">
-        </div>
-        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin: 20px 0;">
-        <div class="form-group">
-            <label style="color: var(--danger); font-weight: 800;">CHAVE MASTER DE LIBERAÇÃO</label>
-            <input type="password" id="cad-master" placeholder="Digite a chave para autorizar">
-        </div>
-        <button class="btn btn-success" style="width:100%; background: var(--success); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-bottom: 10px;" onclick="processarCadastro()">CRIAR OU ATUALIZAR ACESSO</button>
-    </div>
-</div>
-
-<div id="main-app" class="main-wrapper">
-    <header class="top-bar">
-        <div class="logo-area">
-            <h2>NUANCE <span style="font-weight: 300; font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-left: 10px;">2.1</span></h2>
-        </div>
-        <nav style="display:flex; gap: 10px; align-items: center;">
-            <span id="user-display" style="font-size: 11px; color: var(--accent); font-weight: bold; margin-right: 10px;"></span>
-        </nav>
-        <nav style="display: flex; gap: 10px; align-items: center;">
-            <button class="btn btn-nav" onclick="abrirGestao()">📁 Histórico</button>
-            <button class="btn btn-nav" onclick="abrirRankingClientes()">👤 VIPs</button>
-            <button class="btn btn-nav" style="border-color: var(--primary);" onclick="abrirRankingProdutos()">📦 Estoque</button>
-            <button class="btn btn-nav" style="background: #334155; border: none;" onclick="limparHD()">💾 Limpar HD</button>
-            <button class="btn btn-nav" style="background: #f59e0b; border: none;" onclick="abrirLoginAdmin()">🔑 Admin</button>
-            <button class="btn btn-nav" style="background: var(--danger); border: none;" onclick="logout()">🚪 Sair</button>
-        </nav>
-    </header>
-
-    <main class="pdv-container">
-        <section class="panel-left">
-            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05)); border: 1px solid rgba(245, 158, 11, 0.2); padding: 20px; border-radius: 15px; margin-bottom: 25px;">
-                <label style="color: #f59e0b; font-weight: 800;">Colar mensagem do Telegram</label>
-                <textarea id="input-importacao" style="height: 80px; margin: 10px 0; background: rgba(0,0,0,0.3);" placeholder="Cole a mensagem do Telegram aqui..."></textarea>
-                <div class="grid">
-                    <button class="btn btn-importar" onclick="processarTexto()">Processar Mensagem</button>
-                    <button class="btn btn-nav" onclick="limparCampoImportacao()">🧹 Limpar Tudo</button>
+    <div class="container">
+        <header><div class="logo">QUANTUM STOCK PRO</div></header>
+        
+        <div class="control-grid">
+            <section class="glass-panel">
+                <div class="panel-title">REGISTRO</div>
+                <input type="text" id="nomeProd" placeholder="NOME">
+                <input type="text" id="idProd" placeholder="ID">
+                <input type="number" id="totalProd" placeholder="ESTOQUE INICIAL">
+                <select id="catProd">
+                    <option value="ML">ML</option>
+                    <option value="UN">UN</option>
+                </select>
+                <input type="file" id="fotoProd" accept="image/*">
+                <button class="btn btn-cad" id="btnAcao" onclick="cadastrar()">SALVAR PRODUTO</button>
+                
+                <div class="backup-zone">
+                    <button class="btn-backup" onclick="exportarJson()">BAIXAR ARQUIVO .JSON</button>
+                    <button class="btn-backup" onclick="document.getElementById('importFile').click()">RESTAURAR BACKUP</button>
+                    <input type="file" id="importFile" style="display:none" onchange="importarBackup(event)">
                 </div>
-                <div style="margin-top:10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button class="btn" style="background: #4285F4; color:white;" onclick="abrirGoogleMaps()">🌐 Google Maps</button>
-                    <button class="btn" style="background: #0ea5e9; color:white;" onclick="verRotaDiretaCorrente()">🗺️ Rota no Modal</button>
+            </section>
+
+            <section class="glass-panel">
+                <div class="panel-title">TERMINAL DE BAIXA</div>
+                <textarea id="comandoBaixa" placeholder="Ex: ID: 501 (10)"></textarea>
+                <button class="btn btn-baixa" onclick="processarBaixas()">PROCESSAR</button>
+                <button class="btn-backup" style="margin-top:10px" onclick="addShortcut()">+ ATALHO ID:0</button>
+            </section>
+        </div>
+
+        <div id="lista" class="grid-container"></div>
+    </div>
+
+    <script>
+        let estoque = [];
+        try {
+            const data = localStorage.getItem('quantum_data_v2');
+            if (data) estoque = JSON.parse(data);
+        } catch (e) { estoque = []; }
+
+        let idEditando = null;
+        window.onload = render;
+
+        function showAlert(msg) {
+            document.getElementById('alertMsg').innerText = msg;
+            document.getElementById('customAlert').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function closeAlert() {
+            document.getElementById('customAlert').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function cadastrar() {
+            const nome = document.getElementById('nomeProd').value.trim();
+            const id = document.getElementById('idProd').value.trim();
+            const total = parseFloat(document.getElementById('totalProd').value);
+            const cat = document.getElementById('catProd').value;
+            const foto = document.getElementById('fotoProd').files[0];
+
+            if(!nome || !id || isNaN(total)) return showAlert("Preencha os campos!");
+
+            const concluir = (img) => {
+                if(idEditando) {
+                    const idx = estoque.findIndex(p => p.id === idEditando);
+                    estoque[idx] = { ...estoque[idx], nome: nome.toUpperCase(), id, saldo: total, unidade: cat };
+                    if(img) estoque[idx].img = img;
+                } else {
+                    if(!img) return showAlert("Falta a foto!");
+                    estoque.push({ id, nome: nome.toUpperCase(), saldo: total, unidade: cat, img: img });
+                }
+                idEditando = null;
+                localStorage.setItem('quantum_data_v2', JSON.stringify(estoque));
+                render(); limpar();
+            }
+
+            if(foto) {
+                const reader = new FileReader();
+                reader.onload = (e) => concluir(e.target.result);
+                reader.readAsDataURL(foto);
+            } else { concluir(null); }
+        }
+
+        function editar(id) {
+            const p = estoque.find(x => x.id === id);
+            idEditando = id;
+            document.getElementById('nomeProd').value = p.nome;
+            document.getElementById('idProd').value = p.id;
+            document.getElementById('totalProd').value = p.saldo;
+            document.getElementById('catProd').value = p.unidade;
+            document.getElementById('btnAcao').innerText = "ATUALIZAR";
+        }
+
+        function render() {
+            document.getElementById('lista').innerHTML = estoque.map(p => `
+                <div class="card">
+                    <span class="edit-icon" onclick="editar('${p.id}')">✏️</span>
+                    <img src="${p.img}" class="card-img">
+                    <div class="card-nome">${p.nome}</div>
+                    <div class="card-id">ID: ${p.id}</div>
+                    <div class="saldo-box">${p.saldo} <small>${p.unidade}</small></div>
                 </div>
-            </div>
+            `).join('');
+        }
 
-            <div class="section-title">Dados do Cliente</div>
-            <div class="grid">
-                <div class="form-group"><label>Nome do Cliente</label><input type="text" id="nome" placeholder="Ex: João Silva" oninput="salvarProgresso(); atualizarCupom()"></div>
-                <div class="form-group"><label>Data / Hora</label><input type="text" id="data-hora" oninput="salvarProgresso(); atualizarCupom()"></div>
-                <div class="form-group"><label>WhatsApp</label><input type="text" id="whatsapp" placeholder="(00) 00000-0000" oninput="salvarProgresso(); atualizarCupom()"></div>
-                <div class="form-group"><label>CPF ou Referência</label><input type="text" id="CPF" placeholder="Opcional" oninput="salvarProgresso(); atualizarCupom()"></div>
-            </div>
+        function processarBaixas() {
+            const texto = document.getElementById('comandoBaixa').value;
+            const regex = /ID:\s*\(?(\w+)\)?\s*\((\d+\.?\d*)\)/gi;
+            let match, houve = false;
+            while ((match = regex.exec(texto)) !== null) {
+                const p = estoque.find(x => x.id === match[1]);
+                if (p) { p.saldo = parseFloat((p.saldo - parseFloat(match[2])).toFixed(2)); houve = true; }
+            }
+            if(houve) { 
+                localStorage.setItem('quantum_data_v2', JSON.stringify(estoque)); 
+                render(); 
+                document.getElementById('comandoBaixa').value = ''; 
+            }
+        }
 
-            <div class="section-title">Logística de Entrega</div>
-            <div class="grid">
-                <div class="form-group"><label>Rua/Avenida</label><input type="text" id="rua" oninput="salvarProgresso(); atualizarCupom()"></div>
-                <div class="form-group"><label>Número / QD</label><input type="text" id="numero" oninput="salvarProgresso(); atualizarCupom()"></div>
-                <div class="form-group"><label>Bairro</label><input type="text" id="bairro" oninput="salvarProgresso(); atualizarCupom()"></div>
-                <div class="form-group"><label>CEP</label><input type="text" id="cep" oninput="salvarProgresso(); atualizarCupom()"></div>
-            </div>
-            <div class="form-group"><label>Complemento / Ponto de Ref.</label><input type="text" id="complemento" oninput="salvarProgresso(); atualizarCupom()"></div>
+        function addShortcut() { document.getElementById('comandoBaixa').value += "ID: 0 (0)\n"; }
 
-            <div class="section-title">Itens e Pagamento</div>
-            <div class="grid">
-                <div class="form-group"><label>Método de Pagamento</label><input type="text" id="pagamento" placeholder="Ex: Pix, Cartão" oninput="salvarProgresso(); atualizarCupom()"></div>
-                <div class="form-group"><label>Modalidade (MESA/RETIRADA/DELIVERY)</label><input type="text" id="coleta" placeholder="Entrega / Retirada / Mesa" oninput="salvarProgresso(); atualizarCupom()"></div>
-            </div>
-            <div class="form-group"><label>Status do Pagamento</label><input type="text" id="esta-pago" placeholder="Ex: PAGO VIA PIX" oninput="salvarProgresso(); atualizarCupom()"></div>
-            <div class="form-group"><label>Produtos Selecionados</label><textarea id="produtos-texto" style="height: 100px;" placeholder="2x Gin Tônica
-1x Combo Vodka" oninput="salvarProgresso(); atualizarCupom()"></textarea></div>
+        // MODO DE DOWNLOAD FORÇADO (JSON PURO)
+        function exportarJson() {
+            if (estoque.length === 0) return showAlert("Estoque vazio!");
             
-            <div class="grid">
-                <div class="form-group"><label>Valor Total (R$)</label><input type="text" id="valor-total" style="font-weight: 800; color: #4ade80;" oninput="salvarProgresso(); atualizarCupom()"></div>
-                <div class="form-group"><label>Cupom Promocional</label><input type="text" id="cupom-input" placeholder="Ex: BLACK10" oninput="salvarProgresso(); atualizarCupom()"></div>
-            </div>
-            <div class="form-group"><label>Observações Internas</label><input type="text" id="obs" oninput="salvarProgresso(); atualizarCupom()"></div>
-
-            <div class="form-group" style="margin-top: 20px;">
-                <label style="color: var(--primary); font-weight: 800;">Prefixo da Ordem</label>
-                <input type="text" id="prefixo-ordem" placeholder="Digite o prefixo..." style="border: 2px solid var(--primary);" oninput="salvarProgresso()">
-            </div>
-
-            <button class="btn btn-gerar" onclick="finalizarEGerar()">✅ FINALIZAR E SALVAR PEDIDO</button>
-        </section>
-
-        <section class="panel-right">
-            <div id="area-cupom">
-                <div class="empresa-nome">NUANCE</div>
-                <div style="text-align: center; font-size: 11px; letter-spacing: 2px; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 10px;">PREMIUM DRINKS</div>
-                <div style="text-align: center; font-size: 14px; font-weight: bold; margin-bottom: 5px;">ORDEM: <span id="view-id-cupom">---</span></div>
-                
-                <div id="badge-container"></div>
-                
-                <div style="font-size: 12px; line-height: 1.5;">
-                    <b>DATA:</b> <span id="view-data"></span><br>
-                    <b>CLIENTE:</b> <span id="view-nome"></span><br>
-                    <div id="view-endereco-bloco">
-                        <b>ENDEREÇO:</b> <span id="view-endereco"></span><br>
-                        <b>CEP:</b> <span id="view-cep-cupom"></span><br>
-                    </div>
-                    <b>COLETA:</b> <span id="view-coleta"></span><br>
-                    <div id="view-zap-bloco"><b>ZAP:</b> <span id="view-zap"></span><br></div>
-                    <div id="view-cpf-bloco"><b>REF:</b> <span id="view-cpf"></span><br></div>
-                    <div id="view-pag-bloco"><b>Pago Por:</b> <span id="view-pag"></span></div>
-                </div>
-                
-                <div class="divisor"></div>
-                <div id="view-produtos" style="font-size: 12px; white-space: pre-wrap; font-weight: bold;"></div>
-                <div class="divisor"></div>
-                <div id="view-pago-bloco" style="text-align:center; font-weight:bold; font-size:13px; margin: 10px 0; border: 1px solid #000; padding: 4px;"> <span id="view-pago-status"></span></div>
-                <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 16px;">
-                    <span>TOTAL:</span>
-                    <span id="view-total">R$ 0.00</span>
-                </div>
-                <div id="view-atendente-container" style="display:none; font-size: 10px; margin-top: 10px; border-top: 1px solid #eee; padding-top: 5px; color: #555;">
-                    <b>ATENDENTE:</b> <span id="view-atendente-nome"></span>
-                </div>
-
-                <div id="view-cupom-aplicado" style="font-size: 11px; margin-top: 10px; text-align: center; background: #eee; padding: 5px; display:none;"></div>
-                <div id="view-obs" style="font-size: 11px; margin-top: 10px; font-style: italic;"></div>
-                <div id="view-versiculo" style="margin-top: 20px; font-size: 10px; text-align: center; color: #666; border-top: 1px dashed #ccc; padding-top: 10px;"></div>
-                
-                <div id="qr-code-area" style="text-align: center; margin-top: 15px;">
-                    <img id="qr-code-img" src="https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=https://seguromj.github.io/Nuance-/&choe=UTF-8" style="width: 100px; height: 100px;">
-                    <p style="font-size: 9px; margin-top: 5px;">ACESSE NOSSO MENU</p>
-                </div>
-            </div>
-
-            <div style="width: 80mm; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <button class="btn btn-nav" style="background: #1e293b;" onclick="window.print()">🖨️ Imprimir</button>
-                <button class="btn btn-nav" style="background: #1e293b;" onclick="imprimirEtiqueta()">🏷️ Etiqueta</button>
-                <button class="btn btn-nav" style="background: #1e293b;" onclick="baixarPDF()">💾 Salvar PDF</button>
-                <button class="btn btn-nav" style="background: #10b981; border: none;" onclick="exportarCSV()">📥 Exportar CSV</button>
-                <button class="btn btn-nav" style="background: var(--danger); border: none;" onclick="limparCampos()">🧹 Limpar</button>
-            </div>
-        </section>
-    </main>
-</div>
-
-<div id="modalConfirmarLimpeza" class="modal">
-    <div class="modal-content" style="max-width: 400px;">
-        <span class="close" onclick="fecharModal('modalConfirmarLimpeza')">×</span>
-        <h3 style="color: var(--danger)">⚠️ Limpeza Geral</h3>
-        <p>Isso apagará todos os dados do formulário atual. Para confirmar, digite sua senha:</p>
-        <div class="form-group">
-            <input type="password" id="senha-limpeza" placeholder="Sua senha de acesso">
-        </div>
-        <button class="btn" style="background: var(--danger); color:white; width: 100%;" onclick="executarLimpezaGeral()">APAGAR DEFINITIVAMENTE</button>
-    </div>
-</div>
-
-<div id="area-etiqueta" style="display:none; width:80mm; padding:10px; border:2px solid #000; color:#000; background:#fff;">
-    <div style="text-align:center; font-weight:bold; font-size:18px;">NUANCE DRINKS</div>
-    <div class="divisor"></div>
-    <div style="font-size:14px;">
-        <strong>CLIENTE:</strong> <span id="etiq-nome"></span><br>
-        <strong>END:</strong> <span id="etiq-end"></span><br>
-        <strong>CEP:</strong> <span id="etiq-cep"></span><br>
-        <strong>OBS:</strong> <span id="etiq-obs"></span>
-    </div>
-    <div class="divisor"></div>
-    <div id="etiq-prod" style="font-size:14px; font-weight:bold;"></div>
-</div>
-
-<div id="modalGestao" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="fecharModal('modalGestao')">×</span>
-        <h3 style="margin-top:0; display: flex; align-items: center;">📁 Histórico de Vendas <span id="contador-cupons">0</span></h3>
-        <input type="text" id="busca-nota" placeholder="🔍 Pesquisar por Nome, WhatsApp ou ID..." onkeyup="filtrarNotas()" style="margin-bottom:20px; background: rgba(0,0,0,0.2);">
-        <div id="lista-notas"></div>
-    </div>
-</div>
-
-<div id="modalRankingClientes" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="fecharModal('modalRankingClientes')">×</span>
-        <div style="display:flex; justify-content: space-between; align-items: center;">
-            <h3 style="margin:0;">👤 Ranking de Clientes VIP</h3>
-            <button class="btn btn-nav" style="padding: 5px 10px; font-size: 10px;" onclick="mostrarRankingBairros()">📍 Ver Bairros</button>
-        </div>
-        <div id="lista-ranking-clientes"></div>
-        <div id="lista-ranking-bairros" style="display:none; margin-top:20px;"></div>
-    </div>
-</div>
-
-<div id="modalRankingProdutos" class="modal">
-    <div class="modal-content" style="max-height: 85vh; overflow-y: auto;">
-        <span class="close" onclick="fecharModal('modalRankingProdutos')">×</span>
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px;">
-            <h3 style="margin:0;">📦 Pastas de Estoque</h3>
-            <div style="text-align: right;">
-                <span id="valor-total-estoque" style="font-size: 20px; font-weight: 800; color: var(--success);">R$ 0,00</span>
-            </div>
-        </div>
-        <div id="lista-ranking-produtos"></div>
-    </div>
-</div>
-
-<div id="modalMapa" class="modal">
-    <div class="modal-content" style="max-width: 850px; height: 85vh; padding: 20px;">
-        <span class="close" onclick="fecharModal('modalMapa')">×</span>
-        <h3 id="titulo-mapa" style="margin-top:0; color: var(--text);">📍 Localização da Entrega</h3>
-        <iframe id="iframe-mapa" width="100%" height="90%" frameborder="0" style="border:0; border-radius:15px; background: #eee;" allowfullscreen></iframe>
-    </div>
-</div>
-
-<div id="modalSorteio" class="modal">
-    <div class="modal-content" style="max-width: 400px; text-align: center;">
-        <span class="close" onclick="fecharModal('modalSorteio')">×</span>
-        <h2 style="color: var(--primary); margin-bottom: 10px;">Nuance</h2>
-        <p style="font-size: 14px; color: var(--text-muted);">Sorteio de Descontos para VIPs</p>
-        
-        <div class="scene" id="scene">
-            <div class="dice" id="dice">
-                <div class="face face-1"><div class="dot"></div></div>
-                <div class="face face-2"><div class="dot"></div><div class="dot"></div></div>
-                <div class="face face-3"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-                <div class="face face-4"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-                <div class="face face-5"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-                <div class="face face-6"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-            </div>
-        </div>
-
-        <button class="btn btn-gerar" style="width:100%; margin: 20px 0;" onclick="rollDice()">🎲 LANÇAR DADO!</button>
-
-        <div style="text-align: left; margin-top: 20px;">
-            <div class="coupon-item"><span class="discount-text">10% de desconto</span><span>Número 1</span></div>
-            <div class="coupon-item"><span class="discount-text">Não Foi dessa vez</span><span>Número 2</span></div>
-            <div class="coupon-item"><span class="discount-text">4% de desconto</span><span>Número 3</span></div>
-            <div class="coupon-item"><span class="discount-text">100% de desconto para um Drink só</span><span>Número 4</span></div>
-            <div class="coupon-item"><span class="discount-text">7% de desconto</span><span>Número 5</span></div>
-            <div class="coupon-item"><span class="discount-text">Frete Gratis</span><span>Número 6</span></div>
-        </div>
-    </div>
-</div>
-
-<div id="modalLoginAdmin" class="modal">
-    <div class="modal-content" style="max-width: 400px; text-align: center;">
-        <span class="close" onclick="fecharModal('modalLoginAdmin')">×</span>
-        <h3 style="color: var(--accent);">Acesso Restrito Admin</h3>
-        <p style="font-size: 14px; color: var(--text-muted);">Digite a senha de segurança</p>
-        <div class="form-group">
-            <input type="password" id="senha-admin" placeholder="Sua senha master">
-        </div>
-        <button class="btn btn-gerar" style="width:100%;" onclick="verificarLoginAdmin()">LIBERAR ACESSO</button>
-    </div>
-</div>
-
-<div id="modalAdminForm" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-        <span class="close" onclick="fecharModal('modalAdminForm')">×</span>
-        <h3 style="margin-top:0; color: var(--primary);">Formulário do Administrador</h3>
-        <div class="form-group">
-            <label>Informação 1</label>
-            <input type="text" id="admin-campo1" placeholder="Digite aqui...">
-        </div>
-        <div class="form-group">
-            <label>Informação 2</label>
-            <input type="text" id="admin-campo2" placeholder="Digite aqui...">
-        </div>
-        <div class="form-group">
-            <label>Informação 3</label>
-            <input type="text" id="admin-campo3" placeholder="Digite aqui...">
-        </div>
-        <div class="form-group">
-            <label>Informação 4</label>
-            <input type="text" id="admin-campo4" placeholder="Digite aqui...">
-        </div>
-        <button class="btn btn-gerar" style="width:100%; background: var(--success);" onclick="enviarFormAdmin()">ENVIAR PARA PLANILHA</button>
-    </div>
-</div>
-
-<script>
-    // LÓGICA DE LOGIN E ISOLAMENTO DE DADOS
-    let usuarioLogado = null;
-    let nomeUsuarioLogado = "";
-
-    function verificarSessao() {
-        const sessionEmail = localStorage.getItem('nuance_session');
-        const sessionNome = localStorage.getItem('nuance_session_nome');
-        if (sessionEmail) {
-            usuarioLogado = sessionEmail;
-            nomeUsuarioLogado = sessionNome || sessionEmail;
-            mostrarApp();
-            carregarProgresso();
-        } else {
-            document.getElementById('tela-bloqueio').style.display = 'flex';
-            document.getElementById('main-app').style.display = 'none';
-        }
-        atualizarCupom();
-    }
-
-    function mostrarApp() {
-        document.getElementById('tela-bloqueio').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        document.getElementById('user-display').innerText = "ATENDENTE: " + nomeUsuarioLogado.toUpperCase();
-    }
-
-    function fazerLogin() {
-        const email = document.getElementById('login-email').value;
-        const senha = document.getElementById('login-senha').value;
-        const users = JSON.parse(localStorage.getItem('nuance_users') || '[]');
-        
-        const user = users.find(u => u.email === email && u.senha === senha);
-        if (user) {
-            usuarioLogado = email;
-            nomeUsuarioLogado = user.nome || email;
-            localStorage.setItem('nuance_session', email);
-            localStorage.setItem('nuance_session_nome', nomeUsuarioLogado);
-            mostrarApp();
-            carregarProgresso();
-        } else {
-            alert("E-mail ou Senha incorretos.");
-        }
-    }
-
-    function logout() {
-        salvarProgresso();
-        localStorage.removeItem('nuance_session');
-        localStorage.removeItem('nuance_session_nome');
-        location.reload();
-    }
-
-    function limparHD() {
-        const email = prompt("Para limpar o HD, digite seu E-mail:");
-        const senha = prompt("Agora digite sua Senha:");
-        
-        const users = JSON.parse(localStorage.getItem('nuance_users') || '[]');
-        const user = users.find(u => u.email === email && u.senha === senha);
-        
-        if (user && email === usuarioLogado) {
-            if (confirm("ATENÇÃO: Isso apagará todos os seus pedidos salvos e progresso. Continuar?")) {
-                localStorage.removeItem('nuance_progresso_' + usuarioLogado);
-                localStorage.removeItem('notas_nuance');
-                alert("HD Limpo com sucesso!");
-                location.reload();
-            }
-        } else {
-            alert("Credenciais incorretas ou não pertencem ao usuário logado!");
-        }
-    }
-
-    function abrirModalCadastro(isRedefinir = false) {
-        // Solicita senha para liberar acesso ao cadastro
-        const acessoSenha = prompt("Digite a senha para liberar o cadastro:");
-        if (acessoSenha !== "DeD-NUANCE") {
-            return alert("Senha incorreta! Acesso negado.");
+            const dataStr = JSON.stringify(estoque, null, 2);
+            // Usamos 'application/octet-stream' para forçar o navegador a baixar em vez de tentar abrir
+            const blob = new Blob([dataStr], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = "backup_estoque.json";
+            
+            document.body.appendChild(link);
+            link.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 100);
         }
 
-        if(isRedefinir) {
-            document.getElementById('modal-cadastro-titulo').innerText = "🔑 🚨Digite seu email e senha para trocar de Senha 🚨🔑";
-        } else {
-            document.getElementById('modal-cadastro-titulo').innerText = "Configuração de Cadastro";
-            // Limpa os campos para um novo cadastro
-            document.getElementById('cad-nome').value = "";
-            document.getElementById('cad-email').value = "";
-            document.getElementById('cad-senha').value = "";
-            document.getElementById('cad-master').value = "";
-        }
-        document.getElementById('modalNovoAtendente').style.display = 'block';
-    }
-
-    function fecharModal(id) {
-        document.getElementById(id).style.display = 'none';
-    }
-
-    function processarCadastro() {
-        const nome = document.getElementById('cad-nome').value;
-        const email = document.getElementById('cad-email').value;
-        const senha = document.getElementById('cad-senha').value;
-        const master = document.getElementById('cad-master').value;
-
-        if (master !== "MJ-NUANCE") {
-            return alert("Chave Master Incorreta! Acesso Negado.");
-        }
-        if (!nome || !email || !senha) {
-            return alert("Preencha todos os campos: Nome, E-mail e Senha.");
-        }
-
-        let users = JSON.parse(localStorage.getItem('nuance_users') || '[]');
-        const index = users.findIndex(u => u.email === email);
-        
-        if (index !== -1) {
-            // Se já existe, atualiza (Redefinição de Senha)
-            users[index] = { nome, email, senha };
-            alert("Dados de acesso atualizados com sucesso!");
-        } else {
-            // Se não existe, cria novo
-            users.push({ nome, email, senha });
-            alert("Cadastro realizado com sucesso! Agora você pode logar.");
-        }
-
-        localStorage.setItem('nuance_users', JSON.stringify(users));
-        fecharModal('modalNovoAtendente');
-    }
-
-    function alternarAuth(recuperar) {
-        document.getElementById('auth-login').style.display = recuperar ? 'none' : 'block';
-        document.getElementById('auth-recuperar').style.display = recuperar ? 'block' : 'none';
-    }
-
-    function recuperarSenha() {
-        const email = document.getElementById('email-recuperar').value;
-        const users = JSON.parse(localStorage.getItem('nuance_users') || '[]');
-        const user = users.find(u => u.email === email);
-        
-        if (user) {
-            alert(`Instruções de recuperação: Sua senha atual é [ ${user.senha} ]. Guarde com segurança.`);
-            alternarAuth(false);
-        } else {
-            alert("E-mail não encontrado.");
-        }
-    }
-
-    // NOVAS FUNÇÕES DE PERSISTÊNCIA POR USUÁRIO
-    function salvarProgresso() {
-        if (!usuarioLogado) return;
-        const campos = ['nome', 'data-hora', 'whatsapp', 'CPF', 'rua', 'numero', 'bairro', 'cep', 'complemento', 'pagamento', 'coleta', 'esta-pago', 'produtos-texto', 'valor-total', 'cupom-input', 'obs', 'prefixo-ordem'];
-        const dados = {};
-        campos.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) dados[id] = el.value;
-        });
-        localStorage.setItem('nuance_progresso_' + usuarioLogado, JSON.stringify(dados));
-    }
-
-    function carregarProgresso() {
-        if (!usuarioLogado) return;
-        const salvo = localStorage.getItem('nuance_progresso_' + usuarioLogado);
-        if (salvo) {
-            const dados = JSON.parse(salvo);
-            Object.keys(dados).forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = dados[id];
-            });
-            atualizarCupom();
-        }
-    }
-
-    function confirmarLimpezaGeral() {
-        document.getElementById('modalConfirmarLimpeza').style.display = 'block';
-    }
-
-    function executarLimpezaGeral() {
-        const senha = document.getElementById('senha-limpeza').value;
-        const users = JSON.parse(localStorage.getItem('nuance_users') || '[]');
-        const user = users.find(u => u.email === usuarioLogado);
-
-        if (user && user.senha === senha) {
-            limparCampos();
-            localStorage.removeItem('nuance_progresso_' + usuarioLogado);
-            document.getElementById('senha-limpeza').value = "";
-            fecharModal('modalConfirmarLimpeza');
-            alert("Sistema limpo com sucesso!");
-        } else {
-            alert("Senha incorreta!");
-        }
-    }
-
-    const versiculos = ["Filipenses 4:6:\n Não vos inquieteis com nada, mas em toda necessidade apresentai a Deus vossos pedidos com orações, súplicas e ações de graças.",
-                        "Salmos 136:1:\n Deem graças ao Senhor, porque ele é bom. O seu amor dura para sempre!",
-                        "Salmos 100:4:\n Entrai por suas portas dando graças, e em seus átrios com hinos de louvor, louvai-o, bendizei seu nome", 
-                        "O Senhor te abençoe e te guarde.", 
-                        "O amor nunca falha.",
-                        "Confia no Senhor de todo o teu coração."];
-
-    function atualizarCupom() {
-        const nome = document.getElementById('nome').value.toUpperCase();
-        const rua = document.getElementById('rua').value;
-        const num = document.getElementById('numero').value;
-        const bairro = document.getElementById('bairro').value;
-        const cupomV = document.getElementById('cupom-input').value;
-        const estaPago = document.getElementById('esta-pago').value.toUpperCase();
-        const coletaVal = document.getElementById('coleta').value.toUpperCase();
-
-        const endFormatado = `${rua}${num ? ', ' + num : ''}${bairro ? ' - ' + bairro : ''}`;
-        const badgeBox = document.getElementById('badge-container');
-        const endBloco = document.getElementById('view-endereco-bloco');
-        
-        badgeBox.innerHTML = '';
-        endBloco.style.display = 'block';
-
-        if(coletaVal.includes("MESA")) {
-            badgeBox.innerHTML = `<div style="background:#000; color:#fff; text-align:center; padding:5px; font-weight:bold; margin-bottom:10px;">ATENDIMENTO EM MESA</div>`;
-            endBloco.style.display = 'none';
-        } else if(coletaVal.includes("RETIRADA")) {
-            badgeBox.innerHTML = `<div style="border:2px dashed #000; color:#000; text-align:center; padding:5px; font-weight:bold; margin-bottom:10px;">RETIRADA NO LOCAL</div>`;
-            endBloco.style.display = 'none';
-        }
-
-        document.getElementById('view-nome').innerText = nome || "...";
-        document.getElementById('view-data').innerText = document.getElementById('data-hora').value || "...";
-        document.getElementById('view-endereco').innerText = endFormatado || "...";
-        document.getElementById('view-cep-cupom').innerText = document.getElementById('cep').value || "...";
-        document.getElementById('view-coleta').innerText = document.getElementById('coleta').value || "...";
-        document.getElementById('view-zap').innerText = document.getElementById('whatsapp').value || "";
-        document.getElementById('view-zap-bloco').style.display = document.getElementById('whatsapp').value ? 'block' : 'none';
-        document.getElementById('view-cpf').innerText = document.getElementById('CPF').value || "";
-        document.getElementById('view-cpf-bloco').style.display = document.getElementById('CPF').value ? 'block' : 'none';
-        document.getElementById('view-pag').innerText = document.getElementById('pagamento').value.toUpperCase() || "";
-        document.getElementById('view-pag-bloco').style.display = document.getElementById('pagamento').value ? 'block' : 'none';
-        document.getElementById('view-produtos').innerText = document.getElementById('produtos-texto').value || "Nenhum produto";
-        document.getElementById('view-total').innerText = "R$ " + (document.getElementById('valor-total').value || "0.00");
-        document.getElementById('view-obs').innerText = document.getElementById('obs').value ? "OBS: " + document.getElementById('obs').value : "";
-        document.getElementById('view-pago-status').innerText = estaPago || "-💱-";
-
-        const vC = document.getElementById('view-cupom-aplicado');
-        if(cupomV) { vC.style.display = "block"; vC.innerText = "CUPOM para sua próxima Compra: " + cupomV.toUpperCase(); }
-        else vC.style.display = "none";
-
-        document.getElementById('etiq-nome').innerText = nome;
-        document.getElementById('etiq-end').innerText = (document.getElementById('coleta').value.toUpperCase().includes("MESA") || document.getElementById('coleta').value.toUpperCase().includes("RETIRADA")) ? document.getElementById('coleta').value : endFormatado;
-        document.getElementById('etiq-cep').innerText = document.getElementById('cep').value;
-        document.getElementById('etiq-obs').innerText = document.getElementById('obs').value;
-        document.getElementById('etiq-prod').innerText = document.getElementById('produtos-texto').value;
-
-        document.getElementById('view-versiculo').innerText = versiculos[Math.floor(Math.random() * versiculos.length)];
-    }
-
-    function abrirGoogleMaps() {
-        const rua = document.getElementById('rua').value;
-        const num = document.getElementById('numero').value;
-        const bairro = document.getElementById('bairro').value;
-        const cep = document.getElementById('cep').value;
-        if(rua) {
-            const endereco = `${rua}, ${num}, ${bairro}, ${cep}`;
-            window.open("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(endereco));
-        } else { alert("Preencha o endereço primeiro!"); }
-    }
-
-    function verRotaDiretaCorrente() {
-        const rua = document.getElementById('rua').value;
-        const num = document.getElementById('numero').value;
-        const bairro = document.getElementById('bairro').value;
-        const cep = document.getElementById('cep').value;
-        const nome = document.getElementById('nome').value || "Cliente";
-        
-        if(!rua) return alert("Preencha o endereço no formulário primeiro!");
-        
-        const endereco = `${rua}, ${num}, ${bairro}, ${cep}`;
-        document.getElementById('titulo-mapa').innerText = "📍 Rota: " + nome;
-        document.getElementById('iframe-mapa').src = `https://www.google.com/maps/embed/v1/search?key=SEU_API_KEY_AQUI&q=${encodeURIComponent(endereco)}`;
-        // Nota: O embed do Google requer API Key. Caso não tenha, usa-se a URL de visualização:
-        document.getElementById('iframe-mapa').src = `https://maps.google.com/maps?q=${encodeURIComponent(endereco)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
-        document.getElementById('modalMapa').style.display = 'block';
-    }
-
-    function verRotaModal(id) {
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const n = notas.find(x => x.id === id);
-        if(!n || !n.rua) return alert("Endereço não disponível neste pedido!");
-        
-        const endereco = `${n.rua}, ${n.numero}, ${n.bairro}, ${n.cep}`;
-        document.getElementById('titulo-mapa').innerText = "📍 Entrega: " + n.nome;
-        document.getElementById('iframe-mapa').src = `https://maps.google.com/maps?q=${encodeURIComponent(endereco)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
-        document.getElementById('modalMapa').style.display = 'block';
-    }
-
-    function processarTexto() {
-        let texto = document.getElementById('input-importacao').value;
-        if(!texto) return;
-        const map = { '0. DATA/HORA:': 'data-hora', '1. PEDIDO:': 'produtos-texto', '2. NOME:': 'nome', '3. WHATSAPP:': 'whatsapp', '4. CEP:': 'cep', '5. Nº/QD/LOTE:': 'numero', '6. BAIRRO:': 'bairro', '7. RUA/AVENIDA:': 'rua', '8. COMPLEMENTO:': 'complemento', '9. TIPO DE COLETA:': 'coleta', '10. VALOR PRODUTOS:': 'valor-total' };
-        Object.keys(map).forEach(key => {
-            const regex = new RegExp(key.replace(/\//g, '\\/') + "\\s*(.*)");
-            const match = texto.match(regex);
-            if(match) {
-                let val = match[1].trim();
-                if(key === '1. PEDIDO:') val = val.replace(/(\d+x)/g, '\n$1').trim();
-                document.getElementById(map[key]).value = val;
-            }
-        });
-        salvarProgresso();
-        atualizarCupom();
-    }
-
-    function limparCampoImportacao() {
-        document.getElementById('input-importacao').value = "";
-    }
-
-    function finalizarEGerar() {
-        let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const idTimestamp = Date.now();
-        const prefixoDigitado = document.getElementById('prefixo-ordem').value || "ORDEM";
-        let shortId = prefixoDigitado + "-" + idTimestamp.toString().slice(-6);
-        
-        const cleanZap = document.getElementById('whatsapp').value.replace(/\D/g, '');
-        const dados = { 
-            atendente: usuarioLogado,
-            id: idTimestamp, shortId: shortId, nome: document.getElementById('nome').value, data: document.getElementById('data-hora').value, whatsapp: cleanZap, cpf: document.getElementById('CPF').value, rua: document.getElementById('rua').value, numero: document.getElementById('numero').value, bairro: document.getElementById('bairro').value, cep: document.getElementById('cep').value, complemento: document.getElementById('complemento').value, coleta: document.getElementById('coleta').value, produtos: document.getElementById('produtos-texto').value, total: document.getElementById('valor-total').value, pagamento: document.getElementById('pagamento').value, obs: document.getElementById('obs').value, status: 'pendente' 
-        };
-        
-        notas.push(dados);
-        localStorage.setItem('notas_nuance', JSON.stringify(notas));
-        
-        document.getElementById('view-id-cupom').innerText = shortId;
-
-        // VERIFICAÇÃO DO JOGO DO DADO (10 COMPRAS)
-        const totalCompras = notas.filter(n => (n.whatsapp && n.whatsapp === cleanZap) || (n.nome && n.nome === document.getElementById('nome').value)).length;
-        if (totalCompras % 10 === 0 && totalCompras > 0) {
-            abrirSorteio();
-        } else {
-            alert("Pedido Salvo com sucesso no Histórico, VIPs e Estoque!");
-        }
-        
-        if(document.getElementById('modalGestao').style.display === 'block') filtrarNotas();
-    }
-
-    function reabrirNota(id) {
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const n = notas.find(x => x.id === id);
-        if(n) {
-            document.getElementById('nome').value = n.nome || "";
-            document.getElementById('data-hora').value = n.data || "";
-            document.getElementById('whatsapp').value = n.whatsapp || "";
-            document.getElementById('CPF').value = n.cpf || "";
-            document.getElementById('rua').value = n.rua || "";
-            document.getElementById('numero').value = n.numero || "";
-            document.getElementById('bairro').value = n.bairro || "";
-            document.getElementById('cep').value = n.cep || "";
-            document.getElementById('complemento').value = n.complemento || "";
-            document.getElementById('coleta').value = n.coleta || "";
-            document.getElementById('produtos-texto').value = n.produtos || "";
-            document.getElementById('valor-total').value = n.total || "";
-            document.getElementById('pagamento').value = n.pagamento || "";
-            document.getElementById('obs').value = n.obs || "";
-            document.getElementById('view-id-cupom').innerText = n.shortId;
-            atualizarCupom();
-            fecharModal('modalGestao');
-        }
-    }
-
-    function enviarZapDireto(id) {
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const n = notas.find(x => x.id === id);
-        if(!n || !n.whatsapp) return;
-        const primeiroNome = n.nome ? n.nome.split(' ')[0] : "Cliente";
-        let msg = "";
-        const site = "https://seguromj.github.io/Nuance-/";
-        switch(n.status) {
-            case 'pendente':
-                msg = `Olá, *${primeiroNome}*! ✨ %0A%0AIdentificamos que você deixou alguns itens incríveis no seu carrinho na *Nuance* e não finalizou sua compra. 🛒💨 %0A%0ANão deixe seus drinks favoritos esperando! Clique no link abaixo para voltar e garantir seu pedido: %0A%0A🔗 ${site} %0A%0AQualquer dúvida, estou à disposição! 🍸`;
-                break;
-            case 'preparando':
-                msg = `Ótimas notícias, *${primeiroNome}*! 🎉 %0A%0ASeu pedido *${n.shortId}* já está na bancada e nossos especialistas estão preparando seus drinks com todo carinho. 🍸✨ %0A%0AEm breve ele estará pronto para seguir até você!`;
-                break;
-            case 'rua':
-                msg = `Prepare o brinde, *${primeiroNome}*! 🥂 %0A%0ASeu pedido acaba de sair para entrega e já está a caminho. 🛵💨 %0A%0AEm instantes a felicidade bate à sua porta!`;
-                break;
-            case 'entregue':
-                msg = `Pedido entregue! ✅ %0A%0AOlá *${primeiroNome}*, esperamos que aproveite cada gole do seu pedido. Muito obrigado por escolher a *Nuance*! ✨ %0A%0AQuando puder, visite nosso site para novidades: %0A🔗 ${site}`;
-                break;
-        }
-        window.open(`https://api.whatsapp.com/send?phone=55${n.whatsapp}&text=${msg}`);
-    }
-
-    function pedirFeedback(id) {
-        const notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const n = notas.find(x => x.id === id);
-        if(!n || !n.whatsapp) return;
-        const primeiroNome = n.nome ? n.nome.split(' ')[0] : "Cliente";
-        const msg = `Olá *${primeiroNome}*! 🍸%0A%0APassando para saber: o que achou dos seus drinks da *Nuance*? %0A%0ASua opinião é muito importante para nós! Se puder avaliar, ficaremos muito felizes. ✨`;
-        window.open(`https://api.whatsapp.com/send?phone=55${n.whatsapp}&text=${msg}`);
-    }
-
-    function filtrarNotas() {
-        const busca = document.getElementById('busca-nota').value.toLowerCase();
-        let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        notas = notas.filter(n => n.atendente === usuarioLogado);
-        const lista = document.getElementById('lista-notas');
-        const filtradas = notas.slice().reverse().filter(n => (n.nome||"").toLowerCase().includes(busca) || (n.whatsapp||"").toLowerCase().includes(busca.replace(/\D/g, '')) || (n.shortId||"").toLowerCase().includes(busca));
-        document.getElementById('contador-cupons').innerText = filtradas.length;
-        lista.innerHTML = filtradas.map(n => `
-            <div class="nota-card">
-                <div style="display:flex; justify-content:space-between;">
-                    <div><b style="color:var(--primary);">${n.nome}</b><br><small>${n.shortId}</small></div>
-                    <div style="text-align:right;"><span style="color:var(--success); font-weight:800;">R$ ${n.total}</span></div>
-                </div>
-                <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:8px;">
-                    <select onchange="mudarStatus(${n.id}, this.value)" class="status-badge st-${n.status}">
-                        <option value="pendente" ${n.status==='pendente'?'selected':''}>Pendente</option>
-                        <option value="preparando" ${n.status==='preparando'?'selected':''}>Preparo</option>
-                        <option value="rua" ${n.status==='rua'?'selected':''}>Na Rua</option>
-                        <option value="entregue" ${n.status==='entregue'?'selected':''}>Entregue</option>
-                    </select>
-                    <button class="btn btn-nav" style="padding:4px 8px;" onclick="reabrirNota(${n.id})">👁️ Ver</button>
-                    <button class="btn btn-nav" style="background:#0ea5e9; padding:4px 8px; border:none;" onclick="verRotaModal(${n.id})">🗺️ Rota</button>
-                    <button class="btn btn-nav" style="background:var(--whatsapp); padding:4px 8px; border:none;" onclick="enviarZapDireto(${n.id})">📱 Status</button>
-                    <button class="btn btn-nav" style="background:#f59e0b; padding:4px 8px; border:none;" onclick="pedirFeedback(${n.id})">⭐ Feedback</button>
-                    <button class="btn btn-nav" style="background:var(--danger); padding:4px 8px;" onclick="excluirNota(${n.id})">🗑️</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function mudarStatus(id, s) { 
-        let n = JSON.parse(localStorage.getItem('notas_nuance') || '[]'); 
-        const item = n.find(x => x.id === id); 
-        if(item) { 
-            item.status = s; 
-            localStorage.setItem('notas_nuance', JSON.stringify(n)); 
-            filtrarNotas(); 
-        } 
-    }
-
-    function abrirGestao() { document.getElementById('modalGestao').style.display='block'; filtrarNotas(); }
-    
-    function limparCampos() { 
-        document.querySelectorAll('input, textarea').forEach(i => i.value = ""); 
-        document.getElementById('view-id-cupom').innerText = "---"; 
-        atualizarCupom(); 
-    }
-
-    function baixarPDF() { 
-        const atendenteDiv = document.getElementById('view-atendente-container');
-        document.getElementById('view-atendente-nome').innerText = nomeUsuarioLogado.toUpperCase();
-        atendenteDiv.style.display = 'block';
-        
-        const opt = {
-            margin: 5,
-            filename: `Pedido_${document.getElementById('view-id-cupom').innerText}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opt).from(document.getElementById('area-cupom')).save().then(() => {
-            atendenteDiv.style.display = 'none';
-        });
-    }
-    
-    function imprimirEtiqueta() { 
-        document.getElementById('area-cupom').style.display='none'; 
-        document.getElementById('area-etiqueta').style.display='block'; 
-        window.print(); 
-        setTimeout(()=> {
-            document.getElementById('area-cupom').style.display='block'; 
-            document.getElementById('area-etiqueta').style.display='none';
-        }, 1000); 
-    }
-
-    function excluirNota(id) { 
-        if(confirm("Excluir?")) { 
-            let n = JSON.parse(localStorage.getItem('notas_nuance') || '[]').filter(x=>x.id!==id); 
-            localStorage.setItem('notas_nuance', JSON.stringify(n)); 
-            filtrarNotas(); 
-        } 
-    }
-
-    function abrirRankingClientes() {
-        document.getElementById('lista-ranking-clientes').style.display = 'block';
-        document.getElementById('lista-ranking-bairros').style.display = 'none';
-        
-        let FlexibleNotas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        FlexibleNotas = FlexibleNotas.filter(n => n.atendente === usuarioLogado);
-
-        const clientes = {}; const fones = {};
-        
-        FlexibleNotas.forEach(n => { 
-            const key = n.whatsapp ? n.whatsapp.replace(/\D/g, '') : n.nome; 
-            if(key) { 
-                clientes[key] = (clientes[key] || 0) + 1; 
-                fones[key] = { zap: n.whatsapp, name: n.nome }; 
-            } 
-        });
-
-        document.getElementById('lista-ranking-clientes').innerHTML = Object.entries(clientes).sort((a,b)=>b[1]-a[1]).map(([key, q]) => {
-            const isFidelidade = q >= 10;
-            return `
-            <div style="padding:15px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center; background: ${isFidelidade ? 'rgba(16, 185, 129, 0.1)' : 'transparent'};">
-                <div>
-                    <b style="color: ${isFidelidade ? 'var(--success)' : 'var(--primary)'};">${fones[key].name} ${isFidelidade ? '⭐' : ''}</b><br>
-                    <small style="color: var(--text-muted);">${fones[key].zap || 'Sem Whats'}</small>
-                </div>
-                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
-                    <div style="font-weight:800; font-size: 16px;">${q} pedidos</div>
-                    ${isFidelidade ? `
-                        <span style="font-size: 10px; background: var(--success); color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">FIDELIDADE 10+</span>
-                        <button class="btn" style="background: var(--accent); color: white; padding: 4px 8px; font-size: 10px;" onclick="abrirSorteio()">🎁 SORTEAR DESCONTO</button>
-                    ` : ''}
-                </div>
-            </div>`;
-        }).join('');
-        document.getElementById('modalRankingClientes').style.display = 'block';
-    }
-
-    function mostrarRankingBairros() {
-        let nRankingBairros = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        nRankingBairros = nRankingBairros.filter(n => n.atendente === usuarioLogado);
-        const bairros = {};
-        
-        nRankingBairros.forEach(n => {
-            const b = (n.bairro || "Não Informado").trim().toUpperCase();
-            bairros[b] = (bairros[b] || 0) + 1;
-        });
-
-        document.getElementById('lista-ranking-clientes').style.display = 'none';
-        const listaB = document.getElementById('lista-ranking-bairros');
-        listaB.style.display = 'block';
-        
-        listaB.innerHTML = `
-            <div style="margin-bottom:15px;"><button class="btn btn-nav" onclick="abrirRankingClientes()" style="font-size:10px;">← Voltar para Clientes</button></div>
-            <h4 style="margin-bottom:15px; color:var(--accent);">📍 Mapa de Calor (Bairros)</h4>
-            ` + Object.entries(bairros).sort((a,b)=>b[1]-a[1]).map(([nome, total]) => `
-            <div style="padding:12px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between;">
-                <span>${nome}</span>
-                <b style="color:var(--primary);">${total} entregas</b>
-            </div>
-        `).join('');
-    }
-
-    function aplicarValorEstoque() {
-        let total = 0;
-        document.querySelectorAll('.input-valor-estoque').forEach(input => {
-            total += parseFloat(input.value) || 0;
-        });
-        document.getElementById('valor-total-estoque').innerText = "R$ " + total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-    }
-
-    function togglePasta(pastaId) {
-        const pasta = document.getElementById(pastaId);
-        pasta.style.display = pasta.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function abrirRankingProdutos() {
-        let nRankingProdutos = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        nRankingProdutos = nRankingProdutos.filter(n => n.atendente === usuarioLogado);
-        const produtosAgrupados = {};
-
-        nRankingProdutos.forEach(nota => {
-            if(nota.produtos) {
-                nota.produtos.split('\n').forEach(linha => {
-                    const m = linha.match(/(\d+)x\s*(.*)/i);
-                    if(m) {
-                        const qtd = parseInt(m[1]);
-                        const nomeProd = m[2].trim().toUpperCase();
-                        if(!produtosAgrupados[nomeProd]) produtosAgrupados[nomeProd] = [];
-                        for(let i=0; i<qtd; i++) {
-                            produtosAgrupados[nomeProd].push({ cupom: nota.shortId, id: nota.id });
-                        }
-                    }
-                });
-            }
-        });
-
-        const html = Object.entries(produtosAgrupados).map(([nome, itens], index) => {
-            const pastaId = `pasta-${index}`;
-            return `
-            <div style="background:rgba(255,255,255,0.05); border-radius:12px; margin-bottom:15px; border: 1px solid rgba(255,255,255,0.1);">
-                <div onclick="togglePasta('${pastaId}')" style="padding:15px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); border-radius:12px;">
-                    <span style="font-weight:800;">📁 ${nome}</span>
-                    <span style="background:var(--primary); padding:2px 10px; border-radius:20px; font-size:11px;">${itens.length} UNIDADES</span>
-                </div>
-                <div id="${pastaId}" style="display:none; padding:15px; border-top: 1px solid rgba(255,255,255,0.05);">
-                    ${itens.map((it, idx) => `
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;">
-                            <span style="font-size:12px; color:var(--text-muted);">CUPOM: <b>${it.cupom}</b></span>
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                <input type="number" step="0.01" class="input-valor-estoque" placeholder="Valor R$" style="width:100px; padding:6px; font-size:12px;">
-                                <button class="btn btn-nav" style="background:var(--success); border:none; padding:6px 10px; font-size:11px;" onclick="aplicarValorEstoque()">Aplicar</button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>`;
-        }).join('');
-
-        document.getElementById('lista-ranking-produtos').innerHTML = html || "<p style='text-align:center; color:var(--text-muted);'>Nenhum produto em estoque.</p>";
-        document.getElementById('modalRankingProdutos').style.display = 'block';
-        aplicarValorEstoque();
-    }
-
-    function abrirSorteio() {
-        document.getElementById('modalSorteio').style.display = 'block';
-    }
-
-    function rollDice() {
-        const dice = document.getElementById('dice');
-        const scene = document.getElementById('scene');
-        let result;
-        do { result = Math.floor(Math.random() * 6) + 1; } while (result === 4);
-        
-        scene.classList.remove('jumping');
-        void scene.offsetWidth; 
-        scene.classList.add('jumping');
-
-        const rotations = {
-            1: { x: 0, y: 0 },
-            2: { x: 0, y: -90 },
-            3: { x: 0, y: -180 },
-            4: { x: 0, y: 90 },
-            5: { x: -90, y: 0 },
-            6: { x: 90, y: 0 }
-        };
-
-        const extraSpinX = (Math.floor(Math.random() * 6) + 10) * 360;
-        const extraSpinY = (Math.floor(Math.random() * 6) + 10) * 360;
-        const finalX = rotations[result].x + extraSpinX;
-        const finalY = rotations[result].y + extraSpinY;
-
-        dice.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
-        
-        setTimeout(() => {
-            const premios = {
-                1: "10% de desconto",
-                2: "Não Foi dessa vez",
-                3: "4% de desconto",
-                4: "100% de desconto para um Drink só",
-                5: "7% de desconto",
-                6: "Frete Gratis"
+        function importarBackup(event) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                estoque = JSON.parse(e.target.result);
+                localStorage.setItem('quantum_data_v2', JSON.stringify(estoque));
+                render(); showAlert("Restaurado!");
             };
-            alert("O dado caiu em " + result + "! Prêmio: " + premios[result]);
-        }, 2100);
-    }
-
-    function exportarCSV() {
-        let notas = JSON.parse(localStorage.getItem('notas_nuance') || '[]');
-        const minhasNotas = notas.filter(n => n.atendente === usuarioLogado);
-        
-        if (minhasNotas.length === 0) {
-            alert("Você não possui pedidos salvos para exportar.");
-            return;
+            reader.readAsText(event.target.files[0]);
         }
 
-        const cabecalho = ["ID", "Data", "Cliente", "WhatsApp", "Endereço", "Total", "Pagamento", "Produtos"];
-        const linhas = minhasNotas.map(n => [
-            n.shortId,
-            n.data,
-            n.nome,
-            n.whatsapp,
-            `${n.rua}, ${n.numero} - ${n.bairro}`,
-            n.total,
-            n.pagamento,
-            n.produtos.replace(/\n/g, " | ")
-        ]);
-
-        let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-        csvContent += cabecalho.join(";") + "\n";
-        linhas.forEach(row => {
-            csvContent += row.join(";") + "\n";
-        });
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `Relatorio_${nomeUsuarioLogado.replace(/\s+/g, '_')}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    // --- FUNÇÕES NOVAS ADMIN ---
-    function abrirLoginAdmin() {
-        document.getElementById('modalLoginAdmin').style.display = 'block';
-    }
-
-    function verificarLoginAdmin() {
-        const senha = document.getElementById('senha-admin').value;
-        if (senha === "MJ-NUANCE") {
-            fecharModal('modalLoginAdmin');
-            document.getElementById('senha-admin').value = "";
-            document.getElementById('modalAdminForm').style.display = 'block';
-        } else {
-            alert("Senha Incorreta!");
+        function limpar() {
+            ['nomeProd', 'idProd', 'totalProd', 'fotoProd'].forEach(id => document.getElementById(id).value = '');
         }
-    }
-
-    function enviarFormAdmin() {
-        const c1 = document.getElementById('admin-campo1').value;
-        const c2 = document.getElementById('admin-campo2').value;
-        const c3 = document.getElementById('admin-campo3').value;
-        const c4 = document.getElementById('admin-campo4').value;
-
-        if(!c1 || !c2 || !c3 || !c4) return alert("Preencha todos os campos!");
-
-        // CONFIGURAÇÃO DO GOOGLE FORMS
-        const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSfHpe7Idb8cekKYPyOOs8xn5sSfCQhWLKqUYwF4uXaz4QBX9w/formResponse";
-        const entry1 = "entry.1183639703"; // ID
-        const entry2 = "entry.1305746237"; // Nome
-        const entry3 = "entry.204413255"; // Valor
-        const entry4 = "entry.1752078996"; // Imagem
-
-        const fullURL = `${formURL}?${entry1}=${encodeURIComponent(c1)}&${entry2}=${encodeURIComponent(c2)}&${entry3}=${encodeURIComponent(c3)}&${entry4}=${encodeURIComponent(c4)}`;
-
-        fetch(fullURL, { mode: 'no-cors' })
-        .then(() => {
-            alert("Dados enviados com sucesso para a planilha!");
-            fecharModal('modalAdminForm');
-            document.getElementById('admin-campo1').value = "";
-            document.getElementById('admin-campo2').value = "";
-            document.getElementById('admin-campo3').value = "";
-            document.getElementById('admin-campo4').value = "";
-        })
-        .catch(err => alert("Erro ao enviar: " + err));
-    }
-</script>
+    </script>
 </body>
 </html>
+
