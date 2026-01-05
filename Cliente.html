@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Futuristic Data Sync</title>
+    <title>Futuristic Sync</title>
     <style>
         :root {
             --neon-cyan: #00f2ff;
@@ -16,7 +16,7 @@
         body {
             background-color: var(--bg-black);
             color: #ffffff;
-            font-family: sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -85,10 +85,7 @@
             text-align: left;
             border-left: 2px solid var(--neon-cyan);
             margin-bottom: 30px;
-            color: #aaa;
         }
-
-        .terminal-box b { color: var(--neon-cyan); }
 
         button {
             width: 100%;
@@ -111,7 +108,7 @@
 
         #hidden_iframe { display: none; }
 
-        .success-overlay {
+        .success-msg {
             display: none;
             color: #00ff88;
             margin-top: 15px;
@@ -127,17 +124,17 @@
         <div class="input-group">
             <div class="field">
                 <label>Abertura</label>
-                <input type="time" id="aberto" value="18:00" onchange="updatePreview()">
+                <input type="time" id="aberto" value="18:00">
             </div>
             <div class="field">
                 <label>Fechamento</label>
-                <input type="time" id="fechado" value="22:00" onchange="updatePreview()">
+                <input type="time" id="fechado" value="22:00">
             </div>
         </div>
 
         <div class="terminal-box">
-            <div>> TARGET_B: <b>999</b></div>
-            <div>> TARGET_C: <b id="previewText">(Aberto: 18:00)(Fechado: 22:00)</b></div>
+            <div>> COLUNA B: <b style="color:var(--neon-cyan)">999</b></div>
+            <div>> COLUNA C: <b style="color:var(--neon-cyan)" id="previewText">(Aberto: 18:00)(Fechado: 22:00)</b></div>
         </div>
 
         <form id="syncForm" 
@@ -149,45 +146,44 @@
             <input type="hidden" name="entry.1183639703" id="c1">
             <input type="hidden" name="entry.1305746237" id="c2">
 
-            <button type="submit">Executar Transmissão</button>
+            <button type="submit">Atualizar Planilha</button>
         </form>
 
-        <div id="successMsg" class="success-overlay">TRANSMISSÃO CONCLUÍDA COM SUCESSO.</div>
+        <div id="successMsg" class="success-msg">TRANSMISSÃO CONCLUÍDA!</div>
     </div>
 
-    <iframe name="hidden_iframe" id="hidden_iframe" onload="checkSuccess()"></iframe>
+    <iframe name="hidden_iframe" id="hidden_iframe" onload="finalizar()"></iframe>
 
     <script>
-        var isSubmitting = false;
+        var enviando = false;
 
-        function updatePreview() {
-            const hAberto = document.getElementById('aberto').value;
-            const hFechado = document.getElementById('fechado').value;
-            document.getElementById('previewText').innerText = `(Aberto: ${hAberto})(Fechado: ${hFechado})`;
-        }
+        // Atualiza o texto na tela ao mudar o horário
+        document.querySelectorAll('input').forEach(i => {
+            i.oninput = () => {
+                const txt = `(Aberto: ${document.getElementById('aberto').value})(Fechado: ${document.getElementById('fechado').value})`;
+                document.getElementById('previewText').innerText = txt;
+            };
+        });
 
         function prepararEnvio() {
             const hAberto = document.getElementById('aberto').value;
             const hFechado = document.getElementById('fechado').value;
             
-            // Atribuição direta antes do envio
+            // Atribui os valores exatos aos IDs que você passou
             document.getElementById('c1').value = "999";
             document.getElementById('c2').value = `(Aberto: ${hAberto})(Fechado: ${hFechado})`;
             
-            isSubmitting = true;
+            enviando = true;
         }
 
-        function checkSuccess() {
-            if(isSubmitting) {
+        function finalizar() {
+            if(enviando) {
                 document.getElementById('successMsg').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('successMsg').style.display = 'none';
-                }, 4000);
-                isSubmitting = false;
+                setTimeout(() => { document.getElementById('successMsg').style.display = 'none'; }, 4000);
+                enviando = false;
             }
         }
-
-        updatePreview();
     </script>
 </body>
 </html>
+2
