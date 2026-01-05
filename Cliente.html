@@ -4,186 +4,698 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Futuristic Sync</title>
+    <title>Nuance | Painel Administrativo de Catálogo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --neon-cyan: #00f2ff;
-            --neon-purple: #9d00ff;
-            --bg-black: #08080a;
-            --glass: rgba(255, 255, 255, 0.03);
+        :root { 
+            --primary: #6366f1; --accent: #a855f7; --danger: #ef4444; 
+            --success: #10b981; --warning: #f59e0b; --bg: #0f172a; --card: #1e293b;
+            --text: #f8fafc; --text-muted: #94a3b8;
         }
 
-        body {
-            background-color: var(--bg-black);
-            color: #ffffff;
-            font-family: 'Segoe UI', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-image: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #08080a 100%);
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg); color: var(--text); margin: 0;
+            background-image: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+            min-height: 100vh; padding: 20px;
         }
 
-        .container {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            padding: 40px;
-            border-radius: 15px;
-            border: 1px solid rgba(0, 242, 255, 0.2);
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
-            width: 100%;
-            max-width: 420px;
+        /* MODAL DE SABORES */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 10000;
+        }
+        .modal-content {
+            background: var(--card); padding: 30px; border-radius: 24px;
+            width: 90%; max-width: 450px; border: 1px solid rgba(255,255,255,0.1);
+            text-align: center; max-height: 80vh; overflow-y: auto;
+        }
+        .sabores-lista { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+        .sabor-item { 
+            background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1); font-weight: 600; color: var(--text);
+        }
+
+        /* ESTILOS GALERIA DE HOSPEDAGEM */
+        .host-header-fixed {
+            position: sticky; top: -30px; background: var(--card); z-index: 100;
+            padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px; margin-top: -10px;
+        }
+        #lista-hospedagem {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        }
+        .host-item {
+            background: rgba(255,255,255,0.05); border-radius: 12px; padding: 8px;
+            border: 1px solid rgba(255,255,255,0.1); position: relative;
+        }
+        .host-img-preview {
+            width: 100%; height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 5px;
+        }
+        .loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); display: flex; align-items: center;
+            justify-content: center; border-radius: 12px; font-size: 8px; font-weight: 800;
+        }
+        .btn-trash {
+            position: absolute; top: 5px; right: 5px; background: var(--danger);
+            color: white; border: none; width: 24px; height: 24px; border-radius: 6px;
+            cursor: pointer; font-size: 10px; z-index: 5;
+        }
+
+        /* Estilo do Input de Nome na Hospedagem */
+        .host-name-input {
+            width: 100%; padding: 5px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px; color: white; font-size: 9px; margin-bottom: 5px; box-sizing: border-box;
+            text-align: center; font-weight: 600;
+        }
+
+        /* MODAL DE CONFIRMAÇÃO MODERNO */
+        .confirm-modal {
+            background: var(--card); padding: 25px; border-radius: 20px;
+            border: 1px solid var(--danger); text-align: center; max-width: 320px;
+        }
+        .confirm-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-no { background: #334155; color: white; }
+        .btn-yes { background: var(--danger); color: white; }
+
+        #tela-bloqueio {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); z-index: 5000;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .auth-container {
+            background: var(--card); padding: 40px; border-radius: 24px;
+            width: 90%; max-width: 400px; border: 1px solid rgba(255,255,255,0.1);
+            text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        .auth-logo {
+            font-size: 32px; font-weight: 800; margin-bottom: 10px;
+            background: linear-gradient(to right, #818cf8, #d8b4fe);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        #admin-content { display: none; }
+        .admin-container { max-width: 900px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-weight: 800; background: linear-gradient(to right, #818cf8, #d8b4fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
+
+        .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .dash-card { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .dash-card span { display: block; font-size: 20px; font-weight: 800; color: var(--accent); }
+        .dash-card label { font-size: 9px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+
+        .panel-glass {
+            background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 24px;
+            padding: 30px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        .section-title { 
+            font-size: 14px; font-weight: 800; text-transform: uppercase; 
+            color: var(--primary); margin: 30px 0 15px; display: flex; align-items: center; gap: 10px;
+        }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+
+        .search-container { margin: 20px 0; }
+        .search-input { width: 100%; padding: 15px; background: rgba(255,255,255,0.05); border: 2px solid var(--primary); border-radius: 15px; color: white; font-weight: 700; text-align: center; font-size: 16px; }
+
+        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
+
+        input[type="text"], input[type="number"], input[type="password"] { 
+            width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; 
+            border-radius: 10px; color: white; font-family: inherit; box-sizing: border-box;
+        }
+
+        .delete-box {
+            display: flex; align-items: center; gap: 10px; background: rgba(239, 68, 68, 0.1);
+            padding: 15px; border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.2); margin-top: 15px;
+        }
+        .delete-box input { width: 20px; height: 20px; cursor: pointer; }
+        .delete-box span { font-size: 13px; font-weight: 700; color: var(--danger); }
+
+        .btn {
+            border: none; border-radius: 12px; padding: 15px 25px; font-weight: 700;
+            cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; width: 100%;
+            font-size: 14px;
+        }
+        .btn-save { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; margin-top: 20px; }
+        
+        .btn-status { width: 90%; padding: 8px; border-radius: 8px; border: none; font-weight: 800; font-size: 11px; text-transform: uppercase; cursor: pointer; margin-bottom: 8px; }
+        .btn-add { background: #fbbf24; color: #000; }
+        .btn-sabores { background: #10b981; color: white; }
+
+        .carousel-wrapper { margin-bottom: 30px; }
+        .carousel-container { display: flex; gap: 15px; overflow-x: auto; padding: 10px 0 20px 0; }
+
+        .product-card { 
+            background: white; border-radius: 15px; min-width: 200px; max-width: 200px; 
+            color: #1a1a1a; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.2); 
             text-align: center;
         }
-
-        h1 {
-            font-size: 1.5rem;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 15px var(--neon-cyan);
-            margin-bottom: 30px;
+        .edit-badge {
+            position: absolute; top: 10px; right: 10px; background: var(--primary);
+            color: white; width: 30px; height: 30px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 10; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
+        .product-img { width: 100%; height: 120px; object-fit: cover; background: #eee; }
+        .product-info { padding: 10px; }
+        .p-id-label { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+        .p-name { font-weight: 800; font-size: 14px; margin: 2px 0 5px 0; height: 35px; overflow: hidden; }
+        .p-price { color: #059669; font-weight: 800; font-size: 16px; margin-bottom: 10px; }
 
-        .input-group {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 11000; }
+        .toast { background: var(--success); color: white; padding: 15px 25px; border-radius: 12px; font-weight: 700; margin-bottom: 10px; }
 
-        .field {
-            flex: 1;
-            text-align: left;
-        }
-
-        label {
-            font-size: 0.7rem;
-            color: var(--neon-purple);
-            text-transform: uppercase;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        input[type="time"] {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--neon-purple);
-            border-radius: 5px;
-            padding: 10px;
-            color: white;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        .terminal-box {
-            background: rgba(0, 0, 0, 0.6);
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.8rem;
-            text-align: left;
-            border-left: 2px solid var(--neon-cyan);
-            margin-bottom: 30px;
-        }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            background: transparent;
-            border: 1px solid var(--neon-cyan);
-            color: var(--neon-cyan);
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.4s;
-        }
-
-        button:hover {
-            background: var(--neon-cyan);
-            color: #000;
-            box-shadow: 0 0 30px var(--neon-cyan);
-        }
-
-        #hidden_iframe { display: none; }
-
-        .success-msg {
-            display: none;
-            color: #00ff88;
-            margin-top: 15px;
-            font-size: 0.8rem;
-        }
+        .backup-btns { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+        .btn-util { background: rgba(255,255,255,0.05); color: var(--text-muted); padding: 5px 10px; font-size: 10px; width: auto; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Sync System</h1>
+    <div id="toast-container"></div>
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
 
-        <div class="input-group">
-            <div class="field">
-                <label>Abertura</label>
-                <input type="time" id="aberto" value="18:00">
-            </div>
-            <div class="field">
-                <label>Fechamento</label>
-                <input type="time" id="fechado" value="22:00">
-            </div>
+    <div id="modal-sabores" class="modal-overlay" onclick="fecharModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2 id="modal-titulo" style="margin: 0; color: var(--accent);"></h2>
+            <p style="font-size: 12px; color: var(--text-muted);">SABORES DISPONÍVEIS:</p>
+            <div id="lista-sabores" class="sabores-lista"></div>
+            <button class="btn btn-save" onclick="fecharModal()">FECHAR VISUALIZAÇÃO</button>
         </div>
-
-        <div class="terminal-box">
-            <div>> COLUNA B: <b style="color:var(--neon-cyan)">999</b></div>
-            <div>> COLUNA C: <b style="color:var(--neon-cyan)" id="previewText">(Aberto: 18:00)(Fechado: 22:00)</b></div>
-        </div>
-
-        <form id="syncForm" 
-              action="https://docs.google.com/forms/d/e/1FAIpQLSfHpe7Idb8cekKYPyOOs8xn5sSfCQhWLKqUYwF4uXaz4QBX9w/formResponse" 
-              method="POST" 
-              target="hidden_iframe"
-              onsubmit="prepararEnvio()">
-            
-            <input type="hidden" name="entry.1183639703" id="c1">
-            <input type="hidden" name="entry.1305746237" id="c2">
-
-            <button type="submit">Atualizar Planilha</button>
-        </form>
-
-        <div id="successMsg" class="success-msg">TRANSMISSÃO CONCLUÍDA!</div>
     </div>
 
-    <iframe name="hidden_iframe" id="hidden_iframe" onload="finalizar()"></iframe>
+    <div id="modal-status-funcionamento" class="modal-overlay" onclick="fecharModalStatus()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2 style="margin: 0; color: var(--warning);">STATUS DA LOJA</h2>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">ATUALIZAR HORÁRIO NA PLANILHA</p>
+            
+            <div class="form-group">
+                <label>ID DE STATUS (FIXO)</label>
+                <input type="text" id="status-id-fixo" value="999" disabled style="background: rgba(0,0,0,0.5); border-color: var(--text-muted); opacity: 0.7;">
+            </div>
+
+            <div class="form-group">
+                <label>HORÁRIO DE FUNCIONAMENTO</label>
+                <input type="text" id="status-horario" placeholder="(Aberto: 18:00)(Fechado: 22:00)">
+            </div>
+
+            <button class="btn" style="background: var(--warning); color: #000; margin-top: 20px;" onclick="enviarStatusPlanilha()">ENVIAR STATUS PARA PLANILHA</button>
+            <button class="btn btn-util" style="margin-top: 10px;" onclick="fecharModalStatus()">CANCELAR</button>
+        </div>
+    </div>
+
+    <div id="modal-hospedagem" class="modal-overlay" onclick="fecharModalHost()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="host-header-fixed">
+                <h2 style="margin: 0; color: var(--primary); font-size: 18px;">HOSPEDAGEM</h2>
+                <p style="font-size: 9px; color: var(--text-muted); margin: 5px 0 10px;">TRANSFORME FOTOS EM LINKS</p>
+                
+                <button class="btn" style="background: #334155; color: white; margin-bottom: 10px; font-size: 11px; padding: 8px;" onclick="fecharModalHost()">FECHAR GALERIA</button>
+
+                <button id="btn-importar-img" class="btn btn-save" style="background: var(--success); margin-bottom: 0; font-size: 11px; padding: 10px;" onclick="document.getElementById('input-file-host').click()">
+                    ➕ IMPORTAR NOVA IMAGEM
+                </button>
+            </div>
+            
+            <input type="file" id="input-file-host" style="display:none" accept="image/*" onchange="fazerUploadImagem(this)">
+
+            <div id="lista-hospedagem">
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-confirmacao" class="modal-overlay">
+        <div class="confirm-modal">
+            <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+            <h3 style="margin: 0; color: var(--text);">Remover Imagem?</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 10px 0 20px;">Esta ação removerá o link da sua galeria local.</p>
+            <div class="confirm-btns">
+                <button class="btn btn-no" onclick="fecharConfirmacao()">CANCELAR</button>
+                <button id="confirmar-exclusao-btn" class="btn btn-yes">EXCLUIR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tela-bloqueio">
+        <div class="auth-container">
+            <div class="auth-logo">NUANCE</div>
+            <div class="form-group">
+                <label>Chave de Acesso Admin</label>
+                <input type="password" id="senha-acesso" onkeydown="if(event.key==='Enter') verificarAcesso()">
+            </div>
+            <button class="btn btn-save" onclick="verificarAcesso()">LIBERAR PAINEL</button>
+        </div>
+    </div>
+
+    <div id="admin-content">
+        <div class="admin-container">
+            <header class="header">
+                <h1>NUANCE ADMIN</h1>
+                <div class="backup-btns">
+                    <button class="btn btn-util" onclick="exportarBackup()">📥 EXPORTAR BACKUP</button>
+                    <button class="btn btn-util" onclick="document.getElementById('importInput').click()">📤 IMPORTAR BACKUP</button>
+                    <input type="file" id="importInput" style="display:none" onchange="importarBackup(event)">
+                </div>
+            </header>
+
+            <div class="dash-grid">
+                <div class="dash-card"><span id="count-total">0</span><label>Total</label></div>
+                <div class="dash-card"><span id="count-alcool">0</span><label>C/ Álcool</label></div>
+                <div class="dash-card"><span id="count-sem-alcool">0</span><label>S/ Álcool</label></div>
+                <div class="dash-card"><span id="count-copao">0</span><label>Copão</label></div>
+                <div class="dash-card"><span id="count-combos">0</span><label>Combo</label></div>
+            </div>
+
+            <button class="btn" style="background: var(--warning); color: #000; margin-bottom: 15px; border-radius: 16px; font-size: 12px;" onclick="abrirModalStatus()">
+                🕒 ATUALIZAR STATUS DE FUNCIONAMENTO
+            </button>
+
+            <button class="btn" style="background: linear-gradient(135deg, #10b981, #3b82f6); color: white; margin-bottom: 30px; border-radius: 16px; font-size: 12px;" onclick="abrirModalHost()">
+                🖼️ GERENCIAR HOSPEDAGEM DE IMAGENS
+            </button>
+
+            <div class="panel-glass">
+                <div class="section-title">Gerenciar Produto</div>
+                
+                <div class="grid-form">
+                    <div class="form-group"><label>ID</label><input type="number" id="admin-campo1"></div>
+                    <div class="form-group"><label>Nome</label><input type="text" id="admin-campo2"></div>
+                    <div class="form-group"><label>Preço</label><input type="text" id="admin-campo3"></div>
+                </div>
+                <div class="form-group"><label>URL Imagem</label><input type="text" id="admin-campo4"></div>
+                <div class="form-group"><label>Sabores (Separar por vírgula)</label><input type="text" id="admin-campo5"></div>
+                
+                <div class="form-group">
+                    <label>Comando Coluna G (O que digitar chegará na planilha)</label>
+                    <input type="text" id="admin-campo6" placeholder="Texto para a Coluna G...">
+                </div>
+
+                <div class="delete-box">
+                    <input type="checkbox" id="check-excluir">
+                    <span>APAGAR PRODUTO DO PAINEL LOCAL</span>
+                </div>
+
+                <button class="btn btn-save" onclick="salvarProduto()">SALVAR E SINCRONIZAR</button>
+            </div>
+
+            <div class="section-title">Catálogo Ativo</div>
+            
+            <div class="search-container">
+                <input type="text" id="busca-id" class="search-input" placeholder="🔍 BUSCAR POR ID..." oninput="carregarCatalogo()">
+            </div>
+
+            <div id="carrosséis-container">
+                <div class="carousel-wrapper">
+                    <label style="color: var(--accent); font-weight: 800; font-size: 11px;">🍸 DRINKS C/ ÁLCOOL (1-199)</label>
+                    <div id="carousel-1" class="carousel-container"></div>
+                </div>
+                <div class="carousel-wrapper">
+                    <label style="color: var(--accent); font-weight: 800; font-size: 11px;">🥤 DRINKS S/ ÁLCOOL (200-299)</label>
+                    <div id="carousel-2" class="carousel-container"></div>
+                </div>
+                <div class="carousel-wrapper">
+                    <label style="color: var(--accent); font-weight: 800; font-size: 11px;">🍹 COPÕES (300-399)</label>
+                    <div id="carousel-3" class="carousel-container"></div>
+                </div>
+                <div class="carousel-wrapper">
+                    <label style="color: var(--accent); font-weight: 800; font-size: 11px;">📦 COMBOS (400-499)</label>
+                    <div id="carousel-4" class="carousel-container"></div>
+                </div>
+            </div>
+            
+            <button class="btn" style="background: rgba(255,255,255,0.05); color: var(--danger); margin-top: 40px;" onclick="location.reload()">SAIR</button>
+        </div>
+    </div>
 
     <script>
-        var enviando = false;
+        let imagemParaExcluirId = null;
+        //🚨🚨🚨 SUBSTITUA ESTA CHAVE PELA SUA GERADA EM api.imgbb.com ||• Acesse imgbb.com e crie uma conta gratuita
+        const IMGBB_API_KEY = 'b2f2d2c7f96736dadf9fd17f82c72fb3'; 
 
-        // Atualiza o texto na tela ao mudar o horário
-        document.querySelectorAll('input').forEach(i => {
-            i.oninput = () => {
-                const txt = `(Aberto: ${document.getElementById('aberto').value})(Fechado: ${document.getElementById('fechado').value})`;
-                document.getElementById('previewText').innerText = txt;
-            };
-        });
-
-        function prepararEnvio() {
-            const hAberto = document.getElementById('aberto').value;
-            const hFechado = document.getElementById('fechado').value;
-            
-            // Atribui os valores exatos aos IDs que você passou
-            document.getElementById('c1').value = "999";
-            document.getElementById('c2').value = `(Aberto: ${hAberto})(Fechado: ${hFechado})`;
-            
-            enviando = true;
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
-        function finalizar() {
-            if(enviando) {
-                document.getElementById('successMsg').style.display = 'block';
-                setTimeout(() => { document.getElementById('successMsg').style.display = 'none'; }, 4000);
-                enviando = false;
+        function verificarAcesso() {
+            if (document.getElementById('senha-acesso').value === "MJ-NUANCE") { //🚨🚨Senha🚨🚨
+                document.getElementById('tela-bloqueio').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                carregarCatalogo();
+                renderizarHospedagens();
+            } else showToast("Senha Incorreta!");
+        }
+
+        function abrirModalSabores(nome, sabores) {
+            document.getElementById('modal-titulo').innerText = nome;
+            const lista = document.getElementById('lista-sabores');
+            lista.innerHTML = "";
+            sabores.split(',').forEach(s => {
+                if(s.trim()) lista.innerHTML += `<div class="sabor-item">${s.trim()}</div>`;
+            });
+            document.getElementById('modal-sabores').style.display = 'flex';
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-sabores').style.display = 'none';
+        }
+
+        /* FUNÇÕES DO MODAL DE STATUS */
+        function abrirModalStatus() {
+            document.getElementById('modal-status-funcionamento').style.display = 'flex';
+        }
+
+        function fecharModalStatus() {
+            document.getElementById('modal-status-funcionamento').style.display = 'none';
+        }
+
+        function enviarStatusPlanilha() {
+            const statusId = "999";
+            const statusTxt = document.getElementById('status-horario').value.trim();
+
+            if(!statusTxt) return showToast("Digite o horário!");
+
+            const form = document.createElement('form');
+            form.method = "POST";
+            form.action = "https://docs.google.com/forms/d/e/1FAIpQLSfHpe7Idb8cekKYPyOOs8xn5sSfCQhWLKqUYwF4uXaz4QBX9w/formResponse";
+            form.target = "hidden_iframe";
+
+            const dados = {
+                "entry.1183639703": String(statusId),
+                "entry.1305746237": String(statusTxt)
+            };
+
+            for (let key in dados) {
+                let input = document.createElement('input');
+                input.type = "hidden";
+                input.name = key;
+                input.value = dados[key];
+                form.appendChild(input);
             }
+
+            document.body.appendChild(form);
+            form.submit();
+            showToast("Enviando Status...");
+
+            setTimeout(() => {
+                if(document.body.contains(form)) document.body.removeChild(form);
+                fecharModalStatus();
+                showToast("Status atualizado na planilha!");
+            }, 1000);
+        }
+
+        function abrirModalHost() {
+            renderizarHospedagens();
+            document.getElementById('modal-hospedagem').style.display = 'flex';
+        }
+
+        function fecharModalHost() {
+            document.getElementById('modal-hospedagem').style.display = 'none';
+        }
+
+        function fazerUploadImagem(input) {
+            if (!input.files || !input.files[0]) return;
+            
+            const file = input.files[0];
+            const btn = document.getElementById('btn-importar-img');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const tempId = 'temp_' + Date.now();
+                const lista = document.getElementById('lista-hospedagem');
+                
+                const tempItem = document.createElement('div');
+                tempItem.className = 'host-item';
+                tempItem.id = tempId;
+                tempItem.innerHTML = `
+                    <img src="${e.target.result}" class="host-img-preview" style="opacity: 0.5">
+                    <div class="loading-overlay">SUBINDO...</div>
+                `;
+                lista.insertBefore(tempItem, lista.firstChild);
+                
+                btn.disabled = true;
+                btn.innerText = "⌛...";
+
+                const formData = new FormData();
+                formData.append('image', file);
+
+                fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data && data.success) {
+                        const link = data.data.url;
+                        const novaImg = { id: Date.now(), url: link.trim(), nomePersonalizado: "" };
+                        let hospedadas = JSON.parse(localStorage.getItem('nuance_hospedadas') || '[]');
+                        hospedadas.push(novaImg);
+                        localStorage.setItem('nuance_hospedadas', JSON.stringify(hospedadas));
+                        showToast("Sucesso!");
+                    } else {
+                        showToast("Erro ao processar imagem.");
+                    }
+                })
+                .catch(() => showToast("Erro de rede. Verifique sua internet."))
+                .finally(() => {
+                    renderizarHospedagens();
+                    btn.disabled = false;
+                    btn.innerText = "➕ IMPORTAR NOVA IMAGEM";
+                    input.value = "";
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderizarHospedagens() {
+            const lista = document.getElementById('lista-hospedagem');
+            const hospedadas = JSON.parse(localStorage.getItem('nuance_hospedadas') || '[]');
+            lista.innerHTML = hospedadas.length ? "" : "<p style='color:var(--text-muted); font-size:12px; margin:20px 0; grid-column: span 2;'>Nenhuma imagem hospedada ainda.</p>";
+            
+            [...hospedadas].reverse().forEach(img => {
+                const item = document.createElement('div');
+                item.className = 'host-item';
+                item.innerHTML = `
+                    <button class="btn-trash" onclick="abrirConfirmacao(${img.id})">🗑️</button>
+                    <img src="${img.url}" class="host-img-preview">
+                    <input type="text" class="host-name-input" placeholder="Nome..." value="${img.nomePersonalizado || ''}" onchange="salvarNomeImagem(${img.id}, this.value)">
+                    <button class="btn btn-util" style="background:var(--primary); color:white; width:100%; border-radius:6px; padding:6px; font-size:9px;" onclick="copiarLink('${img.url}')">
+                        📋 COPIAR
+                    </button>
+                `;
+                lista.appendChild(item);
+            });
+        }
+
+        function salvarNomeImagem(id, novoNome) {
+            let hospedadas = JSON.parse(localStorage.getItem('nuance_hospedadas') || '[]');
+            const index = hospedadas.findIndex(img => img.id === id);
+            if(index !== -1) {
+                hospedadas[index].nomePersonalizado = novoNome;
+                localStorage.setItem('nuance_hospedadas', JSON.stringify(hospedadas));
+                showToast("Nome atualizado!");
+            }
+        }
+
+        function copiarLink(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast("Link copiado!");
+                document.getElementById('admin-campo4').value = url;
+            }).catch(() => {
+                showToast("Erro ao copiar.");
+            });
+        }
+
+        /* FUNÇÕES DO MODAL DE CONFIRMAÇÃO */
+        function abrirConfirmacao(id) {
+            imagemParaExcluirId = id;
+            document.getElementById('modal-confirmacao').style.display = 'flex';
+            document.getElementById('confirmar-exclusao-btn').onclick = function() {
+                removerHospedagem(imagemParaExcluirId);
+                fecharConfirmacao();
+            };
+        }
+
+        function fecharConfirmacao() {
+            document.getElementById('modal-confirmacao').style.display = 'none';
+            imagemParaExcluirId = null;
+        }
+
+        function removerHospedagem(id) {
+            let hospedadas = JSON.parse(localStorage.getItem('nuance_hospedadas') || '[]');
+            hospedadas = hospedadas.filter(img => img.id !== id);
+            localStorage.setItem('nuance_hospedadas', JSON.stringify(hospedadas));
+            renderizarHospedagens();
+            showToast("Removido!");
+        }
+
+        function atualizarDashboard(produtos) {
+            document.getElementById('count-total').innerText = produtos.length;
+            document.getElementById('count-alcool').innerText = produtos.filter(p => p.id >= 1 && p.id <= 199).length;
+            document.getElementById('count-sem-alcool').innerText = produtos.filter(p => p.id >= 200 && p.id <= 299).length;
+            document.getElementById('count-copao').innerText = produtos.filter(p => p.id >= 300 && p.id <= 399).length;
+            document.getElementById('count-combos').innerText = produtos.filter(p => p.id >= 400 && p.id <= 499).length;
+        }
+
+        function salvarProduto() {
+            const c1 = document.getElementById('admin-campo1').value;
+            const c2 = document.getElementById('admin-campo2').value;
+            const c3 = document.getElementById('admin-campo3').value;
+            const c4 = document.getElementById('admin-campo4').value;
+            const c5 = document.getElementById('admin-campo5').value.trim();
+            const valorG = document.getElementById('admin-campo6').value.trim();
+            const deveExcluir = document.getElementById('check-excluir').checked;
+
+            if(!c1 || !c2 || !c3 || !c4) return showToast("Campos obrigatórios!");
+
+            const form = document.createElement('form');
+            form.method = "POST";
+            form.action = "https://docs.google.com/forms/d/e/1FAIpQLSfHpe7Idb8cekKYPyOOs8xn5sSfCQhWLKqUYwF4uXaz4QBX9w/formResponse";
+            form.target = "hidden_iframe";
+
+            const dados = {
+                "entry.1183639703": String(c1),
+                "entry.1305746237": String(c2),
+                "entry.204413255": String(c3),
+                "entry.1752078996": String(c4),
+                "entry.150716055": String(c5),
+                "entry.1417905239": String(valorG)
+            };
+
+            for (let key in dados) {
+                let input = document.createElement('input');
+                input.type = "hidden";
+                input.name = key;
+                input.value = dados[key];
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+            showToast("Enviando para a planilha...");
+
+            setTimeout(() => {
+                let produtos = JSON.parse(localStorage.getItem('nuance_catalogo') || '[]');
+                const idInt = parseInt(c1);
+
+                if (deveExcluir) {
+                    produtos = produtos.filter(p => p.id !== idInt);
+                } else {
+                    const novoProduto = { id: idInt, nome: c2, preco: c3, img: c4, sabores: c5 };
+                    const index = produtos.findIndex(p => p.id === idInt);
+                    if(index !== -1) produtos[index] = novoProduto;
+                    else produtos.push(novoProduto);
+                }
+                
+                localStorage.setItem('nuance_catalogo', JSON.stringify(produtos));
+                if(document.body.contains(form)) document.body.removeChild(form);
+                carregarCatalogo();
+                limparCampos();
+                document.getElementById('check-excluir').checked = false;
+                showToast(deveExcluir ? "Removido do painel local!" : "Atualizado com sucesso!");
+            }, 1000);
+        }
+
+        function carregarCatalogo() {
+            const produtos = JSON.parse(localStorage.getItem('nuance_catalogo') || '[]');
+            const busca = document.getElementById('busca-id').value;
+            atualizarDashboard(produtos);
+            
+            const carrosséis = [
+                document.getElementById('carousel-1'), 
+                document.getElementById('carousel-2'), 
+                document.getElementById('carousel-3'),
+                document.getElementById('carousel-4')
+            ];
+            carrosséis.forEach(c => c.innerHTML = "");
+
+            produtos.sort((a,b) => a.id - b.id).forEach(p => {
+                if(busca && !p.id.toString().includes(busca)) return;
+                
+                const temSabores = p.sabores && p.sabores !== "---" && p.sabores.trim() !== "";
+                const btnHtml = temSabores 
+                    ? `<button class="btn-status btn-sabores" onclick="abrirModalSabores('${p.nome}', '${p.sabores}')">ESCOLHER SABORES</button>`
+                    : `<button class="btn-status btn-add">ADICIONAR</button>`;
+
+                const card = `
+                    <div class="product-card">
+                        <div class="edit-badge" onclick="editarProduto(${p.id})">✏️</div>
+                        <img src="${p.img}" class="product-img" onerror="this.src='https://placehold.co/400x300?text=Nuance'">
+                        <div class="product-info">
+                            <div class="p-id-label">ID: ${p.id}</div>
+                            <div class="p-name">${p.nome}</div>
+                            <div class="p-price">R$ ${p.preco}</div>
+                            ${btnHtml}
+                        </div>
+                    </div>`;
+                
+                if(p.id >= 1 && p.id <= 199) carrosséis[0].innerHTML += card;
+                else if(p.id >= 200 && p.id <= 299) carrosséis[1].innerHTML += card;
+                else if(p.id >= 300 && p.id <= 399) carrosséis[2].innerHTML += card;
+                else if(p.id >= 400 && p.id <= 499) carrosséis[3].innerHTML += card;
+            });
+        }
+
+        function editarProduto(id) {
+            const p = JSON.parse(localStorage.getItem('nuance_catalogo')).find(prod => prod.id === id);
+            if(p) {
+                document.getElementById('admin-campo1').value = p.id;
+                document.getElementById('admin-campo2').value = p.nome;
+                document.getElementById('admin-campo3').value = p.preco;
+                document.getElementById('admin-campo4').value = p.img;
+                document.getElementById('admin-campo5').value = (p.sabores === "---") ? "" : p.sabores;
+                document.getElementById('admin-campo6').value = "";
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                showToast("Produto carregado!");
+            }
+        }
+
+        function exportarBackup() {
+            const catalogo = localStorage.getItem('nuance_catalogo') || '[]';
+            const hospedadas = localStorage.getItem('nuance_hospedadas') || '[]';
+            const dataCompleta = JSON.stringify({ catalogo: JSON.parse(catalogo), hospedadas: JSON.parse(hospedadas) });
+            
+            const blob = new Blob([dataCompleta], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "backup_nuance.json";
+            a.click();
+        }
+
+        function importarBackup(event) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const dados = JSON.parse(e.target.result);
+                    if(dados.catalogo) localStorage.setItem('nuance_catalogo', JSON.stringify(dados.catalogo));
+                    if(dados.hospedadas) localStorage.setItem('nuance_hospedadas', JSON.stringify(dados.hospedadas));
+                    carregarCatalogo();
+                    renderizarHospedagens();
+                    showToast("Tudo importado com sucesso!");
+                } catch(err) {
+                    showToast("Erro ao ler arquivo de backup.");
+                }
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+
+        function limparCampos() { 
+            document.querySelectorAll('input:not(#senha-acesso, #busca-id, #status-id-fixo)').forEach(i => {
+                i.value = ""; 
+            });
         }
     </script>
 </body>
 </html>
-2
