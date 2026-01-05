@@ -1589,27 +1589,100 @@ async function carregarDadosDaPlanilha() {
 
                 // --- LÓGICA DE STATUS POR PLANILHA (ID 999) ---
                 // --- LÓGICA DE STATUS ULTRA FLEXÍVEL ---
-if (pID === 999) {
-    // Esta regra agora aceita "(Aberto 18:00)", "(Aberto:18:00)", "(aberto: 18:00)", etc.
-    const regexAberto = /Aberto:?\s*(\d{2}):(\d{2})/i;
-    const regexFechado = /Fechado:?\s*(\d{2}):(\d{2})/i;
-    
-    const matchAberto = pNome.match(regexAberto);
-    const matchFechado = pNome.match(regexFechado);
+				async function carregarDadosDaPlanilha() {
+    try {
+        const resposta = await fetch(LINK_CSV);
+        const csvTexto = await resposta.text();
+        const linhas = csvTexto.split('\n').filter(l => l.trim() !== '');
+        if (linhas.length <= 1) return;
 
-    if (matchAberto && matchFechado) {
-        horaAberturaGlobal = parseInt(matchAberto[1]);
-        minutoAberturaGlobal = parseInt(matchAberto[2]);
-        horaFechamentoGlobal = parseInt(matchFechado[1]);
-        minutoFechamentoGlobal = parseInt(matchFechado[2]);
-        
-        console.log(`Horário lido: Aberto às ${horaAberturaGlobal}:${minutoAberturaGlobal}, Fecha às ${horaFechamentoGlobal}:${minutoFechamentoGlobal}`);
-        
-        // Força a atualização do status na hora
-        checkStoreStatus();
-    }
-    continue; 
+        for (let i = 1; i < linhas.length; i++) {
+            const colunas = linhas[i].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
+            if (colunas.length >= 6) { 
+                const pIDStr = colunas[1] ? colunas[1].replace(/"/g, '').trim() : ''; 
+                const pNome = colunas[2] ? colunas[2].replace(/"/g, '').trim() : ''; 
+                const pPreco = colunas[3] ? colunas[3].replace(/"/g, '').trim() : ''; 
+                const pImagem = colunas[4] ? colunas[4].replace(/"/g, '').trim() : ''; 
+                const pSaboresRaw = colunas[5] ? colunas[5].replace(/"/g, '').trim() : '';
+                const pSaboresArray = pSaboresRaw ? pSaboresRaw.split(',').map(s => s.trim()) : [];
+
+                if(!pIDStr || !pNome) continue;
+
+                const pID = parseInt(pIDStr);
+
+                // --- INÍCIO DA CORREÇÃO DO STATUS ---
+                if (pID === 999) {
+                    // Esta regex ignora espaços e aceita com ou sem dois-pontos
+                    const regexAberto = /Aberto:?\s*(\d{2}):(\d{2})/i;
+                    const regexFechado = /Fechado:?\s*(\d{2}):(\d{2})/i;
+                    
+                    const matchAberto = pNome.match(regexAberto);
+                    const matchFechado = pNome.match(regexFechado);
+
+                    if (matchAberto && matchFechado) {
+                        horaAberturaGlobal = parseInt(matchAberto[1]);
+                        minutoAberturaGlobal = parseInt(matchAberto[2]);
+                        horaFechamentoGlobal = parseInt(matchFechado[1]);
+                        minutoFechamentoGlobal = parseInt(matchFechado[2]);
+                        
+                        // Executa a verificação de horário imediatamente
+                        if (typeof checkStoreStatus === "function") {
+                            checkStoreStatus();
+                        }
+                    }
+                    continue; // Pula para o próximo item (ID 1, 2, etc) para não criar card do 999
+                }
+                // --- FIM DA CORREÇÃO ---
+
+                let cardExistente = document.querySelector(`.product-card[data-id="${pID}"]`);
+                
+                if (!cardExistente) {
+                    const novaEstrutura = `
+                        <div class="product-card" data-id="${pID}">
+                            <img src="${pImagem || 'imgs/Logo-principal.jpg'}">
+                            <h3>${pNome}</h3>
+                            <span class="price">R$ ${pPreco}</span>
+                            <button class="btn-add"></button>
+                        </div>`;
+                    
+                    let targetCategory = "alcool"; 
+                    if (pID >= 200 && pID <= 299) targetCategory = "sem-alcool";
+                    else if (pID >= 300 && pID <= 399) targetCategory = "copao";
+                    else if (pID >= 400 && pID <= 499) targetCategory = "combo";
+
+                    const section = document.querySelector(`.menu-section[data-category="${targetCategory}"]`);
+                    if (section) {
+                        const containerCarrossel = section.querySelector('.carousel-container');
+                        if (containerCarrossel) {
+                            containerCarrossel.insertAdjacentHTML('beforeend', novaEstrutura);
+                            cardExistente = document.querySelector(`.product-card[data-id="${pID}"]`);
+                        }
+                    }
+                }
+
+                if (cardExistente) {
+                    cardExistente.querySelector('h3').innerText = pNome;
+                    if (pImagem) cardExistente.querySelector('img').src = pImagem;
+                    cardExistente.querySelector('.price').innerHTML = `R$ ${pPreco}`;
+                    
+                    const precoNumerico = parseFloat(pPreco.replace('R$', '').replace(',', '.').trim());
+                    let btnAdd = cardExistente.querySelector('.btn-add');
+                    
+                    if (pSaboresArray.length > 0) {
+                        btnAdd.className = "btn-add btn-flavor";
+                        btnAdd.innerText = "Escolher Sabor";
+                        btnAdd.onclick = () => openFlavorModal(pNome, precoNumerico, pSaboresArray, pImagem);
+                    } else {
+                        btnAdd.className = "btn-add";
+                        btnAdd.innerText = "Adicionar";
+                        btnAdd.onclick = function() { animateAdd(this); addToCart(pNome, precoNumerico, pImagem); };
+                    }
+                }
+            }
+        }
+    } catch (e) { console.error("Erro ao carregar dados:", e); }
 }
+
 
                 // SE O CARD NÃO EXISTIR, VAMOS CRIAR UM NOVO NO LUGAR CERTO
                 if (!cardExistente) {
