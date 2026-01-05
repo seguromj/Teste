@@ -1588,21 +1588,29 @@ async function carregarDadosDaPlanilha() {
                 const pID = parseInt(pIDStr);
 
                 // --- LÓGICA DE STATUS POR PLANILHA (ID 999) ---
-                if (pID === 999) {
-                    // Esperado na Coluna B: (Aberto: 18:00)(Fechado 23:00)
-                    const regex = /\(Aberto:\s*(\d{2}):(\d{2})\)\(Fechado\s*(\d{2}):(\d{2})\)/i;
-                    const match = pNome.match(regex);
-                    if (match) {
-                        horaAberturaGlobal = parseInt(match[1]);
-                        minutoAberturaGlobal = parseInt(match[2]);
-                        horaFechamentoGlobal = parseInt(match[3]);
-                        minutoFechamentoGlobal = parseInt(match[4]);
-                    }
-                    continue; // Não cria card para o ID 999
-                }
+                // --- LÓGICA DE STATUS ULTRA FLEXÍVEL ---
+if (pID === 999) {
+    // Esta regra agora aceita "(Aberto 18:00)", "(Aberto:18:00)", "(aberto: 18:00)", etc.
+    const regexAberto = /Aberto:?\s*(\d{2}):(\d{2})/i;
+    const regexFechado = /Fechado:?\s*(\d{2}):(\d{2})/i;
+    
+    const matchAberto = pNome.match(regexAberto);
+    const matchFechado = pNome.match(regexFechado);
 
-                let cardExistente = document.querySelector(`.product-card[data-id="${pID}"]`);
-                
+    if (matchAberto && matchFechado) {
+        horaAberturaGlobal = parseInt(matchAberto[1]);
+        minutoAberturaGlobal = parseInt(matchAberto[2]);
+        horaFechamentoGlobal = parseInt(matchFechado[1]);
+        minutoFechamentoGlobal = parseInt(matchFechado[2]);
+        
+        console.log(`Horário lido: Aberto às ${horaAberturaGlobal}:${minutoAberturaGlobal}, Fecha às ${horaFechamentoGlobal}:${minutoFechamentoGlobal}`);
+        
+        // Força a atualização do status na hora
+        checkStoreStatus();
+    }
+    continue; 
+}
+
                 // SE O CARD NÃO EXISTIR, VAMOS CRIAR UM NOVO NO LUGAR CERTO
                 if (!cardExistente) {
                     const novaEstrutura = `
