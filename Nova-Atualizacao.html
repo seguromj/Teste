@@ -434,7 +434,7 @@
 }
 
 /* 🚨🚨Estilos dos Barmans no Rodapé🚨🚨 */
- .nuance-footer {
+ .nuance-footer1 {
             background: var(--dark);
             padding: 80px 5%;
             border-top: 1px solid rgba(255,255,255,0.1);
@@ -442,7 +442,7 @@
             overflow: hidden;
         }
 
-        .footer-grid {
+        .footer-grid1 {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -450,19 +450,19 @@
             gap: 50px;
         }
 
-        .brand h2 {
+        .brand1 h2 {
             font-family: 'Playfair Display', serif;
             font-size: 3rem;
             letter-spacing: -1px;
             color: var(--gold);
         }
 
-        .profiles-wrapper {
+        .profiles-wrapper1 {
             display: flex;
             gap: 100px;
         }
 
-        .profile-item {
+        .profile-item1 {
             position: relative;
             display: flex;
             align-items: center;
@@ -470,12 +470,12 @@
             transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .profile-item.active {
+        .profile-item1.active1 {
             width: 320px;
         }
 
         /* --- LUZ VIBRANTE POR TRÁS (GLOW) --- */
-        .border-animation {
+        .border-animation1 {
             position: relative;
             width: 130px;
             height: 130px;
@@ -489,7 +489,7 @@
         }
 
         /* O brilho que vai e vem */
-        .border-animation::after {
+        .border-animation1::after {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -507,7 +507,7 @@
             50% { transform: scale(1.3); opacity: 0.8; }
         }
 
-        .profile-img {
+        .profile-img1 {
             width: 100%;
             height: 100%;
             border-radius: 50%;
@@ -518,7 +518,7 @@
         }
 
         /* --- MODAL LATERAL --- */
-        .mini-modal {
+        .mini-modal1 {
             position: absolute;
             left: 170px;
             opacity: 0;
@@ -536,13 +536,13 @@
             z-index: 1;
         }
 
-        .profile-item.active .mini-modal {
+        .profile-item1.active1 .mini-modal1 {
             opacity: 1;
             transform: translateX(0);
             visibility: visible;
         }
 
-        .modal-btn {
+        .modal-btn1 {
             border: none;
             padding: 8px 15px;
             border-radius: 10px;
@@ -553,11 +553,11 @@
             transition: 0.3s;
         }
 
-        .btn-bio { background: var(--gold); color: #000; }
-        .btn-follow { background: transparent; color: #fff; border: 1px solid #444; }
-        .modal-btn:hover { transform: scale(1.05); filter: brightness(1.2); }
+        .btn-bio1 { background: var(--gold); color: #000; }
+        .btn-follow1 { background: transparent; color: #fff; border: 1px solid #444; }
+        .modal-btn1:hover { transform: scale(1.05); filter: brightness(1.2); }
 
-        .profile-name {
+        .profile-name1 {
             position: absolute;
             bottom: -30px;
             width: 100%;
@@ -568,8 +568,8 @@
         }
 
         @media (max-width: 768px) {
-            .footer-grid { flex-direction: column; text-align: center; }
-            .profiles-wrapper { gap: 50px; flex-direction: column; align-items: center; }
+            .footer-grid1 { flex-direction: column; text-align: center; }
+            .profiles-wrapper1 { gap: 50px; flex-direction: column; align-items: center; }
         }
 
 
@@ -992,20 +992,38 @@
    <div id="mensagem-conteudo" class="atencao-body"></div>
   </div>
 
-<footer class="mini-rodape">
+<footer class="mini-rodape1">
    
-	            <div class="profiles-wrapper">
-                <div class="profile-item" onclick="toggleModal(this)">
-                    <div class="border-animation">
+	            <div class="profiles-wrapper1">
+                <div class="profile-item1" onclick="toggleModal(this)">
+                    <div class="border-animation1">
                         <img src="https://img.freepik.com/vetores-gratis/circulo-azul-com-usuario-branco_78370-4707.jpg?semt=ais_hybrid&w=740&q=80" class="profile-img" alt="Barman 1">
                     </div>
-                    <div class="mini-modal">
+                    <div class="mini-modal1">
                         <span style="font-size: 0.7rem; color: var(--gold);">ALEX RIVERA</span>
-                        <button class="modal-btn btn-bio">Ver Especialidade</button>
-                        <button class="modal-btn btn-follow">Seguir Perfil</button>
+                        <button class="modal-btn1 btn-bio1">Ver Especialidade</button>
+                        <button class="modal-btn1 btn-follow1">Seguir Perfil</button>
                     </div>
-                    <div class="profile-name">Alex Rivera</div> 
+                    <div class="profile-name1">Alex Rivera</div> 
                 </div>
+
+					     <div class="profile-item1" onclick="toggleModal(this)">
+                    <div class="border-animation1">
+                        <img src="https://img.freepik.com/vetores-gratis/circulo-azul-com-usuario-branco_78370-4707.jpg?semt=ais_hybrid&w=740&q=80" class="profile-img" alt="Barman 2">
+                    </div>
+                    <div class="mini-modal1">
+                        <span style="font-size: 0.7rem; color: var(--gold);">SOFIA MENDES</span>
+                        <button class="modal-btn1 btn-bio1">Ver Drinks</button>
+                        <button class="modal-btn1 btn-follow1">Instagram</button>
+                    </div>
+                    <div class="profile-name1">Sofia Mendes</div>
+                </div>
+            </div>
+
+            <div style="text-align: right;">
+                <p style="font-size: 0.8rem; color: #444;">&copy; 2026 NUANCE DRINKS</p>
+            </div>
+</div>
                 
     <hr>
     
@@ -1047,15 +1065,15 @@ const vibrantColors = ['#ff007f', '#00f2fe', '#d4af37', '#7000ff', '#00ff41', '#
 
         function toggleModal(element) {
             document.querySelectorAll('.profile-item').forEach(item => {
-                if(item !== element) item.classList.remove('active');
+                if(item !== element) item.classList.remove('active1');
             });
-            element.classList.toggle('active');
+            element.classList.toggle('active1');
         }
 
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.profile-item')) {
                 document.querySelectorAll('.profile-item').forEach(item => {
-                    item.classList.remove('active');
+                    item.classList.remove('active1');
                 });
             }
         });
