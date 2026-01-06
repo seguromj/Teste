@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -126,7 +127,7 @@
         .form-group { margin-bottom: 15px; text-align: left; }
         label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
 
-        input[type="text"], input[type="number"], input[type="password"] { 
+        input[type="text"], input[type="number"], input[type="password"], input[type="time"] { 
             width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; 
             border-radius: 10px; color: white; font-family: inherit; box-sizing: border-box;
         }
@@ -192,20 +193,31 @@
 
     <div id="modal-status-funcionamento" class="modal-overlay" onclick="fecharModalStatus()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h2 style="margin: 0; color: var(--warning);">STATUS DA LOJA</h2>
-            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">ATUALIZAR HORÁRIO NA PLANILHA</p>
+            <h2 style="margin: 0; color: var(--warning);">STATUS: Aberto/Fechado</h2>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">ATUALIZAR HORÁRIO</p>
             
             <div class="form-group">
                 <label>ID DE STATUS (FIXO)</label>
                 <input type="text" id="status-id-fixo" value="100" disabled style="background: rgba(0,0,0,0.5); border-color: var(--text-muted); opacity: 0.7;">
             </div>
 
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div class="form-group">
+                    <label>ABERTO AS:</label>
+                    <input type="time" id="time-aberto" oninput="atualizarTextoHorario()">
+                </div>
+                <div class="form-group">
+                    <label>FECHADO AS:</label>
+                    <input type="time" id="time-fechado" oninput="atualizarTextoHorario()">
+                </div>
+            </div>
+
             <div class="form-group">
-                <label>HORÁRIO DE FUNCIONAMENTO</label>
+                <label>HORÁRIO de funcionamento que irá Funcionar 👇</label>
                 <input type="text" id="status-horario" placeholder="(Aberto: 18:00)(Fechado: 22:00)">
             </div>
 
-            <button class="btn" style="background: var(--warning); color: #000; margin-top: 20px;" onclick="enviarStatusPlanilha()">ENVIAR STATUS PARA PLANILHA</button>
+            <button class="btn" style="background: var(--warning); color: #000; margin-top: 20px;" onclick="enviarStatusPlanilha()">ATUALIZAR HORÁRIO</button>
             <button class="btn btn-util" style="margin-top: 10px;" onclick="fecharModalStatus()">CANCELAR</button>
         </div>
     </div>
@@ -288,12 +300,24 @@
                     <div class="form-group"><label>Nome</label><input type="text" id="admin-campo2"></div>
                     <div class="form-group"><label>Preço</label><input type="text" id="admin-campo3"></div>
                 </div>
+                
+                <div class="grid-form">
+                    <div class="form-group"><label>Preço Antigo</label><input type="text" id="admin-campo7"></div>
+                    <div class="form-group"><label>ML</label><input type="text" id="admin-campo8"></div>
+                </div>
+
                 <div class="form-group"><label>URL Imagem</label><input type="text" id="admin-campo4"></div>
                 <div class="form-group"><label>Sabores (Separar por vírgula)</label><input type="text" id="admin-campo5"></div>
                 
                 <div class="form-group">
-                    <label>Comando Coluna G (O que digitar chegará na planilha)</label>
-                    <input type="text" id="admin-campo6" placeholder="Texto para a Coluna G...">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="margin-bottom: 0;">Clica no botão Excluir para Evitar Digitar:</label>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 11px; color: var(--danger); font-weight: 700;"> 👉</span>
+                            <button type="button" onclick="document.getElementById('admin-campo6').value = 'Excluir'" style="background: var(--danger); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 10px; cursor: pointer; font-weight: 800;">Excluir</button>
+                        </div>
+                    </div>
+                    <input type="text" id="admin-campo6" placeholder="Digite Excluir para apagar Produto">
                 </div>
 
                 <div class="delete-box">
@@ -379,6 +403,14 @@
             document.getElementById('modal-status-funcionamento').style.display = 'none';
         }
 
+        function atualizarTextoHorario() {
+            const aberto = document.getElementById('time-aberto').value;
+            const fechado = document.getElementById('time-fechado').value;
+            if(aberto && fechado) {
+                document.getElementById('status-horario').value = `(Aberto: ${aberto})(Fechado: ${fechado})`;
+            }
+        }
+          //🚨🚨👇👇👇🚨🚨
         function enviarStatusPlanilha() {
             const statusId = "100";
             const statusTxt = document.getElementById('status-horario').value.trim();
@@ -554,7 +586,11 @@
             const c4 = document.getElementById('admin-campo4').value;
             const c5 = document.getElementById('admin-campo5').value.trim();
             const valorG = document.getElementById('admin-campo6').value.trim();
+            const c7 = document.getElementById('admin-campo7').value;
+            const c8 = document.getElementById('admin-campo8').value;
             const deveExcluir = document.getElementById('check-excluir').checked;
+
+            if(c1 === "100") return showToast("Esse ID: 100 não pode ser Usado.");
 
             if(!c1 || !c2 || !c3 || !c4) return showToast("Campos obrigatórios!");
 
@@ -569,7 +605,9 @@
                 "entry.204413255": String(c3),
                 "entry.1752078996": String(c4),
                 "entry.150716055": String(c5),
-                "entry.1417905239": String(valorG)
+                "entry.1417905239": String(valorG),
+                "entry.982615910": String(c7),
+                "entry.1688936222": String(c8)
             };
 
             for (let key in dados) {
@@ -591,7 +629,7 @@
                 if (deveExcluir) {
                     produtos = produtos.filter(p => p.id !== idInt);
                 } else {
-                    const novoProduto = { id: idInt, nome: c2, preco: c3, img: c4, sabores: c5 };
+                    const novoProduto = { id: idInt, nome: c2, preco: c3, img: c4, sabores: c5, precoAntigo: c7, ml: c8 };
                     const index = produtos.findIndex(p => p.id === idInt);
                     if(index !== -1) produtos[index] = novoProduto;
                     else produtos.push(novoProduto);
@@ -655,6 +693,8 @@
                 document.getElementById('admin-campo4').value = p.img;
                 document.getElementById('admin-campo5').value = (p.sabores === "---") ? "" : p.sabores;
                 document.getElementById('admin-campo6').value = "";
+                document.getElementById('admin-campo7').value = p.precoAntigo || "";
+                document.getElementById('admin-campo8').value = p.ml || "";
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 showToast("Produto carregado!");
             }
@@ -698,4 +738,3 @@
     </script>
 </body>
 </html>
-
