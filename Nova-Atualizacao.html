@@ -433,144 +433,36 @@
     50% { transform: translateY(-3px); }
 }
 
-/* 🚨🚨Estilos dos Barmans no Rodapé🚨🚨 */
- .nuance-footer1 {
-            background: var(--dark);
-            padding: 80px 5%;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            overflow: hidden;
-        }
+/* Estilos dos Barmans no Rodapé */
+.barmans-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+.barman-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
+.barman-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--verde-perfil);
+}
 
-        .footer-grid1 {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 50px;
-        }
-
-        .brand1 h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 3rem;
-            letter-spacing: -1px;
-            color: var(--gold);
-        }
-
-        .profiles-wrapper1 {
-            display: flex;
-            gap: 100px;
-        }
-
-        .profile-item1 {
-            position: relative;
-            display: flex;
-            align-items: center;
-            width: 150px;
-            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .profile-item1.active1 {
-            width: 320px;
-        }
-
-        /* --- LUZ VIBRANTE POR TRÁS (GLOW) --- */
-        .border-animation1 {
-            position: relative;
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 5;
-            background: #000;
-        }
-
-        /* O brilho que vai e vem */
-        .border-animation1::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            border-radius: 50%;
-            background: var(--vibrant-color);
-            filter: blur(20px);
-            z-index: -1;
-            opacity: 0;
-            animation: vibrate-glow 2.5s infinite;
-            transition: background 1s ease;
-        }
-
-        @keyframes vibrate-glow {
-            0%, 100% { transform: scale(0.8); opacity: 0; }
-            50% { transform: scale(1.3); opacity: 0.8; }
-        }
-
-        .profile-img1 {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            position: relative;
-            z-index: 6;
-            border: 2px solid rgba(255,255,255,0.1);
-        }
-
-        /* --- MODAL LATERAL --- */
-        .mini-modal1 {
-            position: absolute;
-            left: 170px;
-            opacity: 0;
-            transform: translateX(-20px);
-            visibility: hidden;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 15px 20px;
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            transition: all 0.5s ease;
-            z-index: 1;
-        }
-
-        .profile-item1.active1 .mini-modal1 {
-            opacity: 1;
-            transform: translateX(0);
-            visibility: visible;
-        }
-
-        .modal-btn1 {
-            border: none;
-            padding: 8px 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 600;
-            white-space: nowrap;
-            transition: 0.3s;
-        }
-
-        .btn-bio1 { background: var(--gold); color: #000; }
-        .btn-follow1 { background: transparent; color: #fff; border: 1px solid #444; }
-        .modal-btn1:hover { transform: scale(1.05); filter: brightness(1.2); }
-
-        .profile-name1 {
-            position: absolute;
-            bottom: -30px;
-            width: 100%;
-            text-align: center;
-            font-size: 0.8rem;
-            color: #888;
-            pointer-events: none;
-        }
-
-        @media (max-width: 768px) {
-            .footer-grid1 { flex-direction: column; text-align: center; }
-            .profiles-wrapper1 { gap: 50px; flex-direction: column; align-items: center; }
-        }
+/* No computador, ele fica em uma linha só */
+@media (min-width: 768px) {
+    .mini-grid {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
 
 
 /* --- NOVA ANIMAÇÃO DO JOINHA --- */
@@ -992,40 +884,31 @@
    <div id="mensagem-conteudo" class="atencao-body"></div>
   </div>
 
-<footer class="mini-rodape1">
-   
-	            <div class="profiles-wrapper1">
-                <div class="profile-item1" onclick="toggleModal(this)">
-                    <div class="border-animation1">
-                        <img src="https://img.freepik.com/vetores-gratis/circulo-azul-com-usuario-branco_78370-4707.jpg?semt=ais_hybrid&w=740&q=80" class="profile-img" alt="Barman 1">
-                    </div>
-                    <div class="mini-modal1">
-                        <span style="font-size: 0.7rem; color: var(--gold);">ALEX RIVERA</span>
-                        <button class="modal-btn1 btn-bio1">Ver Especialidade</button>
-                        <button class="modal-btn1 btn-follow1">Seguir Perfil</button>
-                    </div>
-                    <div class="profile-name1">Alex Rivera</div> 
-                </div>
-
-					     <div class="profile-item1" onclick="toggleModal(this)">
-                    <div class="border-animation1">
-                        <img src="https://img.freepik.com/vetores-gratis/circulo-azul-com-usuario-branco_78370-4707.jpg?semt=ais_hybrid&w=740&q=80" class="profile-img" alt="Barman 2">
-                    </div>
-                    <div class="mini-modal1">
-                        <span style="font-size: 0.7rem; color: var(--gold);">SOFIA MENDES</span>
-                        <button class="modal-btn1 btn-bio1">Ver Drinks</button>
-                        <button class="modal-btn1 btn-follow1">Instagram</button>
-                    </div>
-                    <div class="profile-name1">Sofia Mendes</div>
-                </div>
+<footer class="mini-rodape">
+    <div class="mini-grid">
+        <div class="barmans-footer">
+            <div class="barman-item">
+                <img src="imgs/Perfil.Darwin.jpg" alt="Darwin" class="barman-img">
+                <span>Barman Darwin</span>
             </div>
-
-            <div style="text-align: right;">
-                <p style="font-size: 0.8rem; color: #444;">&copy; 2026 NUANCE DRINKS</p>
+            <div class="barman-item">
+                <img src="imgs/Perfil.Douglas.png" alt="Douglas" class="barman-img">
+                <span>Barman Douglas</span>
             </div>
-</div>
-                
-    <hr>
+        </div>
+        
+        <div class="links-mini">
+            <a href="#" style="font-size: 30px;">Início</a>
+        </div>
+
+	        <div class="social-mini">
+            <a href="https://wa.me/62995679219?text=Ol%C3%A1!" style="font-size: 30px;" target="_blank" class="insta-link"><i class="fab fa-whatsapp"></i></a>
+        </div>
+    </div>
+    
+    <div class="barra-final">
+        <p>&copy; <span id="ano-mini"></span> • Nuance <span class="magic">❤️</span></p>
+    </div>
     
     
     <a href="https://www.instagram.com/nuance_drinks?igsh=MXEwcDh1Y3FpenozNw==" target="_blank" class="logo-container45">
@@ -1050,36 +933,6 @@
         
         
 <script>
-//===================================
-//===🚨🚨 Lógico Rodapé 🚨🚨=========
-//===================================
-const vibrantColors = ['#ff007f', '#00f2fe', '#d4af37', '#7000ff', '#00ff41', '#ff4d00'];
-        
-        function changeGlowColor() {
-            const randomColor = vibrantColors[Math.floor(Math.random() * vibrantColors.length)];
-            document.documentElement.style.setProperty('--vibrant-color', randomColor);
-        }
-
-        // Muda a cor toda vez que a animação completa um ciclo (2.5s)
-        setInterval(changeGlowColor, 2500);
-
-        function toggleModal(element) {
-            document.querySelectorAll('.profile-item').forEach(item => {
-                if(item !== element) item.classList.remove('active1');
-            });
-            element.classList.toggle('active1');
-        }
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.profile-item')) {
-                document.querySelectorAll('.profile-item').forEach(item => {
-                    item.classList.remove('active1');
-                });
-            }
-        });
-
-
-	
     const icon = document.getElementById('insta-icon');
 const brandNameContainer = document.getElementById('brand-name');
 const text = "nuance _drinks";
@@ -1099,8 +952,12 @@ function revealText(str) {
         }
     }, 100); // Velocidade do surgimento das letras (100ms)
 }
-//🚨🚨🚨🚨🚨
-//========================
+
+    
+    
+    
+    
+        
         
     let cart = [];
     let currentFlavorProduct = null;
