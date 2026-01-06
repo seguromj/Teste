@@ -1032,6 +1032,36 @@
         
         
 <script>
+//===================================
+//===🚨🚨 Lógico Rodapé 🚨🚨=========
+//===================================
+const vibrantColors = ['#ff007f', '#00f2fe', '#d4af37', '#7000ff', '#00ff41', '#ff4d00'];
+        
+        function changeGlowColor() {
+            const randomColor = vibrantColors[Math.floor(Math.random() * vibrantColors.length)];
+            document.documentElement.style.setProperty('--vibrant-color', randomColor);
+        }
+
+        // Muda a cor toda vez que a animação completa um ciclo (2.5s)
+        setInterval(changeGlowColor, 2500);
+
+        function toggleModal(element) {
+            document.querySelectorAll('.profile-item').forEach(item => {
+                if(item !== element) item.classList.remove('active');
+            });
+            element.classList.toggle('active');
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.profile-item')) {
+                document.querySelectorAll('.profile-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+            }
+        });
+
+
+	
     const icon = document.getElementById('insta-icon');
 const brandNameContainer = document.getElementById('brand-name');
 const text = "nuance _drinks";
@@ -1051,12 +1081,8 @@ function revealText(str) {
         }
     }, 100); // Velocidade do surgimento das letras (100ms)
 }
-
-    
-    
-    
-    
-        
+//🚨🚨🚨🚨🚨
+//========================
         
     let cart = [];
     let currentFlavorProduct = null;
