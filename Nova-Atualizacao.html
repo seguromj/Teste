@@ -18,7 +18,10 @@
                 --success: #27ae60; 
                 --Laranja: #F54927;
 			    --verde-perfil: #00F241;
-                --shadow: 0 4px 15px rgba(0,0,0,0.1); }
+                --shadow: 0 4px 15px rgba(0,0,0,0.1);
+			    --nuance-gold1: #d4af37; /*Cor rodapé*/
+                --vibrant-glow1: #ff007f; /* Cor que mudará via JS Rodapé*/
+			  }
                 
 
 .logo-container45 {
@@ -433,7 +436,102 @@
     50% { transform: translateY(-3px); }
 }
 
-/* Estilos dos Barmans no Rodapé */
+/* 🚨🚨Estilos dos Barmans no Rodapé🚨🚨 */
+
+.profiles-container {
+    display: flex;
+    gap: 120px;
+    padding: 50px;
+    background: #080808; /* Fundo escuro para destacar a luz */
+}
+
+.barman-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100px; 
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.barman-item.active {
+    width: 350px; 
+}
+
+/* Círculo com Luz Vibrante por trás */
+.glow-circle {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    z-index: 5;
+}
+
+.glow-circle::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--vibrant-glow1);
+    filter: blur(15px);
+    z-index: -1;
+    animation: pulse-glow 2.5s infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { transform: scale(0.8); opacity: 0; }
+    50% { transform: scale(1.25); opacity: 0.7; }
+}
+
+.barman-photo {
+    width: 100%; height: 100%; border-radius: 50%;
+    object-fit: cover; border: 2px solid rgba(255,255,255,0.1);
+}
+
+/* Modal Lateral */
+.side-modal {
+    position: absolute;
+    left: 160px; /* Distância para a luz não entrar no modal */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-30px);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    padding: 15px 20px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.5s ease;
+}
+
+.barman-item.active .side-modal {
+    opacity: 1; visibility: visible; transform: translateX(0);
+}
+
+.modal-title { color: var(--nuance-gold1); font-size: 0.7rem; font-weight: bold; }
+
+.btn-action {
+    border: none; padding: 8px 16px; border-radius: 8px;
+    font-size: 0.8rem; cursor: pointer;
+}
+
+.btn-gold { background: var(--nuance-gold1); color: #000; }
+.btn-outline { background: transparent; color: #fff; border: 1px solid #444; }
+
+.name-label {
+    position: absolute; bottom: -25px; width: 100px;
+    text-align: center; font-size: 0.7rem; color: #666;
+}
+
+
+
+
+
+
+
+
+		
 .barmans-footer {
     display: flex;
     flex-direction: column;
@@ -896,10 +994,44 @@
                 <span>Barman Douglas</span>
             </div>
         </div>
-        
         <div class="links-mini">
             <a href="#" style="font-size: 30px;">Início</a>
         </div>
+
+
+		
+
+<div class="profiles-container">
+    <div class="barman-item" onclick="handleProfileClick(this)">
+        <div class="glow-circle">
+            <img src="URL_DA_SUA_IMAGEM_1" class="barman-photo">
+        </div>
+        <div class="side-modal">
+            <span class="modal-title">NOME DO PROFISSIONAL</span>
+            <button class="btn-action btn-gold">Botão 1</button>
+            <button class="btn-action btn-outline">Botão 2</button>
+        </div>
+        <div class="name-label">Status/Nome 1</div>
+    </div>
+
+    <div class="barman-item" onclick="handleProfileClick(this)">
+        <div class="glow-circle">
+            <img src="URL_DA_SUA_IMAGEM_2" class="barman-photo">
+        </div>
+        <div class="side-modal">
+            <span class="modal-title">NOME DO PROFISSIONAL</span>
+            <button class="btn-action btn-gold">Botão 1</button>
+            <button class="btn-action btn-outline">Botão 2</button>
+        </div>
+        <div class="name-label">Status/Nome 2</div>
+    </div>
+</div>
+
+
+
+
+
+		
 
 	        <div class="social-mini">
             <a href="https://wa.me/62995679219?text=Ol%C3%A1!" style="font-size: 30px;" target="_blank" class="insta-link"><i class="fab fa-whatsapp"></i></a>
@@ -933,6 +1065,36 @@
         
         
 <script>
+
+    // Lista de cores vibrantes que vão alternar
+    const colors = ['#ff007f', '#00f2fe', '#d4af37', '#7000ff', '#00ff41'];
+    
+    // Troca a cor da luz a cada ciclo de animação
+    setInterval(() => {
+        const nextColor = colors[Math.floor(Math.random() * colors.length)];
+        document.documentElement.style.setProperty('--vibrant-glow', nextColor);
+    }, 2500);
+
+    // Abre o perfil clicado e fecha os outros
+    function handleProfileClick(element) {
+        document.querySelectorAll('.barman-item').forEach(item => {
+            if(item !== element) item.classList.remove('active');
+        });
+        element.classList.toggle('active');
+    }
+
+    // Fecha se o usuário clicar em qualquer outro lugar da página
+    document.addEventListener('click', (event) => {
+        if (!event.target.closest('.barman-item')) {
+            document.querySelectorAll('.barman-item').forEach(item => item.classList.remove('active'));
+        }
+    });
+
+
+
+
+//🚨🚨🚨👇👇👇 Rodapé Instagram rolante
+	
     const icon = document.getElementById('insta-icon');
 const brandNameContainer = document.getElementById('brand-name');
 const text = "nuance _drinks";
@@ -952,13 +1114,9 @@ function revealText(str) {
         }
     }, 100); // Velocidade do surgimento das letras (100ms)
 }
-
+//🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
     
     
-    
-    
-        
-        
     let cart = [];
     let currentFlavorProduct = null;
     let currentPaymentLink = "#"; 
