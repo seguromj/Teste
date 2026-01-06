@@ -436,94 +436,117 @@
     50% { transform: translateY(-3px); }
 }
 
-/* 🚨🚨Estilos dos Barmans no Rodapé🚨🚨 */
 
+/* 🚨🚨Estilos dos Barmans no Rodapé🚨🚨 */
 .profiles-container {
     display: flex;
-    gap: 120px;
-    padding: 50px;
-    background: #080808; /* Fundo escuro para destacar a luz */
+    gap: 20px; /* Reduzido para caber melhor no layout */
+    padding: 20px;
+    background: #080808; 
+    justify-content: center;
+    flex-wrap: wrap; /* Para não quebrar no celular */
+    border-radius: 20px;
+    margin: 20px 0;
 }
 
-.barman-item {
+.barman-item-interactive {
     position: relative;
     display: flex;
     align-items: center;
-    width: 100px; 
+    width: 80px; 
+    height: 120px;
     transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    overflow: visible;
 }
 
-.barman-item.active {
-    width: 350px; 
+.barman-item-interactive.active {
+    width: 280px; 
 }
 
 /* Círculo com Luz Vibrante por trás */
-.glow-circle {
+.glow-circle-interactive {
     position: relative;
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     z-index: 5;
+    flex-shrink: 0;
 }
 
-.glow-circle::after {
+.glow-circle-interactive::after {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    background: var(--vibrant-glow1);
+    background: var(--vibrant-glow1); /* Usando sua variável do root */
     filter: blur(15px);
     z-index: -1;
-    animation: pulse-glow 2.5s infinite;
+    animation: pulse-glow-int 2.5s infinite;
 }
 
-@keyframes pulse-glow {
-    0%, 100% { transform: scale(0.8); opacity: 0; }
-    50% { transform: scale(1.25); opacity: 0.7; }
+@keyframes pulse-glow-int {
+    0%, 100% { transform: scale(0.8); opacity: 0.3; }
+    50% { transform: scale(1.1); opacity: 0.8; }
 }
 
-.barman-photo {
-    width: 100%; height: 100%; border-radius: 50%;
-    object-fit: cover; border: 2px solid rgba(255,255,255,0.1);
+.barman-photo-interactive {
+    width: 100%; 
+    height: 100%; 
+    border-radius: 50%;
+    object-fit: cover; 
+    border: 2px solid rgba(255,255,255,0.2);
 }
 
 /* Modal Lateral */
-.side-modal {
+.side-modal-interactive {
     position: absolute;
-    left: 160px; /* Distância para a luz não entrar no modal */
+    left: 90px; 
     opacity: 0;
     visibility: hidden;
-    transform: translateX(-30px);
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    padding: 15px 20px;
-    border-radius: 20px;
+    transform: translateX(-20px);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    padding: 10px 15px;
+    border-radius: 15px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    transition: all 0.5s ease;
+    gap: 8px;
+    transition: all 0.4s ease;
+    white-space: nowrap;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
-.barman-item.active .side-modal {
-    opacity: 1; visibility: visible; transform: translateX(0);
+.barman-item-interactive.active .side-modal-interactive {
+    opacity: 1; 
+    visibility: visible; 
+    transform: translateX(0);
 }
 
-.modal-title { color: var(--nuance-gold1); font-size: 0.7rem; font-weight: bold; }
+.modal-title-int { color: var(--nuance-gold1); font-size: 0.8rem; font-weight: bold; }
 
-.btn-action {
-    border: none; padding: 8px 16px; border-radius: 8px;
-    font-size: 0.8rem; cursor: pointer;
+.btn-action-int {
+    border: none; 
+    padding: 5px 10px; 
+    border-radius: 5px;
+    font-size: 0.7rem; 
+    cursor: pointer;
+    font-weight: bold;
 }
 
-.btn-gold { background: var(--nuance-gold1); color: #000; }
-.btn-outline { background: transparent; color: #fff; border: 1px solid #444; }
+.btn-gold-int { background: var(--nuance-gold1); color: #000; }
+.btn-outline-int { background: transparent; color: #fff; border: 1px solid #fff; }
 
-.name-label {
-    position: absolute; bottom: -25px; width: 100px;
-    text-align: center; font-size: 0.7rem; color: #666;
+.name-label-interactive {
+    position: absolute; 
+    bottom: 5px; 
+    width: 80px;
+    text-align: center; 
+    font-size: 0.6rem; 
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px #000;
 }
-
 
 
 
@@ -1002,30 +1025,31 @@
 		
 
 <div class="profiles-container">
-    <div class="barman-item" onclick="handleProfileClick(this)">
-        <div class="glow-circle">
-            <img src="URL_DA_SUA_IMAGEM_1" class="barman-photo">
+    <div class="barman-item-interactive" onclick="handleInteractiveProfile(this)">
+        <div class="glow-circle-interactive">
+            <img src="imgs/Perfil.Darwin.jpg" class="barman-photo-interactive">
         </div>
-        <div class="side-modal">
-            <span class="modal-title">NOME DO PROFISSIONAL</span>
-            <button class="btn-action btn-gold">Botão 1</button>
-            <button class="btn-action btn-outline">Botão 2</button>
+        <div class="side-modal-interactive">
+            <span class="modal-title-int">BARMAN DARWIN</span>
+            <button class="btn-action-int btn-gold-int">Ver Especialidade</button>
+            <button class="btn-action-int btn-outline-int">Instagram</button>
         </div>
-        <div class="name-label">Status/Nome 1</div>
+        <div class="name-label-interactive">Darwin</div>
     </div>
 
-    <div class="barman-item" onclick="handleProfileClick(this)">
-        <div class="glow-circle">
-            <img src="URL_DA_SUA_IMAGEM_2" class="barman-photo">
+    <div class="barman-item-interactive" onclick="handleInteractiveProfile(this)">
+        <div class="glow-circle-interactive">
+            <img src="imgs/Perfil.Douglas.png" class="barman-photo-interactive">
         </div>
-        <div class="side-modal">
-            <span class="modal-title">NOME DO PROFISSIONAL</span>
-            <button class="btn-action btn-gold">Botão 1</button>
-            <button class="btn-action btn-outline">Botão 2</button>
+        <div class="side-modal-interactive">
+            <span class="modal-title-int">BARMAN DOUGLAS</span>
+            <button class="btn-action-int btn-gold-int">Ver Especialidade</button>
+            <button class="btn-action-int btn-outline-int">Instagram</button>
         </div>
-        <div class="name-label">Status/Nome 2</div>
+        <div class="name-label-interactive">Douglas</div>
     </div>
 </div>
+
 
 
 
@@ -1066,29 +1090,21 @@
         
 <script>
 
-    // Lista de cores vibrantes que vão alternar
-    const colors = ['#ff007f', '#00f2fe', '#d4af37', '#7000ff', '#00ff41'];
-    
-    // Troca a cor da luz a cada ciclo de animação
-    setInterval(() => {
-        const nextColor = colors[Math.floor(Math.random() * colors.length)];
-        document.documentElement.style.setProperty('--vibrant-glow', nextColor);
-    }, 2500);
-
-    // Abre o perfil clicado e fecha os outros
-    function handleProfileClick(element) {
-        document.querySelectorAll('.barman-item').forEach(item => {
-            if(item !== element) item.classList.remove('active');
-        });
-        element.classList.toggle('active');
-    }
-
-    // Fecha se o usuário clicar em qualquer outro lugar da página
-    document.addEventListener('click', (event) => {
-        if (!event.target.closest('.barman-item')) {
-            document.querySelectorAll('.barman-item').forEach(item => item.classList.remove('active'));
-        }
+    function handleInteractiveProfile(element) {
+    // Fecha outros perfis interativos se houver algum aberto
+    document.querySelectorAll('.barman-item-interactive').forEach(item => {
+        if(item !== element) item.classList.remove('active');
     });
+    // Abre ou fecha o atual
+    element.classList.toggle('active');
+}
+
+// Atualização da cor vibrante (usando sua variável existente)
+setInterval(() => {
+    const vibranteColors = ['#ff007f', '#00f2fe', '#d4af37', '#7000ff', '#00ff41'];
+    const nextColor = vibranteColors[Math.floor(Math.random() * vibranteColors.length)];
+    document.documentElement.style.setProperty('--vibrant-glow1', nextColor);
+}, 2500);
 
 
 
