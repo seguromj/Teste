@@ -13,7 +13,6 @@
         .container { padding: 20px; max-width: 600px; margin: auto; }
         .item-card { background: #252525; padding: 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid #333; }
         
-        /* Chat Estilo WhatsApp */
         #chat-window { position: fixed; bottom: 90px; right: 20px; width: 320px; height: 450px; background: #e5ddd5; border-radius: 10px; display: none; flex-direction: column; z-index: 1001; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #ccc; }
         .chat-header { background: var(--wa-green); color: white; padding: 12px; display: flex; align-items: center; gap: 10px; font-weight: bold; }
         .chat-content { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); }
@@ -43,7 +42,7 @@
             <div><span>Nuance IA</span><br><small style="font-weight: normal; font-size: 10px;">Online</small></div>
         </div>
         <div class="chat-content" id="chat-box">
-            <div class="msg bot">Olá! Sou a IA da Nuance. Posso te falar sobre nossos drinks e valores! Como posso ajudar? 🍹</div>
+            <div class="msg bot">Olá! Sou a Mayckon da Nuance. Posso te falar sobre nossos drinks e valores! Como posso ajudar? 🍹</div>
         </div>
         <div class="chat-input">
             <input type="text" id="user-msg" placeholder="Digite uma mensagem..." onkeypress="if(event.key === 'Enter') askIA()">
@@ -56,8 +55,8 @@
     </div>
 
     <script>
-        // SUBSTITUA ABAIXO PELA CHAVE QUE VOCÊ GEROU AGORA
-        const API_KEY = "AIzaSyCy49MAWRwh5X-IMLo5YVD6Ls5OgSah0Kw"; 
+        // COLE SUA NOVA CHAVE ENTRE AS ASPAS ABAIXO
+        const API_KEY = "AIzaSyCsEQw8xsi_ThR9OCAZYEIqrXXYOze8yqw"; 
         
         function toggleChat() {
             const chat = document.getElementById('chat-window');
@@ -80,11 +79,10 @@
             chatBox.appendChild(typingMsg);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            const promptContexto = `Você é o atendente do Bar Nuance. 
-            Cardápio: CaipFrutas custa R$ 10,00 (sabores: Morango, Limão, Maracujá). 
-            Responda sempre de forma curta, amigável e com emojis.
-            Se for saudação, seja educado. Se for preço, use os dados acima.
-            Pergunta: ${userText}`;
+            const promptContexto = `Você é o atendente oficial do Bar Nuance. 
+            CARDÁPIO: CaipFrutas custa R$ 10,00. Sabores: Morango, Limão e Maracujá.
+            INSTRUÇÃO: Responda sempre de forma curta, amigável e com muitos emojis.
+            PERGUNTA DO CLIENTE: ${userText}`;
 
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
@@ -102,17 +100,13 @@
                     const resposta = data.candidates[0].content.parts[0].text;
                     chatBox.innerHTML += `<div class="msg bot">${resposta}</div>`;
                 } else {
-                    throw new Error();
+                    throw new Error("API recusou");
                 }
             } catch (error) {
                 if (typingMsg) chatBox.removeChild(typingMsg);
-                // Resposta de segurança caso a API falhe
-                if(userText.toLowerCase().includes("valor") || userText.toLowerCase().includes("quanto")) {
-                    chatBox.innerHTML += `<div class="msg bot">A nossa Caipfruta está R$ 10,00! 🍹</div>`;
-                } else {
-                    chatBox.innerHTML += `<div class="msg bot">Opa! Tive um pico de pedidos e me perdi. Pode perguntar de novo?</div>`;
-                }
-                console.log("Erro detectado:", error);
+                // RESPOSTA DE EMERGÊNCIA (Caso a chave dê erro de novo)
+                let msgEmergencia = "Opa! Estamos com muitos pedidos. 🍹 A nossa CaipFruta está saindo por apenas R$ 10,00! Quer pedir uma?";
+                chatBox.innerHTML += `<div class="msg bot">${msgEmergencia}</div>`;
             }
             chatBox.scrollTop = chatBox.scrollHeight;
         }
