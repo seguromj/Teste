@@ -1,125 +1,379 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Estoque Pro</title>
+    <title>Sistema de IDs Pro - Multi-Leitura</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
         :root {
-            --primary: #007bff; --success: #28a745; --danger: #dc3545; --warning: #ffc107;
-            --bg: #121212; --card: #1e1e1e; --text: #ffffff;
+            --primary: #007bff;
+            --success: #28a745;
+            --danger: #dc3545;
+            --bg: #121212;
+            --card: #1e1e1e;
+            --text: #ffffff;
+            --warning: #ffc107;
         }
 
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
-        
-        /* Menu Principal */
-        #home { display: flex; flex-direction: column; gap: 15px; align-items: center; justify-content: center; min-height: 100vh; }
-        .btn-main { width: 85%; max-width: 350px; padding: 20px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .menu-principal {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .btn-main {
+            padding: 25px;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: 0.2s;
+        }
+
         .btn-blue { background: var(--primary); color: white; }
         .btn-green { background: var(--success); color: white; }
         .btn-orange { background: var(--warning); color: #000; }
+        .btn-main:active { transform: scale(0.95); }
 
-        /* Modais */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; flex-direction: column; padding: 15px; box-sizing: border-box; overflow-y: auto; }
-        .btn-voltar { background: #333; color: white; border: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; align-self: flex-start; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 1000;
+            flex-direction: column;
+            padding: 15px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
 
-        /* Formulário de Cadastro */
-        .form-cadastro { display: flex; flex-direction: column; gap: 10px; background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-        .form-cadastro input { padding: 10px; border-radius: 6px; border: 1px solid #444; background: #222; color: white; }
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid #333;
+        }
 
-        /* Grid de Produtos Mini */
-        .grid-produtos { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; width: 100%; }
-        .produto-mini { background: var(--card); border-radius: 8px; padding: 5px; font-size: 10px; position: relative; border: 1px solid #333; text-align: center; }
-        .produto-mini img { width: 100%; height: 60px; object-fit: cover; border-radius: 4px; margin-bottom: 4px; }
-        .produto-mini .price { color: var(--success); font-weight: bold; }
-        .produto-mini .qty { background: #333; padding: 2px 4px; border-radius: 3px; }
-        
-        .acoes-mini { position: absolute; top: 2px; right: 2px; display: flex; gap: 2px; }
-        .btn-mini { border: none; border-radius: 3px; padding: 3px; cursor: pointer; font-size: 8px; }
-        .btn-edit { background: var(--warning); }
-        .btn-del { background: var(--danger); color: white; }
+        .camera-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            margin: 10px auto;
+        }
 
-        #reader { width: 100%; max-width: 400px; margin: 0 auto; border-radius: 10px; overflow: hidden; }
+        .btn-circle {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: none;
+            background: #333;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,123,255,0.5);
+        }
+
+        .lista-resultados {
+            width: 100%;
+            max-width: 500px;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .item-lista {
+            background: var(--card);
+            padding: 18px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 6px solid var(--primary);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            animation: bounceIn 0.4s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            70% { transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .id-text { font-size: 22px; font-weight: bold; color: var(--primary); }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-voltar {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 12px 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            align-self: flex-start;
+            cursor: pointer;
+        }
+
+        #status-leitura {
+            text-align: center;
+            font-size: 14px;
+            color: var(--success);
+            height: 20px;
+            margin-bottom: 5px;
+        }
+
+        /* NOVOS ESTILOS PARA CADASTRO E PRODUTOS */
+        .form-cadastro {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: var(--card);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .form-cadastro input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #222;
+            color: white;
+        }
+        .grid-produtos {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 2 itens por linha */
+            gap: 10px;
+            width: 100%;
+        }
+        .produto-card {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 8px;
+            border: 1px solid #333;
+            position: relative;
+            text-align: center;
+        }
+        .produto-card img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+        .produto-info { font-size: 12px; margin-top: 5px; }
+        .btn-edit-prod {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--warning);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 2px 5px;
+        }
+        .baixa-container {
+            margin-top: 5px;
+            display: flex;
+            gap: 2px;
+        }
+        .baixa-input {
+            width: 40px;
+            font-size: 12px;
+            padding: 2px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
-    <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/766/766-preview.mp3" preload="auto"></audio>
+    <audio id="beep" src="https://assets.mixkit.co/active_storage/sfx/766/766-preview.mp3"></audio>
 
-    <div id="home">
-        <h1>📦 MEU ESTOQUE</h1>
-        <button class="btn-main btn-blue" onclick="abrirSist()">📷 ESCANEAR / SISTEMA</button>
-        <button class="btn-main btn-orange" onclick="abrirCatalogo()">🛍️ CADASTRAR PRODUTOS</button>
-        <button class="btn-main btn-green" onclick="abrirGerador()">🏷️ GERAR BARRAS</button>
-    </div>
-
-    <div id="modalCatalogo" class="modal">
-        <button class="btn-voltar" onclick="fecharTudo()">⬅ VOLTAR</button>
-        
-        <div class="form-cadastro">
-            <h3 id="titulo-form">Novo Produto</h3>
-            <input type="hidden" id="edit-index">
-            <input type="text" id="p-id" placeholder="ID (ou escaneie)">
-            <input type="text" id="p-img" placeholder="URL da Imagem">
-            <input type="number" id="p-valor" placeholder="Preço (R$)">
-            <input type="number" id="p-qtd" placeholder="Quantidade">
-            <button class="btn-main btn-green" style="width:100%" onclick="salvarProduto()">SALVAR PRODUTO</button>
-        </div>
-
-        <h3>Produtos em Estoque</h3>
-        <div class="grid-produtos" id="lista-produtos"></div>
+    <div id="home" class="menu-principal">
+        <h1 style="text-align:center">📦 Sistema de IDs</h1>
+        <button class="btn-main btn-blue" onclick="abrirSist()">ENTRAR NO SISTEMA</button>
+        <button class="btn-main btn-orange" onclick="abrirCadastro()">🛍️ CADASTRAR PRODUTOS</button>
+        <button class="btn-main btn-green" onclick="abrirGerador()">GERAR CÓDIGO</button>
     </div>
 
     <div id="modalSist" class="modal">
         <button class="btn-voltar" onclick="fecharTudo()">⬅ VOLTAR</button>
+        
+        <div class="camera-controls">
+            <div id="status-leitura">Pronto para escanear</div>
+            <button class="btn-circle" onclick="girarCamera()">🔄</button>
+        </div>
+
         <div id="reader"></div>
-        <div id="lista-scan" style="margin-top:20px;"></div>
+
+        <div class="lista-resultados" id="lista">
+            </div>
+    </div>
+
+    <div id="modalCadastro" class="modal">
+        <button class="btn-voltar" onclick="fecharTudo()">⬅ VOLTAR</button>
+        
+        <div class="form-cadastro">
+            <h3 style="margin:0">Cadastrar/Editar</h3>
+            <input type="hidden" id="edit-index">
+            <input type="text" id="p-id" placeholder="ID do Produto">
+            <input type="text" id="p-img" placeholder="Link da Imagem">
+            <input type="number" id="p-valor" placeholder="Valor (R$)">
+            <input type="number" id="p-qtd" placeholder="Quantidade em Estoque">
+            <button class="btn-main btn-green" style="padding:15px" onclick="salvarProduto()">SALVAR NO CATÁLOGO</button>
+        </div>
+
+        <div class="grid-produtos" id="grid-produtos">
+            </div>
     </div>
 
     <div id="modalGen" class="modal">
         <button class="btn-voltar" onclick="fecharTudo()">⬅ VOLTAR</button>
-        <div style="text-align:center">
-            <input type="number" id="numID" style="padding:15px; width:80%" placeholder="ID 1-800">
-            <button class="btn-main btn-green" onclick="criarBarras()">GERAR</button>
-            <br><svg id="barcode"></svg>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:20px;">
+            <h2>Gerar Novo ID</h2>
+            <input type="number" id="numID" style="width:80%; padding:18px; font-size:20px; border-radius:12px; border:none;" placeholder="Digite 1-800">
+            <button class="btn-main btn-green" onclick="criarBarras()" style="width:80%">GERAR BARRAS</button>
+            <div style="background: white; padding: 20px; border-radius: 10px;">
+                <svg id="barcode"></svg>
+            </div>
         </div>
     </div>
 
     <script>
         let scanner;
-        let produtos = JSON.parse(localStorage.getItem('produtos')) || [];
-        const beep = document.getElementById('beep-sound');
+        let cameras = [];
+        let currentCamIndex = 0;
+        let historico = [];
+        let produtos = JSON.parse(localStorage.getItem('meus_produtos')) || [];
+        let aguardandoReset = false;
 
-        function abrirCatalogo() {
-            document.getElementById('modalCatalogo').style.display = 'flex';
-            document.getElementById('home').style.display = 'none';
-            renderizarProdutos();
-        }
-
-        function abrirSist() {
+        async function abrirSist() {
             document.getElementById('modalSist').style.display = 'flex';
             document.getElementById('home').style.display = 'none';
+            
+            cameras = await Html5Qrcode.getCameras();
+            if (cameras.length > 0) {
+                startCamera(cameras[currentCamIndex].id);
+            }
+        }
+
+        function startCamera(id) {
+            if (scanner) scanner.stop();
             scanner = new Html5Qrcode("reader");
-            scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, (text) => {
-                // Tocar o som
-                beep.play();
-                
-                alert("ID Lido: " + text);
-                document.getElementById('p-id').value = text;
-                fecharTudo();
-                abrirCatalogo();
+            scanner.start(id, { fps: 15, qrbox: 250 }, (text) => {
+                if (!aguardandoReset) {
+                    document.getElementById('beep').play();
+                    adicionarNaLista(text);
+                    aguardandoReset = true;
+                    document.getElementById('status-leitura').innerText = "Aguarde... ✅";
+                    setTimeout(() => {
+                        aguardandoReset = false;
+                        document.getElementById('status-leitura').innerText = "Pronto para próxima leitura";
+                    }, 2000); 
+                }
             });
+        }
+
+        function adicionarNaLista(id) {
+            // Busca o produto no catálogo pelo ID
+            const produtoEncontrado = produtos.find(p => p.id === id);
+            
+            const itemObj = {
+                id: id,
+                nome: produtoEncontrado ? "Produto Localizado" : "ID Não Cadastrado",
+                img: produtoEncontrado ? produtoEncontrado.img : "https://via.placeholder.com/50",
+                timestamp: new Date().toLocaleTimeString()
+            };
+
+            historico.unshift(itemObj);
+            atualizarLista();
+            if(navigator.vibrate) navigator.vibrate(100);
+        }
+
+        function girarCamera() {
+            if (cameras.length > 1) {
+                currentCamIndex = (currentCamIndex + 1) % cameras.length;
+                startCamera(cameras[currentCamIndex].id);
+            }
+        }
+
+        function atualizarLista() {
+            const container = document.getElementById('lista');
+            container.innerHTML = '<h3>Histórico e Baixa</h3>';
+            historico.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'item-lista';
+                div.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:10px">
+                        <img src="${item.img}" style="width:40px; height:40px; border-radius:5px; object-fit:cover">
+                        <div>
+                            <span class="id-text" style="font-size:16px">${item.id}</span><br>
+                            <small>${item.timestamp}</small>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px">
+                        <div class="baixa-container">
+                            <input type="number" class="baixa-input" id="baixa-${index}" value="1">
+                            <button class="btn-delete" style="background:var(--warning); color:black; padding:5px" onclick="darBaixa('${item.id}', ${index})">BAIXA</button>
+                        </div>
+                        <button class="btn-delete" onclick="removerItem(${index})">X</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function removerItem(index) {
+            historico.splice(index, 1);
+            atualizarLista();
+        }
+
+        // FUNÇÕES DO CATÁLOGO
+        function abrirCadastro() {
+            document.getElementById('modalCadastro').style.display = 'flex';
+            document.getElementById('home').style.display = 'none';
+            renderizarCatalogo();
         }
 
         function salvarProduto() {
             const index = document.getElementById('edit-index').value;
             const p = {
                 id: document.getElementById('p-id').value,
-                img: document.getElementById('p-img').value || 'https://via.placeholder.com/100',
+                img: document.getElementById('p-img').value || "https://via.placeholder.com/150",
                 valor: document.getElementById('p-valor').value,
-                qtd: document.getElementById('p-qtd').value
+                qtd: parseInt(document.getElementById('p-qtd').value) || 0
             };
 
             if(index === "") {
@@ -129,25 +383,24 @@
                 document.getElementById('edit-index').value = "";
             }
 
-            localStorage.setItem('produtos', JSON.stringify(produtos));
-            limparForm();
-            renderizarProdutos();
+            localStorage.setItem('meus_produtos', JSON.stringify(produtos));
+            limparFormProd();
+            renderizarCatalogo();
         }
 
-        function renderizarProdutos() {
-            const container = document.getElementById('lista-produtos');
-            container.innerHTML = "";
+        function renderizarCatalogo() {
+            const grid = document.getElementById('grid-produtos');
+            grid.innerHTML = "";
             produtos.forEach((p, i) => {
-                container.innerHTML += `
-                    <div class="produto-mini">
-                        <div class="acoes-mini">
-                            <button class="btn-mini btn-edit" onclick="editarProduto(${i})">✏️</button>
-                            <button class="btn-mini btn-del" onclick="deletarProduto(${i})">X</button>
-                        </div>
+                grid.innerHTML += `
+                    <div class="produto-card">
+                        <button class="btn-edit-prod" onclick="editarProduto(${i})">✏️</button>
                         <img src="${p.img}">
-                        <b>ID: ${p.id}</b><br>
-                        <span class="price">R$ ${p.valor}</span><br>
-                        <span class="qty">Qtd: ${p.qtd}</span>
+                        <div class="produto-info">
+                            <b>ID: ${p.id}</b><br>
+                            R$ ${p.valor}<br>
+                            <span style="color:var(--success)">Estoque: ${p.qtd}</span>
+                        </div>
                     </div>
                 `;
             });
@@ -160,34 +413,49 @@
             document.getElementById('p-valor').value = p.valor;
             document.getElementById('p-qtd').value = p.qtd;
             document.getElementById('edit-index').value = i;
-            document.getElementById('titulo-form').innerText = "Editando Produto";
         }
 
-        function deletarProduto(i) {
-            produtos.splice(i, 1);
-            localStorage.setItem('produtos', JSON.stringify(produtos));
-            renderizarProdutos();
+        function darBaixa(id, histIndex) {
+            const qtdBaixa = parseInt(document.getElementById(`baixa-${histIndex}`).value);
+            const pIndex = produtos.findIndex(p => p.id === id);
+            
+            if(pIndex !== -1) {
+                if(produtos[pIndex].qtd >= qtdBaixa) {
+                    produtos[pIndex].qtd -= qtdBaixa;
+                    localStorage.setItem('meus_produtos', JSON.stringify(produtos));
+                    alert(`Baixa de ${qtdBaixa} unidades no ID ${id} realizada!`);
+                    renderizarCatalogo();
+                } else {
+                    alert("Estoque insuficiente!");
+                }
+            } else {
+                alert("Este ID não está cadastrado no catálogo!");
+            }
         }
 
-        function limparForm() {
+        function limparFormProd() {
             document.getElementById('p-id').value = "";
             document.getElementById('p-img').value = "";
             document.getElementById('p-valor').value = "";
             document.getElementById('p-qtd').value = "";
-            document.getElementById('titulo-form').innerText = "Novo Produto";
         }
 
-        function abrirGerador() { document.getElementById('modalGen').style.display = 'flex'; document.getElementById('home').style.display = 'none'; }
-        
+        function abrirGerador() {
+            document.getElementById('modalGen').style.display = 'flex';
+            document.getElementById('home').style.display = 'none';
+        }
+
         function fecharTudo() {
-            if(scanner) scanner.stop();
+            if (scanner) scanner.stop();
             document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
             document.getElementById('home').style.display = 'flex';
         }
 
         function criarBarras() {
             const v = document.getElementById('numID').value;
-            JsBarcode("#barcode", v, { format: "CODE128", width: 2 });
+            if(v >= 1 && v <= 800) {
+                JsBarcode("#barcode", v, { format: "CODE128", displayValue: true, fontSize: 20 });
+            }
         }
     </script>
 </body>
