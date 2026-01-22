@@ -4,170 +4,453 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Stock - Scanner Ultra Fast</title>
-    <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
+    <title>Sistema Neon Stock - Multi-Baixa</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root {
             --neon-blue: #00f2ff;
             --neon-pink: #ff00e5;
+            --neon-purple: #9d00ff;
             --bg-dark: #0a0a0c;
             --card-bg: #16161a;
+            --text: #e0e0e0;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-dark); color: #e0e0e0; padding: 15px; }
 
-        header h1 { text-align: center; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); margin-bottom: 20px; font-size: 1.2rem; }
-
-        /* Área do Scanner Otimizada */
-        #scanner-visual {
-            width: 100%;
-            height: 250px;
-            position: relative;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 2px solid var(--neon-blue);
-            margin-bottom: 15px;
-            display: none;
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text); 
+            padding: 15px; 
+            min-height: 100vh;
         }
 
-        #scanner-visual video { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Linha guia para ajudar você a posicionar o código */
-        .laser {
-            position: absolute;
-            top: 50%; left: 10%;
-            width: 80%; height: 2px;
-            background-color: var(--neon-pink);
-            box-shadow: 0 0 8px var(--neon-pink);
-            z-index: 10;
-            animation: scan-anim 2s infinite;
+        .container { max-width: 900px; margin: 0 auto; }
+
+        header h1 { 
+            text-align: center; 
+            color: var(--neon-blue); 
+            text-shadow: 0 0 10px var(--neon-blue);
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            text-transform: uppercase;
         }
 
-        @keyframes scan-anim {
-            0%, 100% { top: 30%; }
-            50% { top: 70%; }
-        }
-
-        #status-leitura {
-            text-align: center;
-            padding: 10px;
-            font-weight: bold;
-            color: var(--neon-blue);
-            min-height: 40px;
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
         .btn-main {
-            width: 100%; padding: 15px; border: none; border-radius: 8px;
-            background: linear-gradient(45deg, #9d00ff, #ff00e5);
-            color: white; font-weight: bold; cursor: pointer; text-transform: uppercase;
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: white;
+            transition: 0.3s;
         }
 
-        canvas.drawingBuffer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .btn-new { background: linear-gradient(45deg, var(--neon-purple), var(--neon-pink)); }
+        .btn-out { background: #333; border: 1px solid var(--neon-pink); }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--neon-purple);
+            z-index: 1000;
+            width: 95%;
+            max-width: 450px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
+
+        .modal-baixa { border-color: var(--neon-pink); }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(3px);
+            z-index: 999;
+        }
+
+        /* Área de Seleção de Baixa */
+        .preview-baixa {
+            background: #000;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px dashed var(--neon-pink);
+            display: none;
+        }
+        .preview-baixa img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+        
+        /* Lista de itens para dar baixa */
+        #lista-baixa {
+            margin: 15px 0;
+            border-top: 1px solid #333;
+            padding-top: 10px;
+        }
+        .item-baixa {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #222;
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        .item-baixa span { color: var(--neon-pink); font-weight: bold; }
+
+        .grid-inputs { display: grid; gap: 10px; }
+
+        input {
+            background: #1c1c21;
+            border: 1px solid #333;
+            padding: 8px;
+            border-radius: 4px;
+            color: white;
+            outline: none;
+        }
+
+        .search-input {
+            width: 100%;
+            margin-bottom: 20px;
+            border: 1px solid var(--neon-blue);
+            background: #111;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .product-grid {
+            display: grid;
+            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+            font-size: 0.8rem;
+        }
+
+        .product-img { width: 100%; height: 80px; object-fit: cover; }
+        .product-info { padding: 8px; }
+        .price { color: var(--neon-pink); font-size: 0.9rem; font-weight: bold; }
+        .actions { display: flex; gap: 5px; margin-top: 8px; }
+
+        .btn-action {
+            flex: 1;
+            padding: 4px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            border: 1px solid transparent;
+        }
+        .btn-edit { color: var(--neon-blue); border-color: var(--neon-blue); background: transparent; }
+        .btn-delete { color: var(--neon-pink); border-color: var(--neon-pink); background: transparent; }
+
+        /* Estilos do Scanner */
+        .input-group-camera {
+            display: flex;
+            gap: 5px;
+        }
+        .btn-camera {
+            background: #222;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 0 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #reader {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            display: none;
+            background: #000;
+        }
     </style>
 </head>
 <body>
 
+<div class="overlay" id="overlay" onclick="fecharTodosModais()"></div>
+
 <div class="container">
-    <header><h1>⚡ Neon Scanner Pro</h1></header>
+    <header>
+        <h1>⚡ Neon Stock Compact</h1>
+    </header>
 
-    <div id="status-leitura">Pronto para escanear</div>
-
-    <div id="scanner-visual">
-        <div class="laser"></div>
+    <div class="top-actions">
+        <button class="btn-main btn-new" onclick="abrirModalCadastro()">➕ Novo Produto</button>
+        <button class="btn-main btn-out" onclick="abrirModalBaixa()">📉 Baixa em Massa</button>
     </div>
 
-    <button id="btn-camera" class="btn-main" onclick="ligarScanner()">Ligar Câmera</button>
-
-    <div id="info-produto" style="margin-top:20px; padding:15px; background:var(--card-bg); border-radius:8px; display:none; border-left: 5px solid var(--neon-pink);">
-        <h2 id="res-nome" style="color:var(--neon-blue)"></h2>
-        <p id="res-id" style="font-size:0.8rem; color:#888"></p>
-        <p id="res-estoque" style="font-weight:bold; margin-top:5px"></p>
+    <div class="modal" id="modal-form">
+        <h2 style="font-size: 1rem; margin-bottom: 15px; color: var(--neon-blue);">Gerenciar Produto</h2>
+        <div class="grid-inputs">
+            <input type="hidden" id="p-index">
+            <input type="text" id="p-id" placeholder="ID">
+            <input type="text" id="p-nome" placeholder="Nome">
+            <input type="number" id="p-valor" placeholder="R$">
+            <input type="number" id="p-qtd" placeholder="Qtd">
+            <input type="text" id="p-img" placeholder="URL Imagem">
+            <button class="btn-main btn-new" onclick="salvarProduto()">Confirmar</button>
+            <button class="btn-action" style="color: #888" onclick="fecharTodosModais()">Cancelar</button>
+        </div>
     </div>
+
+    <div class="modal modal-baixa" id="modal-baixa">
+        <h2 style="font-size: 1rem; color: var(--neon-pink);">📉 Saída de Produtos</h2>
+        
+        <div class="grid-inputs" style="margin-top: 15px;">
+            <div id="reader"></div>
+            
+            <div class="input-group-camera">
+                <input type="text" id="baixa-id" placeholder="Digite o ID..." onkeyup="buscarProdutoBaixa()" style="flex-grow: 1;">
+                <button class="btn-camera" onclick="alternarCamera()">📷</button>
+            </div>
+            
+            <div id="preview-baixa" class="preview-baixa">
+                <img id="prev-img" src="" alt="">
+                <div style="flex-grow:1">
+                    <h4 id="prev-nome" style="font-size: 0.75rem;"></h4>
+                    <p style="font-size: 0.65rem; color:#888">Disponível: <span id="prev-qtd"></span></p>
+                </div>
+                <input type="number" id="baixa-qtd" placeholder="Qtd" style="width: 60px;">
+                <button onclick="adicionarNaLista()" style="background:var(--neon-blue); border:none; padding:5px; border-radius:4px; cursor:pointer">➕</button>
+            </div>
+
+            <div id="lista-baixa">
+                </div>
+
+            <button class="btn-main" style="background: var(--neon-pink)" onclick="confirmarBaixaLote()">Efetivar Todas as Saídas</button>
+            <button class="btn-action" style="color: #888" onclick="fecharTodosModais()">Voltar</button>
+        </div>
+    </div>
+
+    <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar ID ou Nome..." onkeyup="listarProdutos()">
+    <div id="product-display" class="product-grid"></div>
 </div>
 
 <script>
     let produtos = JSON.parse(localStorage.getItem('neon_produtos')) || [];
-    let processando = false;
+    let carrinhoBaixa = [];
+    let html5QrCode;
 
-    function ligarScanner() {
-        document.getElementById('scanner-visual').style.display = 'block';
-        document.getElementById('btn-camera').style.display = 'none';
+    function abrirModalCadastro() { document.getElementById('modal-form').style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
+    function abrirModalBaixa() { document.getElementById('modal-baixa').style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
+    
+    function fecharTodosModais() {
+        pararCamera();
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        document.getElementById('overlay').style.display = 'none';
+        carrinhoBaixa = [];
+        atualizarTabelaBaixa();
+        limparCampos();
+    }
+
+    // FUNÇÃO DE CÂMERA AJUSTADA
+    async function alternarCamera() {
+        const readerDiv = document.getElementById('reader');
         
-        Quagga.init({
-            inputStream: {
-                name: "Live",
-                type: "LiveStream",
-                target: document.querySelector('#scanner-visual'),
-                constraints: {
-                    facingMode: "environment",
-                    aspectRatio: { min: 1, max: 2 }
-                },
-            },
-            locator: {
-                patchSize: "medium",
-                halfSample: true
-            },
-            decoder: {
-                // Focado no padrão da sua etiqueta (Code 128)
-                readers: ["code_128_reader"] 
-            },
-            locate: true
-        }, function(err) {
-            if (err) { alert("Erro ao abrir câmera. Certifique-se de usar HTTPS."); return; }
-            Quagga.start();
+        if (html5QrCode && html5QrCode.isScanning) {
+            pararCamera();
+            return;
+        }
+
+        readerDiv.style.display = 'block';
+        html5QrCode = new Html5Qrcode("reader");
+        
+        const config = { 
+            fps: 10, 
+            qrbox: { width: 250, height: 150 },
+            aspectRatio: 1.0 
+        };
+        
+        try {
+            // Tenta iniciar usando a câmera traseira
+            await html5QrCode.start(
+                { facingMode: "environment" }, 
+                config, 
+                (decodedText) => {
+                    document.getElementById('baixa-id').value = decodedText;
+                    buscarProdutoBaixa();
+                    pararCamera();
+                }
+            );
+        } catch (err) {
+            // Alerta específico para o erro de permissão/protocolo file://
+            alert("ERRO DE ACESSO: Para usar a câmera, o arquivo precisa estar em um servidor seguro (HTTPS) ou Localhost. Navegadores bloqueiam câmeras em arquivos locais (file://).");
+            console.error(err);
+            readerDiv.style.display = 'none';
+        }
+    }
+
+    function pararCamera() {
+        const readerDiv = document.getElementById('reader');
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                readerDiv.style.display = 'none';
+            }).catch(() => {
+                readerDiv.style.display = 'none';
+            });
+        } else {
+            readerDiv.style.display = 'none';
+        }
+    }
+
+    function buscarProdutoBaixa() {
+        const idBusca = document.getElementById('baixa-id').value;
+        const preview = document.getElementById('preview-baixa');
+        const produto = produtos.find(p => p.id == idBusca);
+
+        if (produto) {
+            preview.style.display = 'flex';
+            document.getElementById('prev-img').src = produto.img;
+            document.getElementById('prev-nome').innerText = produto.nome;
+            document.getElementById('prev-qtd').innerText = produto.qtd;
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    function adicionarNaLista() {
+        const idBusca = document.getElementById('baixa-id').value;
+        const qtdBaixa = parseInt(document.getElementById('baixa-qtd').value);
+        const produto = produtos.find(p => p.id == idBusca);
+
+        if (!produto || isNaN(qtdBaixa) || qtdBaixa <= 0) {
+            alert("Verifique os dados!");
+            return;
+        }
+
+        if (qtdBaixa > produto.qtd) {
+            alert("Estoque insuficiente!");
+            return;
+        }
+
+        carrinhoBaixa.push({ id: produto.id, nome: produto.nome, qtd: qtdBaixa });
+        document.getElementById('baixa-id').value = "";
+        document.getElementById('baixa-qtd').value = "";
+        document.getElementById('preview-baixa').style.display = 'none';
+        atualizarTabelaBaixa();
+    }
+
+    function atualizarTabelaBaixa() {
+        const lista = document.getElementById('lista-baixa');
+        lista.innerHTML = carrinhoBaixa.length > 0 ? '<p style="font-size:0.7rem; margin-bottom:5px">Itens na fila:</p>' : '';
+        carrinhoBaixa.forEach((item, index) => {
+            lista.innerHTML += `
+                <div class="item-baixa">
+                    ${item.nome} (ID: ${item.id}) <span>x${item.qtd}</span>
+                    <button onclick="removerDoCarrinho(${index})" style="background:none; border:none; color:red; cursor:pointer">✕</button>
+                </div>
+            `;
+        });
+    }
+
+    function removerDoCarrinho(index) {
+        carrinhoBaixa.splice(index, 1);
+        atualizarTabelaBaixa();
+    }
+
+    function confirmarBaixaLote() {
+        if (carrinhoBaixa.length === 0) return alert("Adicione produtos à lista!");
+
+        carrinhoBaixa.forEach(item => {
+            const index = produtos.findIndex(p => p.id == item.id);
+            if (index !== -1) {
+                produtos[index].qtd -= item.qtd;
+            }
         });
 
-        Quagga.onDetected(validarLeitura);
+        persistir();
+        alert("Baixa de múltiplos produtos realizada!");
+        fecharTodosModais();
     }
 
-    function validarLeitura(result) {
-        if (processando) return;
-        
-        let codigoLido = result.codeResult.code;
-        
-        // Verifica se o ID existe no seu cadastro
-        let index = produtos.findIndex(p => p.id == codigoLido);
+    function salvarProduto() {
+        const index = document.getElementById('p-index').value;
+        const id = document.getElementById('p-id').value;
+        const nome = document.getElementById('p-nome').value;
+        const valor = document.getElementById('p-valor').value;
+        const qtd = document.getElementById('p-qtd').value;
+        const img = document.getElementById('p-img').value || 'https://via.placeholder.com/150x80/111/00f2ff?text=IMG';
 
-        if (index !== -1) {
-            processando = true; // Trava para não ler 10 vezes o mesmo código
-            executarBaixa(index);
-        } else {
-            document.getElementById('status-leitura').innerText = "ID " + codigoLido + " não cadastrado.";
-        }
+        if (!id || !nome || !valor || !qtd) return alert("Preencha tudo!");
+
+        const obj = { id, nome, valor, qtd: parseInt(qtd), img };
+        index === "" ? produtos.push(obj) : produtos[index] = obj;
+
+        persistir();
+        fecharTodosModais();
     }
 
-    function executarBaixa(index) {
-        if (produtos[index].qtd > 0) {
-            produtos[index].qtd -= 1;
-            localStorage.setItem('neon_produtos', JSON.stringify(produtos));
-            
-            // Feedback Visual
-            document.getElementById('status-leitura').innerText = "✅ BAIXA REALIZADA!";
-            mostrarResultado(produtos[index]);
-            
-            // Vibra o celular (se disponível)
-            if (navigator.vibrate) navigator.vibrate(200);
-
-            // Destrava após 3 segundos para a próxima leitura
-            setTimeout(() => {
-                processando = false;
-                document.getElementById('status-leitura').innerText = "Buscando próximo...";
-                document.getElementById('info-produto').style.display = 'none';
-            }, 3000);
-        }
+    function editarProduto(index) {
+        const p = produtos[index];
+        document.getElementById('p-index').value = index;
+        document.getElementById('p-id').value = p.id;
+        document.getElementById('p-nome').value = p.nome;
+        document.getElementById('p-valor').value = p.valor;
+        document.getElementById('p-qtd').value = p.qtd;
+        document.getElementById('p-img').value = p.img;
+        abrirModalCadastro();
     }
 
-    function mostrarResultado(p) {
-        const box = document.getElementById('info-produto');
-        box.style.display = 'block';
-        document.getElementById('res-nome').innerText = p.nome;
-        document.getElementById('res-id').innerText = "Cód: " + p.id;
-        document.getElementById('res-estoque').innerText = "Novo Estoque: " + p.qtd;
+    function deletarProduto(index) { if(confirm("Excluir?")) { produtos.splice(index, 1); persistir(); } }
+    function persistir() { localStorage.setItem('neon_produtos', JSON.stringify(produtos)); listarProdutos(); }
+    function limparCampos() { document.querySelectorAll('input:not([type="hidden"])').forEach(i => i.value = ''); }
+
+    function listarProdutos() {
+        const display = document.getElementById('product-display');
+        const busca = document.getElementById('search-input').value.toLowerCase();
+        display.innerHTML = '';
+        produtos.forEach((p, index) => {
+            if (p.nome.toLowerCase().includes(busca) || p.id.toString().includes(busca)) {
+                display.innerHTML += `
+                    <div class="product-card">
+                        <img src="${p.img}" class="product-img">
+                        <div class="product-info">
+                            <span style="color:var(--neon-blue); font-size:0.6rem">#${p.id}</span>
+                            <h3 style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${p.nome}</h3>
+                            <span class="price">R$ ${parseFloat(p.valor).toFixed(2)}</span>
+                            <p style="color:#888; font-size:0.7rem">Qtd: ${p.qtd}</p>
+                            <div class="actions">
+                                <button class="btn-action btn-edit" onclick="editarProduto(${index})">✎</button>
+                                <button class="btn-action btn-delete" onclick="deletarProduto(${index})">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
     }
+
+    listarProdutos();
 </script>
 
 </body>
 </html>
-
