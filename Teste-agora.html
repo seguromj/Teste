@@ -1,285 +1,195 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de IDs Pro - Multi-Leitura</title>
+    <title>Sistema de Estoque Pro</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
         :root {
-            --primary: #007bff;
-            --success: #28a745;
-            --danger: #dc3545;
-            --bg: #121212;
-            --card: #1e1e1e;
-            --text: #ffffff;
+            --primary: #007bff; --success: #28a745; --danger: #dc3545; --warning: #ffc107;
+            --bg: #121212; --card: #1e1e1e; --text: #ffffff;
         }
 
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .menu-principal {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 90%;
-            max-width: 400px;
-        }
-
-        .btn-main {
-            padding: 25px;
-            border: none;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            transition: 0.2s;
-        }
-
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
+        
+        /* Menu Principal */
+        #home { display: flex; flex-direction: column; gap: 15px; align-items: center; justify-content: center; min-height: 100vh; }
+        .btn-main { width: 85%; max-width: 350px; padding: 20px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-green { background: var(--success); color: white; }
-        .btn-main:active { transform: scale(0.95); }
+        .btn-orange { background: var(--warning); color: #000; }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: var(--bg);
-            z-index: 1000;
-            flex-direction: column;
-            padding: 15px;
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
+        /* Modais */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; flex-direction: column; padding: 15px; box-sizing: border-box; overflow-y: auto; }
+        .btn-voltar { background: #333; color: white; border: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; align-self: flex-start; }
 
-        #reader {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            border-radius: 15px;
-            overflow: hidden;
-            border: 2px solid #333;
-        }
+        /* Formulário de Cadastro */
+        .form-cadastro { display: flex; flex-direction: column; gap: 10px; background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+        .form-cadastro input { padding: 10px; border-radius: 6px; border: 1px solid #444; background: #222; color: white; }
 
-        .camera-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 500px;
-            margin: 10px auto;
-        }
+        /* Grid de Produtos Mini */
+        .grid-produtos { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; width: 100%; }
+        .produto-mini { background: var(--card); border-radius: 8px; padding: 5px; font-size: 10px; position: relative; border: 1px solid #333; text-align: center; }
+        .produto-mini img { width: 100%; height: 60px; object-fit: cover; border-radius: 4px; margin-bottom: 4px; }
+        .produto-mini .price { color: var(--success); font-weight: bold; }
+        .produto-mini .qty { background: #333; padding: 2px 4px; border-radius: 3px; }
+        
+        .acoes-mini { position: absolute; top: 2px; right: 2px; display: flex; gap: 2px; }
+        .btn-mini { border: none; border-radius: 3px; padding: 3px; cursor: pointer; font-size: 8px; }
+        .btn-edit { background: var(--warning); }
+        .btn-del { background: var(--danger); color: white; }
 
-        .btn-circle {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            border: none;
-            background: #333;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(0,123,255,0.5);
-        }
-
-        .lista-resultados {
-            width: 100%;
-            max-width: 500px;
-            margin: 20px auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .item-lista {
-            background: var(--card);
-            padding: 18px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 6px solid var(--primary);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            animation: bounceIn 0.4s ease;
-        }
-
-        @keyframes bounceIn {
-            0% { opacity: 0; transform: scale(0.9); }
-            70% { transform: scale(1.05); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
-        .id-text { font-size: 22px; font-weight: bold; color: var(--primary); }
-
-        .btn-delete {
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-voltar {
-            background: #222;
-            color: #fff;
-            border: 1px solid #444;
-            padding: 12px 20px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            align-self: flex-start;
-            cursor: pointer;
-        }
-
-        #status-leitura {
-            text-align: center;
-            font-size: 14px;
-            color: var(--success);
-            height: 20px;
-            margin-bottom: 5px;
-        }
+        #reader { width: 100%; max-width: 400px; margin: 0 auto; border-radius: 10px; overflow: hidden; }
     </style>
 </head>
 <body>
 
-    <div id="home" class="menu-principal">
-        <h1 style="text-align:center">📦 Sistema de IDs</h1>
-        <button class="btn-main btn-blue" onclick="abrirSist()">ENTRAR NO SISTEMA</button>
-        <button class="btn-main btn-green" onclick="abrirGerador()">GERAR CÓDIGO</button>
+    <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/766/766-preview.mp3" preload="auto"></audio>
+
+    <div id="home">
+        <h1>📦 MEU ESTOQUE</h1>
+        <button class="btn-main btn-blue" onclick="abrirSist()">📷 ESCANEAR / SISTEMA</button>
+        <button class="btn-main btn-orange" onclick="abrirCatalogo()">🛍️ CADASTRAR PRODUTOS</button>
+        <button class="btn-main btn-green" onclick="abrirGerador()">🏷️ GERAR BARRAS</button>
+    </div>
+
+    <div id="modalCatalogo" class="modal">
+        <button class="btn-voltar" onclick="fecharTudo()">⬅ VOLTAR</button>
+        
+        <div class="form-cadastro">
+            <h3 id="titulo-form">Novo Produto</h3>
+            <input type="hidden" id="edit-index">
+            <input type="text" id="p-id" placeholder="ID (ou escaneie)">
+            <input type="text" id="p-img" placeholder="URL da Imagem">
+            <input type="number" id="p-valor" placeholder="Preço (R$)">
+            <input type="number" id="p-qtd" placeholder="Quantidade">
+            <button class="btn-main btn-green" style="width:100%" onclick="salvarProduto()">SALVAR PRODUTO</button>
+        </div>
+
+        <h3>Produtos em Estoque</h3>
+        <div class="grid-produtos" id="lista-produtos"></div>
     </div>
 
     <div id="modalSist" class="modal">
         <button class="btn-voltar" onclick="fecharTudo()">⬅ VOLTAR</button>
-        
-        <div class="camera-controls">
-            <div id="status-leitura">Pronto para escanear</div>
-            <button class="btn-circle" onclick="girarCamera()">🔄</button>
-        </div>
-
         <div id="reader"></div>
-
-        <div class="lista-resultados" id="lista">
-            </div>
+        <div id="lista-scan" style="margin-top:20px;"></div>
     </div>
 
     <div id="modalGen" class="modal">
         <button class="btn-voltar" onclick="fecharTudo()">⬅ VOLTAR</button>
-        <div style="display:flex; flex-direction:column; align-items:center; gap:20px;">
-            <h2>Gerar Novo ID</h2>
-            <input type="number" id="numID" style="width:80%; padding:18px; font-size:20px; border-radius:12px; border:none;" placeholder="Digite 1-800">
-            <button class="btn-main btn-green" onclick="criarBarras()" style="width:80%">GERAR BARRAS</button>
-            <div style="background: white; padding: 20px; border-radius: 10px;">
-                <svg id="barcode"></svg>
-            </div>
+        <div style="text-align:center">
+            <input type="number" id="numID" style="padding:15px; width:80%" placeholder="ID 1-800">
+            <button class="btn-main btn-green" onclick="criarBarras()">GERAR</button>
+            <br><svg id="barcode"></svg>
         </div>
     </div>
 
     <script>
         let scanner;
-        let cameras = [];
-        let currentCamIndex = 0;
-        let historico = [];
-        let aguardandoReset = false; // Controla o tempo entre leituras
+        let produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+        const beep = document.getElementById('beep-sound');
 
-        async function abrirSist() {
+        function abrirCatalogo() {
+            document.getElementById('modalCatalogo').style.display = 'flex';
+            document.getElementById('home').style.display = 'none';
+            renderizarProdutos();
+        }
+
+        function abrirSist() {
             document.getElementById('modalSist').style.display = 'flex';
             document.getElementById('home').style.display = 'none';
-            
-            cameras = await Html5Qrcode.getCameras();
-            if (cameras.length > 0) {
-                startCamera(cameras[currentCamIndex].id);
-            }
-        }
-
-        function startCamera(id) {
-            if (scanner) scanner.stop();
             scanner = new Html5Qrcode("reader");
-            scanner.start(id, { fps: 15, qrbox: 250 }, (text) => {
+            scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 200 }, (text) => {
+                // Tocar o som
+                beep.play();
                 
-                // Se não estiver no intervalo de espera, adiciona
-                if (!aguardandoReset) {
-                    adicionarNaLista(text);
-                    
-                    // Ativa espera de 2 segundos para evitar duplicatas infinitas acidentais
-                    aguardandoReset = true;
-                    document.getElementById('status-leitura').innerText = "Aguarde... ✅";
-                    
-                    setTimeout(() => {
-                        aguardandoReset = false;
-                        document.getElementById('status-leitura').innerText = "Pronto para próxima leitura";
-                    }, 2000); 
-                }
+                alert("ID Lido: " + text);
+                document.getElementById('p-id').value = text;
+                fecharTudo();
+                abrirCatalogo();
             });
         }
 
-        function adicionarNaLista(id) {
-            historico.unshift(id); // Adiciona no topo da lista
-            atualizarLista();
-            if(navigator.vibrate) navigator.vibrate(100);
-        }
+        function salvarProduto() {
+            const index = document.getElementById('edit-index').value;
+            const p = {
+                id: document.getElementById('p-id').value,
+                img: document.getElementById('p-img').value || 'https://via.placeholder.com/100',
+                valor: document.getElementById('p-valor').value,
+                qtd: document.getElementById('p-qtd').value
+            };
 
-        function girarCamera() {
-            if (cameras.length > 1) {
-                currentCamIndex = (currentCamIndex + 1) % cameras.length;
-                startCamera(cameras[currentCamIndex].id);
+            if(index === "") {
+                produtos.push(p);
+            } else {
+                produtos[index] = p;
+                document.getElementById('edit-index').value = "";
             }
+
+            localStorage.setItem('produtos', JSON.stringify(produtos));
+            limparForm();
+            renderizarProdutos();
         }
 
-        function atualizarLista() {
-            const container = document.getElementById('lista');
-            container.innerHTML = '<h3>Histórico de Leituras</h3>';
-            historico.forEach((id, index) => {
-                const item = document.createElement('div');
-                item.className = 'item-lista';
-                item.innerHTML = `
-                    <span class="id-text">${id}</span>
-                    <button class="btn-delete" onclick="removerItem(${index})">EXCLUIR X</button>
+        function renderizarProdutos() {
+            const container = document.getElementById('lista-produtos');
+            container.innerHTML = "";
+            produtos.forEach((p, i) => {
+                container.innerHTML += `
+                    <div class="produto-mini">
+                        <div class="acoes-mini">
+                            <button class="btn-mini btn-edit" onclick="editarProduto(${i})">✏️</button>
+                            <button class="btn-mini btn-del" onclick="deletarProduto(${i})">X</button>
+                        </div>
+                        <img src="${p.img}">
+                        <b>ID: ${p.id}</b><br>
+                        <span class="price">R$ ${p.valor}</span><br>
+                        <span class="qty">Qtd: ${p.qtd}</span>
+                    </div>
                 `;
-                container.appendChild(item);
             });
         }
 
-        function removerItem(index) {
-            historico.splice(index, 1);
-            atualizarLista();
+        function editarProduto(i) {
+            const p = produtos[i];
+            document.getElementById('p-id').value = p.id;
+            document.getElementById('p-img').value = p.img;
+            document.getElementById('p-valor').value = p.valor;
+            document.getElementById('p-qtd').value = p.qtd;
+            document.getElementById('edit-index').value = i;
+            document.getElementById('titulo-form').innerText = "Editando Produto";
         }
 
-        function abrirGerador() {
-            document.getElementById('modalGen').style.display = 'flex';
-            document.getElementById('home').style.display = 'none';
+        function deletarProduto(i) {
+            produtos.splice(i, 1);
+            localStorage.setItem('produtos', JSON.stringify(produtos));
+            renderizarProdutos();
         }
 
+        function limparForm() {
+            document.getElementById('p-id').value = "";
+            document.getElementById('p-img').value = "";
+            document.getElementById('p-valor').value = "";
+            document.getElementById('p-qtd').value = "";
+            document.getElementById('titulo-form').innerText = "Novo Produto";
+        }
+
+        function abrirGerador() { document.getElementById('modalGen').style.display = 'flex'; document.getElementById('home').style.display = 'none'; }
+        
         function fecharTudo() {
-            if (scanner) scanner.stop();
+            if(scanner) scanner.stop();
             document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
             document.getElementById('home').style.display = 'flex';
         }
 
         function criarBarras() {
             const v = document.getElementById('numID').value;
-            if(v >= 1 && v <= 800) {
-                JsBarcode("#barcode", v, { 
-                    format: "CODE128",
-                    displayValue: true,
-                    fontSize: 20
-                });
-            }
+            JsBarcode("#barcode", v, { format: "CODE128", width: 2 });
         }
     </script>
 </body>
 </html>
+
