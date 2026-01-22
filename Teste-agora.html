@@ -4,53 +4,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scanner Super Precisão</title>
+    <title>Leitor de ID de Produto</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #000; color: white; margin: 0; padding: 10px; }
-        video { width: 100%; max-width: 500px; border-radius: 10px; }
-        #resultado { width: 90%; margin-top: 15px; padding: 15px; font-size: 20px; font-weight: bold; border-radius: 5px; border: none; }
-        button { width: 90%; padding: 20px; margin-top: 10px; background: #28a745; color: white; border: none; border-radius: 5px; font-size: 18px; }
-        .box { border: 2px solid #0f0; position: absolute; top: 30%; left: 10%; width: 80%; height: 100px; pointer-events: none; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
+        .camera-box { position: relative; width: 100%; max-width: 400px; border: 3px solid #333; border-radius: 15px; overflow: hidden; background: #000; }
+        video { width: 100%; display: block; }
+        .scanner-line { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 60px; border: 2px dashed #00ff00; border-radius: 8px; box-shadow: 0 0 15px rgba(0,255,0,0.5); }
+        .controls { width: 100%; max-width: 400px; margin-top: 20px; }
+        input { width: 100%; padding: 15px; font-size: 22px; text-align: center; border-radius: 8px; border: none; margin-bottom: 10px; background: #333; color: #00ff00; font-weight: bold; box-sizing: border-box; }
+        button { width: 100%; padding: 18px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:active { background: #0056b3; transform: scale(0.98); }
+        #status { margin-top: 10px; font-size: 14px; color: #888; }
+        canvas { display: none; }
     </style>
 </head>
 <body>
-    <h3>Aponte e Escaneie</h3>
-    <div style="position: relative; display: inline-block; width: 100%;">
+
+    <h2>Cadastrar ID de Produto</h2>
+
+    <div class="camera-box">
         <video id="video" autoplay playsinline></video>
-        <div class="box"></div>
+        <div class="scanner-line"></div>
     </div>
-    <button id="btn">ESCANEAR AGORA</button>
-    <input type="text" id="resultado" placeholder="Texto aparecerá aqui...">
-    <canvas id="canvas" style="display:none;"></canvas>
+
+    <div class="controls">
+        <label>ID Identificado:</label>
+        <input type="text" id="id_produto" placeholder="Aguardando leitura...">
+        <button id="btn-scan">CAPTURAR E LER ID</button>
+        <p id="status">Enquadre o código no retângulo tracejado</p>
+    </div>
+
+    <canvas id="canvas"></canvas>
 
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        const res = document.getElementById('resultado');
+        const id_produto = document.getElementById('id_produto');
+        const btnScan = document.getElementById('btn-scan');
+        const status = document.getElementById('status');
 
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(s => video.srcObject = s);
+        // Configura a câmera focando em alta qualidade
+        navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } 
+        })
+        .then(stream => { video.srcObject = stream; })
+        .catch(err => { status.innerText = "Erro: Sem acesso à câmera."; });
 
-        document.getElementById('btn').onclick = async () => {
-            res.value = "Lendo...";
+        btnScan.addEventListener('click', async () => {
+            status.innerText = "Lendo código... Mantenha a mão firme!";
+            id_produto.value = "PROCESSANDO...";
+            
+            const ctx = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
+
+            // Tira a foto
             ctx.drawImage(video, 0, 0);
 
-            // Filtro para forçar contraste máximo (Binário)
-            let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            let d = imgData.data;
-            for (let i = 0; i < d.length; i += 4) {
-                let v = (d[i] + d[i+1] + d[i+2]) / 3;
-                let thresh = v < 120 ? 0 : 255; // Transforma em preto e branco puro
-                d[i] = d[i+1] = d[i+2] = thresh;
-            }
-            ctx.putImageData(imgData, 0, 0);
+            // MELHORIA: Corta apenas a área central (o retângulo verde) para o OCR não se perder
+            const cropW = canvas.width * 0.8;
+            const cropH = canvas.height * 0.2;
+            const cropX = (canvas.width - cropW) / 2;
+            const cropY = (canvas.height - cropH) / 2;
 
-            const { data: { text } } = await Tesseract.recognize(canvas.toDataURL(), 'por+eng');
-            res.value = text.replace(/[^a-zA-Z0-9 ]/g, "").trim(); // Remove lixo visual
-        };
+            const croppedCanvas = document.createElement('canvas');
+            croppedCanvas.width = cropW;
+            croppedCanvas.height = cropH;
+            croppedCanvas.getContext('2d').drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+            try {
+                // Inicia o motor de leitura
+                const worker = await Tesseract.createWorker('eng'); // 'eng' é melhor para códigos e IDs
+                
+                // Configura para ler apenas letras e números (evita erros com símbolos)
+                await worker.setParameters({
+                    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',
+                });
+
+                const { data: { text } } = await worker.recognize(croppedCanvas.toDataURL());
+                
+                // Limpa o texto e joga no campo
+                const finalID = text.trim().toUpperCase();
+                id_produto.value = finalID;
+                status.innerText = finalID ? "ID capturado com sucesso!" : "Não foi possível ler. Tente novamente.";
+                
+                await worker.terminate();
+            } catch (error) {
+                status.innerText = "Erro no processamento.";
+                id_produto.value = "";
+            }
+        });
     </script>
 </body>
 </html>
