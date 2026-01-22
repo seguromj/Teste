@@ -1,593 +1,306 @@
 
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de IDs Pro - Multi-Leitura</title>
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <title>Gerador de Código de Barras - OrcaScan Style</title>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
     <style>
         :root {
-            --primary: #007bff;
-            --success: #28a745;
-            --danger: #dc3545;
-            --bg: #121212;
-            --card: #1e1e1e;
-            --text: #ffffff;
-            --warning: #ffc107;
+            --bg-color: #121517;
+            --card-bg: #1c1f22;
+            --primary-yellow: #f4be1a;
+            --text-main: #e0e0e0;
+            --text-dim: #a0a0a0;
+            --input-bg: #2a2d31;
+            --border-color: #3f4246;
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
         }
 
-        .menu-principal {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 90%;
-            max-width: 400px;
-        }
-
-        .btn-main {
-            padding: 25px;
-            border: none;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            transition: 0.2s;
-        }
-
-        .btn-blue { background: var(--primary); color: white; }
-        .btn-green { background: var(--success); color: white; }
-        .btn-orange { background: var(--warning); color: #000; }
-        .btn-main:active { transform: scale(0.95); }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: var(--bg);
-            z-index: 1000;
-            flex-direction: column;
-            padding: 15px;
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
-
-        /* Câmera menor conforme solicitado */
-        #reader {
-            width: 100%;
-            max-width: 300px; /* Reduzi de 500 para 300 */
-            margin: 0 auto;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid #333;
-            flex-shrink: 0;
-        }
-
-        .camera-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 300px;
-            margin: 5px auto;
-            flex-shrink: 0;
-        }
-
-        .btn-circle {
-            width: 40px; /* Menor */
-            height: 40px;
-            border-radius: 50%;
-            border: none;
-            background: #333;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-        }
-
-        .lista-resultados {
+        .container {
             width: 100%;
             max-width: 500px;
-            margin: 10px auto;
-            display: flex;
-            flex-direction: column;
-            gap: 8px; /* Gap menor */
-            overflow-y: auto; 
         }
 
-        /* Itens da lista bem menores */
-        .item-lista {
-            background: var(--card);
-            padding: 8px 12px; /* Reduzi o padding */
-            border-radius: 8px;
+        header {
+            width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 4px solid var(--primary);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            padding-bottom: 20px;
         }
 
-        .id-text { font-size: 16px; font-weight: bold; color: var(--primary); } /* Fonte menor */
-
-        .btn-delete {
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 6px;
+        .logo {
             font-weight: bold;
-            font-size: 10px;
-            cursor: pointer;
-        }
-
-        .btn-voltar {
-            background: #222;
-            color: #fff;
-            border: 1px solid #444;
-            padding: 8px 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            align-self: flex-start;
-            cursor: pointer;
-            flex-shrink: 0;
-            font-size: 12px;
-        }
-
-        #status-leitura {
-            text-align: center;
-            font-size: 12px;
-            color: var(--success);
-            height: 18px;
-        }
-
-        .form-cadastro {
+            font-size: 20px;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background: var(--card);
-            padding: 15px;
-            border-radius: 12px;
+            align-items: center;
+        }
+
+        .logo span { color: var(--primary-yellow); margin-right: 5px; }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
             margin-bottom: 20px;
+            border: 1px solid var(--border-color);
         }
-        .form-cadastro input {
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            background: #222;
-            color: white;
-        }
-        .grid-produtos {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+
+        h2 { font-size: 18px; margin-top: 0; color: var(--primary-yellow); }
+
+        .form-group { margin-bottom: 15px; }
+
+        label { display: block; font-size: 14px; margin-bottom: 5px; color: var(--text-dim); }
+
+        input, select {
             width: 100%;
-        }
-        .produto-card {
-            background: var(--card);
-            border-radius: 10px;
-            padding: 8px;
-            border: 1px solid #333;
-            position: relative;
-            text-align: center;
-        }
-        .produto-card img {
-            width: 100%;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 6px;
-        }
-        .produto-info { font-size: 12px; margin-top: 5px; }
-        .btn-edit-prod {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: var(--warning);
-            border: none;
+            padding: 10px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
             border-radius: 4px;
-            cursor: pointer;
-            padding: 2px 5px;
-        }
-        .baixa-container {
-            margin-top: 5px;
-            display: flex;
-            gap: 2px;
-        }
-        .baixa-input {
-            width: 35px;
-            font-size: 11px;
-            padding: 2px;
-            text-align: center;
-        }
-        
-        /* Botão DAR BAIXA EM TUDO menor */
-        .btn-baixa-geral {
-            background: var(--warning);
-            color: black;
-            border: none;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 14px;
-            font-weight: bold;
-            width: 100%;
-            cursor: pointer;
-        }
-
-        /* NOVO ESTILO PARA O TOTAL E TROCO */
-        .campo-total {
-            background: #333;
-            color: var(--warning);
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 5px;
-            border: 1px solid var(--warning);
-        }
-
-        .container-pagamento {
-            background: var(--card);
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            border: 1px solid #444;
-        }
-
-        .input-pagamento {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid var(--primary);
-            background: #222;
             color: white;
-            font-size: 16px;
             box-sizing: border-box;
         }
 
-        .texto-troco {
-            color: var(--success);
-            font-weight: bold;
-            text-align: center;
-            font-size: 16px;
+        .preview-area {
+            background-color: #2a2d31;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            padding: 10px;
         }
+
+        #barcode-svg { max-width: 100%; background: white; padding: 10px; display: none; }
+        #qrcode-canvas { background: white; padding: 10px; display: none; }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-primary { background-color: var(--primary-yellow); color: black; }
+        .btn-secondary { background-color: #3f4246; color: white; }
+
+        .folder-container {
+            margin-top: 30px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .folder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .barcode-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .saved-item {
+            background: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        .saved-item img { max-width: 100%; height: auto; display: block; }
     </style>
 </head>
 <body>
 
-    <audio id="beep" src="https://assets.mixkit.co/active_storage/sfx/766/766-preview.mp3"></audio>
+<div class="container">
+    <header>
+        <div class="logo"><span>●</span> OrcaScan Clone</div>
+        <div style="font-size: 24px;">≡</div>
+    </header>
 
-    <div id="home" class="menu-principal">
-        <h1 style="text-align:center">📦 Sistema de IDs</h1>
-        <button class="btn-main btn-blue" onclick="abrirSist()">ENTRAR NO SISTEMA</button>
-        <button class="btn-main btn-orange" onclick="abrirCadastro()">🛍️ CADASTRAR PRODUTOS</button>
-        <button class="btn-main btn-green" onclick="abrirGerador()">GERAR CÓDIGO</button>
-        <a class="btn-main"
-            href="">
-            Admin
-        </a>
-    </div>
-
-    <div id="modalSist" class="modal">
-        <button class="btn-voltar" onclick="fecharTudo()">⬅ VOLTAR</button>
+    <div class="card">
+        <h2>2. Insira os dados do código de barras</h2>
         
-        <div class="camera-controls">
-            <div id="status-leitura">Pronto para escanear</div>
-            <button class="btn-circle" onclick="girarCamera()">🔄</button>
+        <div class="form-group">
+            <label>Tipo de Código</label>
+            <select id="barcodeType" onchange="generateBarcode()">
+                <option value="CODE128">CODE128</option>
+                <option value="EAN13">EAN13</option>
+                <option value="QR">QR Code</option>
+            </select>
         </div>
 
-        <div id="reader"></div>
-
-        <div id="container-baixa-geral" style="padding: 10px 0; display: none; flex-shrink: 0;">
-            <button class="btn-baixa-geral" onclick="baixaGeral()">DAR BAIXA EM TUDO</button>
-            <div id="valor-total" class="campo-total">Total: R$ 0,00</div>
-            
-            <div class="container-pagamento">
-                <input type="number" id="valor-recebido" class="input-pagamento" placeholder="Valor recebido do cliente" oninput="calcularTroco()">
-                <div id="texto-troco" class="texto-troco">Troco: R$ 0,00</div>
-            </div>
+        <div class="form-group">
+            <label>Conteúdo do código de barras</label>
+            <input type="text" id="barcodeValue" placeholder="valor capturado" oninput="generateBarcode()">
         </div>
 
-        <div class="lista-resultados" id="lista">
-            </div>
+        <div class="form-group">
+            <label>Legenda do código de barras</label>
+            <input type="text" id="barcodeLabel" placeholder="texto abaixo" oninput="generateBarcode()">
+        </div>
+
+        <div class="preview-area">
+            <p id="preview-placeholder" style="color: var(--text-dim)">Pré-visualização do código de barras</p>
+            <svg id="barcode-svg"></svg>
+            <div id="qrcode-canvas"></div>
+        </div>
+
+        <button class="btn-primary" onclick="saveToFolder()">SALVAR NA PASTA</button>
     </div>
 
-    <div id="modalCadastro" class="modal">
-        <button class="btn-voltar" onclick="fecharTudo()">⬅ VOLTAR</button>
+    <div class="folder-container">
+        <div class="folder-header">
+            <h3 style="margin:0">Pasta de Arquivos</h3>
+            <button class="btn-secondary" style="width: auto; margin:0; padding: 5px 15px;" onclick="downloadAll()">Baixar Todos (ZIP)</button>
+        </div>
+        <div class="barcode-list" id="barcodeList"></div>
+    </div>
+</div>
+
+<canvas id="hidden-canvas" style="display:none;"></canvas>
+
+<script>
+    let savedBarcodes = [];
+
+    function generateBarcode() {
+        const value = document.getElementById('barcodeValue').value;
+        const label = document.getElementById('barcodeLabel').value;
+        const type = document.getElementById('barcodeType').value;
         
-        <div class="form-cadastro">
-            <h3 style="margin:0">Cadastrar/Editar</h3>
-            <input type="hidden" id="edit-index">
-            <input type="text" id="p-id" placeholder="ID do Produto">
-            <input type="text" id="p-img" placeholder="Link da Imagem">
-            <input type="number" id="p-valor" placeholder="Valor (R$)">
-            <input type="number" id="p-qtd" placeholder="Quantidade em Estoque">
-            <button class="btn-main btn-green" style="padding:15px" onclick="salvarProduto()">SALVAR NO CATÁLOGO</button>
-        </div>
+        const svg = document.getElementById('barcode-svg');
+        const qrDiv = document.getElementById('qrcode-canvas');
+        const placeholder = document.getElementById('preview-placeholder');
 
-        <div class="grid-produtos" id="grid-produtos">
-            </div>
-    </div>
-
-    <div id="modalGen" class="modal">
-        <button class="btn-voltar" onclick="fecharTudo()">⬅ VOLTAR</button>
-        <div style="display:flex; flex-direction:column; align-items:center; gap:20px;">
-            <h2>Gerar Novo ID</h2>
-            <input type="number" id="numID" style="width:80%; padding:18px; font-size:20px; border-radius:12px; border:none;" placeholder="Digite 1-800">
-            <button class="btn-main btn-green" onclick="criarBarras()" style="width:80%">GERAR BARRAS</button>
-            <div style="background: white; padding: 20px; border-radius: 10px;">
-                <svg id="barcode"></svg>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let scanner;
-        let cameras = [];
-        let currentCamIndex = 0;
-        let historico = JSON.parse(localStorage.getItem('meu_historico')) || [];
-        let produtos = JSON.parse(localStorage.getItem('meus_produtos')) || [];
-        let aguardandoReset = false;
-        let valorTotalVenda = 0; // Variável global para auxiliar o troco
-
-        window.onload = () => {
-            if(historico.length > 0) atualizarLista();
-        };
-
-        async function abrirSist() {
-            document.getElementById('modalSist').style.display = 'flex';
-            document.getElementById('home').style.display = 'none';
-            
-            cameras = await Html5Qrcode.getCameras();
-            if (cameras.length > 0) {
-                startCamera(cameras[currentCamIndex].id);
-            }
+        if (!value) {
+            svg.style.display = 'none';
+            qrDiv.style.display = 'none';
+            placeholder.style.display = 'block';
+            return;
         }
 
-        function startCamera(id) {
-            if (scanner) scanner.stop();
-            scanner = new Html5Qrcode("reader");
-            scanner.start(id, { fps: 15, qrbox: 180 }, (text) => { // qrbox menor
-                if (!aguardandoReset) {
-                    document.getElementById('beep').play();
-                    adicionarNaLista(text);
-                    aguardandoReset = true;
-                    document.getElementById('status-leitura').innerText = "Aguarde... ✅";
-                    setTimeout(() => {
-                        aguardandoReset = false;
-                        document.getElementById('status-leitura').innerText = "Pronto para próxima leitura";
-                    }, 2000); 
-                }
+        placeholder.style.display = 'none';
+
+        if (type === 'QR') {
+            svg.style.display = 'none';
+            qrDiv.style.display = 'block';
+            qrDiv.innerHTML = "";
+            new QRCode(qrDiv, {
+                text: value,
+                width: 128,
+                height: 128
+            });
+        } else {
+            qrDiv.style.display = 'none';
+            svg.style.display = 'block';
+            try {
+                JsBarcode("#barcode-svg", value, {
+                    format: type,
+                    text: label || value,
+                    displayValue: true,
+                    fontSize: 20,
+                    background: "#ffffff",
+                    width: 2,
+                    height: 60
+                });
+            } catch (e) {
+                console.error("Erro ao gerar barcode:", e);
+            }
+        }
+    }
+
+    async function saveToFolder() {
+        const value = document.getElementById('barcodeValue').value;
+        if (!value) return alert("Insira um valor primeiro!");
+
+        const type = document.getElementById('barcodeType').value;
+        let dataUrl = "";
+
+        if (type === 'QR') {
+            dataUrl = document.querySelector('#qrcode-canvas canvas').toDataURL("image/png");
+        } else {
+            // Correção: Converte o SVG para DataURL de imagem para aparecer na lista
+            const svg = document.getElementById('barcode-svg');
+            const canvas = document.getElementById('hidden-canvas');
+            const ctx = canvas.getContext('2d');
+            const xml = new XMLSerializer().serializeToString(svg);
+            const svg64 = btoa(unescape(encodeURIComponent(xml)));
+            const img = new Image();
+            
+            await new Promise((resolve) => {
+                img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.fillStyle = "white";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                    dataUrl = canvas.toDataURL("image/png");
+                    resolve();
+                };
+                img.src = 'data:image/svg+xml;base64,' + svg64;
             });
         }
 
-        function adicionarNaLista(id) {
-            const produtoEncontrado = produtos.find(p => p.id === id);
-            
-            const itemObj = {
-                id: id,
-                nome: produtoEncontrado ? "Produto Localizado" : "ID Não Cadastrado",
-                img: produtoEncontrado ? produtoEncontrado.img : "https://via.placeholder.com/50",
-                valor: produtoEncontrado ? produtoEncontrado.valor : 0,
-                timestamp: new Date().toLocaleTimeString()
-            };
+        const id = Date.now();
+        savedBarcodes.push({ id, dataUrl });
+        renderFolder();
+    }
 
-            historico.unshift(itemObj);
-            localStorage.setItem('meu_historico', JSON.stringify(historico));
-            atualizarLista();
-            if(navigator.vibrate) navigator.vibrate(100);
-        }
+    function renderFolder() {
+        const list = document.getElementById('barcodeList');
+        list.innerHTML = "";
+        savedBarcodes.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'saved-item';
+            div.innerHTML = `<img src="${item.dataUrl}" alt="barcode">`;
+            list.appendChild(div);
+        });
+    }
 
-        function girarCamera() {
-            if (cameras.length > 1) {
-                currentCamIndex = (currentCamIndex + 1) % cameras.length;
-                startCamera(cameras[currentCamIndex].id);
-            }
-        }
+    async function downloadAll() {
+        if (savedBarcodes.length === 0) return alert("A pasta está vazia!");
+        
+        const zip = new JSZip();
+        savedBarcodes.forEach((item, index) => {
+            const base64Data = item.dataUrl.split(',')[1];
+            zip.file(`codigo_${index + 1}.png`, base64Data, {base64: true});
+        });
 
-        function atualizarLista() {
-            const container = document.getElementById('lista');
-            const btnGeral = document.getElementById('container-baixa-geral');
-            const campoTotal = document.getElementById('valor-total');
-            
-            container.innerHTML = '<h4 style="margin:5px 0">Histórico</h4>';
-            
-            let somaTotal = 0;
+        const content = await zip.generateAsync({type:"blob"});
+        saveAs(content, "meus_codigos.zip");
+    }
+</script>
 
-            if(historico.length > 0) {
-                btnGeral.style.display = 'block';
-            } else {
-                btnGeral.style.display = 'none';
-            }
-
-            historico.forEach((item, index) => {
-                const valorItem = parseFloat(item.valor) || 0;
-                somaTotal += valorItem;
-
-                const div = document.createElement('div');
-                div.className = 'item-lista';
-                div.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:8px">
-                        <img src="${item.img}" style="width:30px; height:30px; border-radius:4px; object-fit:cover">
-                        <div>
-                            <span class="id-text">${item.id}</span><br>
-                            <small style="font-size:10px; color:#aaa">${item.nome} | R$ ${valorItem.toFixed(2)}</small>
-                        </div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:5px">
-                        <div class="baixa-container">
-                            <input type="number" class="baixa-input" id="baixa-${index}" value="1">
-                            <button class="btn-delete" style="background:var(--warning); color:black;" onclick="darBaixa('${item.id}', ${index})">BAIXA</button>
-                        </div>
-                        <button class="btn-delete" onclick="removerItem(${index})">X</button>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-
-            valorTotalVenda = somaTotal;
-            campoTotal.innerText = `Total: R$ ${somaTotal.toFixed(2)}`;
-            calcularTroco(); // Atualiza o troco se o total mudar
-        }
-
-        // NOVA FUNÇÃO PARA CALCULAR O TROCO
-        function calcularTroco() {
-            const recebido = parseFloat(document.getElementById('valor-recebido').value) || 0;
-            const troco = recebido - valorTotalVenda;
-            const displayTroco = document.getElementById('texto-troco');
-            
-            if (recebido > 0) {
-                displayTroco.innerText = `Troco: R$ ${troco < 0 ? "0,00" : troco.toFixed(2)}`;
-                displayTroco.style.color = troco < 0 ? "var(--danger)" : "var(--success)";
-            } else {
-                displayTroco.innerText = "Troco: R$ 0,00";
-                displayTroco.style.color = "var(--success)";
-            }
-        }
-
-        function removerItem(index) {
-            historico.splice(index, 1);
-            localStorage.setItem('meu_historico', JSON.stringify(historico));
-            atualizarLista();
-        }
-
-        function abrirCadastro() {
-            document.getElementById('modalCadastro').style.display = 'flex';
-            document.getElementById('home').style.display = 'none';
-            renderizarCatalogo();
-        }
-
-        function salvarProduto() {
-            const index = document.getElementById('edit-index').value;
-            const p = {
-                id: document.getElementById('p-id').value,
-                img: document.getElementById('p-img').value || "https://via.placeholder.com/150",
-                valor: document.getElementById('p-valor').value,
-                qtd: parseInt(document.getElementById('p-qtd').value) || 0
-            };
-
-            if(index === "") {
-                produtos.push(p);
-            } else {
-                produtos[index] = p;
-                document.getElementById('edit-index').value = "";
-            }
-
-            localStorage.setItem('meus_produtos', JSON.stringify(produtos));
-            limparFormProd();
-            renderizarCatalogo();
-        }
-
-        function renderizarCatalogo() {
-            const grid = document.getElementById('grid-produtos');
-            grid.innerHTML = "";
-            produtos.forEach((p, i) => {
-                grid.innerHTML += `
-                    <div class="produto-card">
-                        <button class="btn-edit-prod" onclick="editarProduto(${i})">✏️</button>
-                        <img src="${p.img}">
-                        <div class="produto-info">
-                            <b>ID: ${p.id}</b><br>
-                            R$ ${p.valor}<br>
-                            <span style="color:var(--success)">Estoque: ${p.qtd}</span>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function editarProduto(i) {
-            const p = produtos[i];
-            document.getElementById('p-id').value = p.id;
-            document.getElementById('p-img').value = p.img;
-            document.getElementById('p-valor').value = p.valor;
-            document.getElementById('p-qtd').value = p.qtd;
-            document.getElementById('edit-index').value = i;
-        }
-
-        function darBaixa(id, histIndex) {
-            const qtdBaixa = parseInt(document.getElementById(`baixa-${histIndex}`).value);
-            const pIndex = produtos.findIndex(p => p.id === id);
-            
-            if(pIndex !== -1) {
-                if(produtos[pIndex].qtd >= qtdBaixa) {
-                    produtos[pIndex].qtd -= qtdBaixa;
-                    localStorage.setItem('meus_produtos', JSON.stringify(produtos));
-                    alert(`Baixa de ${qtdBaixa} unidades no ID ${id} realizada!`);
-                    renderizarCatalogo();
-                } else {
-                    alert("Estoque insuficiente!");
-                }
-            } else {
-                alert("Este ID não está cadastrado no catálogo!");
-            }
-        }
-
-        function baixaGeral() {
-            if(!confirm("Deseja dar baixa em todos os itens da lista?")) return;
-            
-            historico.forEach((item, index) => {
-                const qtdBaixa = parseInt(document.getElementById(`baixa-${index}`).value);
-                const pIndex = produtos.findIndex(p => p.id === item.id);
-                if(pIndex !== -1 && produtos[pIndex].qtd >= qtdBaixa) {
-                    produtos[pIndex].qtd -= qtdBaixa;
-                }
-            });
-            
-            localStorage.setItem('meus_produtos', JSON.stringify(produtos));
-            historico = [];
-            localStorage.setItem('meu_historico', JSON.stringify(historico));
-            
-            // Limpa o campo de troco ao finalizar
-            document.getElementById('valor-recebido').value = "";
-            atualizarLista();
-            alert("Baixa geral concluída!");
-        }
-
-        function limparFormProd() {
-            document.getElementById('p-id').value = "";
-            document.getElementById('p-img').value = "";
-            document.getElementById('p-valor').value = "";
-            document.getElementById('p-qtd').value = "";
-        }
-
-        function abrirGerador() {
-            document.getElementById('modalGen').style.display = 'flex';
-            document.getElementById('home').style.display = 'none';
-        }
-
-        function fecharTudo() {
-            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-            document.getElementById('home').style.display = 'flex';
-            if (scanner) {
-                scanner.stop().catch(err => console.log("Erro ao parar scanner:", err));
-            }
-        }
-
-        function criarBarras() {
-            const v = document.getElementById('numID').value;
-            if(v >= 1 && v <= 800) {
-                JsBarcode("#barcode", v, { format: "CODE128", displayValue: true, fontSize: 20 });
-            }
-        }
-    </script>
 </body>
 </html>
