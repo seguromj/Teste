@@ -4,27 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Estoque Inteligente</title>
+    <title>Sistema de IDs - Foco em Botões</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
         :root {
             --primary: #007bff;
             --success: #28a745;
+            --danger: #dc3545;
             --bg: #121212;
             --card: #1e1e1e;
             --text: #ffffff;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
+            padding-bottom: 50px;
         }
 
         .header {
@@ -41,7 +42,7 @@
             max-width: 500px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
         }
 
         /* Estilização do Scanner */
@@ -53,12 +54,13 @@
             background: #000;
         }
 
+        /* Card de Resultado */
         .result-card {
             background: var(--card);
             padding: 20px;
             border-radius: 15px;
             text-align: center;
-            border-left: 5px solid var(--primary);
+            border: 2px solid var(--primary);
         }
 
         #resultado {
@@ -66,28 +68,42 @@
             background: transparent;
             border: none;
             color: var(--primary);
-            font-size: 32px;
+            font-size: 35px;
             font-weight: bold;
             text-align: center;
             outline: none;
         }
 
+        /* Botões Estilizados */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
         .btn {
-            padding: 15px;
+            padding: 20px;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 12px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
-            width: 100%;
+            transition: 0.2s;
             text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .btn-primary { background: var(--primary); color: white; }
-        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); margin-top: 10px; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-secondary { background: #444; color: white; font-size: 14px; padding: 12px; }
+        
+        .btn:active { transform: scale(0.95); }
 
-        /* Modal Tela Cheia */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -107,16 +123,6 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            margin-top: 50px;
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 30px;
-            cursor: pointer;
-            color: #ff4d4d;
         }
 
         #barcode-svg {
@@ -127,86 +133,128 @@
         }
 
         input.modal-input {
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #444;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #444;
             background: #222;
             color: white;
-            font-size: 18px;
+            font-size: 22px;
+            text-align: center;
+        }
+
+        select {
+            padding: 12px;
+            border-radius: 8px;
+            background: #333;
+            color: white;
+            border: 1px solid var(--primary);
+            width: 100%;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h2 style="margin:0;">Sistema de IDs</h2>
+        <h2 style="margin:0;">GESTOR DE IDS</h2>
     </div>
 
     <div class="container">
+        <div id="camera-selection">
+            <label style="font-size: 12px; color: #888;">ESCOLHER CÂMARA:</label>
+            <select id="camera-select"></select>
+        </div>
+
         <div id="reader"></div>
 
         <div class="result-card">
-            <span style="color: #888; font-size: 12px;">ID DO PRODUTO LIDO</span>
-            <input type="text" id="resultado" readonly placeholder="---">
+            <input type="text" id="resultado" readonly placeholder="AGUARDANDO...">
         </div>
 
-        <button class="btn btn-primary" onclick="abrirModal()">Gerar Novo Código</button>
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="abrirModal()">➕ GERAR CÓDIGO DE BARRAS</button>
+            <button class="btn btn-secondary" onclick="reiniciarScanner()">🔄 REINICIAR CÂMARA</button>
+        </div>
     </div>
 
     <div id="modalGerador" class="modal">
-        <span class="close-modal" onclick="fecharModal()">&times;</span>
-        
         <div class="modal-content">
-            <h2 style="text-align: center;">Gerador de ID</h2>
-            <p style="text-align: center; color: #888;">Digite um número entre 1 e 800</p>
+            <h2 style="text-align: center;">CRIAR ID (1-800)</h2>
             
-            <input type="number" id="inputGerar" class="modal-input" placeholder="Ex: 157" min="1" max="800">
+            <input type="number" id="inputGerar" class="modal-input" placeholder="DIGITE O NÚMERO">
             
-            <button class="btn btn-primary" onclick="gerarCodigo()">Gerar Barras</button>
+            <button class="btn btn-success" onclick="gerarCodigo()">✅ GERAR AGORA</button>
             
             <div style="text-align: center; margin-top: 20px;">
                 <svg id="barcode-svg"></svg>
             </div>
             
-            <button class="btn btn-outline" onclick="window.print()">Imprimir Código</button>
+            <button class="btn btn-primary" onclick="window.print()">🖨️ IMPRIMIR</button>
+            <button class="btn" style="background: var(--danger);" onclick="fecharModal()">❌ FECHAR</button>
         </div>
     </div>
 
     <script>
-        // --- Lógica do Scanner ---
-        const scanner = new Html5QrcodeScanner("reader", { 
-            fps: 10, 
-            qrbox: { width: 250, height: 150 } 
-        });
+        let html5QrCode;
+        const cameraSelect = document.getElementById('camera-select');
 
-        scanner.render((text) => {
-            document.getElementById('resultado').value = text;
-            // Feedback vibratório se disponível
-            if(navigator.vibrate) navigator.vibrate(100);
-        });
+        // 1. Listar Câmaras Disponíveis
+        Html5Qrcode.getCameras().then(cameras => {
+            if (cameras && cameras.length) {
+                cameras.forEach(camera => {
+                    const option = document.createElement('option');
+                    option.value = camera.id;
+                    option.text = camera.label;
+                    cameraSelect.appendChild(option);
+                });
+                iniciarScanner(cameras[0].id);
+            }
+        }).catch(err => alert("Erro ao listar câmaras."));
 
-        // --- Lógica do Modal e Gerador ---
-        function abrirModal() {
-            document.getElementById('modalGerador').style.display = 'flex';
+        // 2. Iniciar o Scanner
+        function iniciarScanner(cameraId) {
+            if(html5QrCode) {
+                html5QrCode.stop().then(() => start(cameraId));
+            } else {
+                start(cameraId);
+            }
+
+            function start(id) {
+                html5QrCode = new Html5Qrcode("reader");
+                html5QrCode.start(
+                    id, 
+                    { fps: 10, qrbox: { width: 250, height: 150 } },
+                    (decodedText) => {
+                        document.getElementById('resultado').value = decodedText;
+                        if(navigator.vibrate) navigator.vibrate(100);
+                    }
+                );
+            }
         }
 
-        function fecharModal() {
-            document.getElementById('modalGerador').style.display = 'none';
+        // Trocar câmara ao mudar o select
+        cameraSelect.addEventListener('change', () => {
+            iniciarScanner(cameraSelect.value);
+        });
+
+        function reiniciarScanner() {
+            iniciarScanner(cameraSelect.value);
         }
+
+        // --- Lógica do Modal ---
+        function abrirModal() { document.getElementById('modalGerador').style.display = 'flex'; }
+        function fecharModal() { document.getElementById('modalGerador').style.display = 'none'; }
 
         function gerarCodigo() {
             const valor = document.getElementById('inputGerar').value;
-            
             if (valor >= 1 && valor <= 800) {
                 JsBarcode("#barcode-svg", valor, {
                     format: "CODE128",
-                    lineColor: "#000",
-                    width: 2,
-                    height: 80,
-                    displayValue: true
+                    displayValue: true,
+                    fontSize: 20
                 });
             } else {
-                alert("Por favor, digite um número entre 1 e 800.");
+                alert("ID inválido! Use de 1 a 800.");
             }
         }
     </script>
