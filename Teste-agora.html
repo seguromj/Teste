@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de IDs Pro</title>
+    <title>Sistema de IDs Pro - Multi-Leitura</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <style>
@@ -29,7 +29,6 @@
             min-height: 100vh;
         }
 
-        /* Botões Iniciais */
         .menu-principal {
             display: flex;
             flex-direction: column;
@@ -47,12 +46,13 @@
             cursor: pointer;
             text-transform: uppercase;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: 0.2s;
         }
 
         .btn-blue { background: var(--primary); color: white; }
         .btn-green { background: var(--success); color: white; }
+        .btn-main:active { transform: scale(0.95); }
 
-        /* Modal Fullscreen */
         .modal {
             display: none;
             position: fixed;
@@ -66,7 +66,6 @@
             overflow-y: auto;
         }
 
-        /* Área do Scanner */
         #reader {
             width: 100%;
             max-width: 500px;
@@ -76,7 +75,6 @@
             border: 2px solid #333;
         }
 
-        /* Controles da Câmera */
         .camera-controls {
             display: flex;
             justify-content: space-between;
@@ -87,68 +85,80 @@
         }
 
         .btn-circle {
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             border: none;
-            background: #444;
+            background: #333;
             color: white;
-            font-size: 20px;
+            font-size: 24px;
             cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,123,255,0.5);
         }
 
-        /* Lista de Resultados */
         .lista-resultados {
             width: 100%;
             max-width: 500px;
             margin: 20px auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .item-lista {
             background: var(--card);
-            padding: 15px;
-            border-radius: 10px;
+            padding: 18px;
+            border-radius: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 4px solid var(--primary);
-            animation: slideIn 0.3s ease;
+            border-left: 6px solid var(--primary);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            animation: bounceIn 0.4s ease;
         }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.9); }
+            70% { transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
-        .id-text { font-size: 20px; font-weight: bold; color: var(--primary); }
+        .id-text { font-size: 22px; font-weight: bold; color: var(--primary); }
 
         .btn-delete {
             background: var(--danger);
             color: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
             cursor: pointer;
         }
 
         .btn-voltar {
-            background: transparent;
-            color: #888;
+            background: #222;
+            color: #fff;
             border: 1px solid #444;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 8px;
+            padding: 12px 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
             align-self: flex-start;
+            cursor: pointer;
+        }
+
+        #status-leitura {
+            text-align: center;
+            font-size: 14px;
+            color: var(--success);
+            height: 20px;
+            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
 
     <div id="home" class="menu-principal">
-        <h1 style="text-align:center">📦 Gestão</h1>
+        <h1 style="text-align:center">📦 Sistema de IDs</h1>
         <button class="btn-main btn-blue" onclick="abrirSist()">ENTRAR NO SISTEMA</button>
         <button class="btn-main btn-green" onclick="abrirGerador()">GERAR CÓDIGO</button>
     </div>
@@ -157,8 +167,8 @@
         <button class="btn-voltar" onclick="fecharTudo()">⬅ VOLTAR</button>
         
         <div class="camera-controls">
-            <span>Câmera Ativa</span>
-            <button class="btn-circle" onclick="girarCamera()" title="Girar Câmera">🔄</button>
+            <div id="status-leitura">Pronto para escanear</div>
+            <button class="btn-circle" onclick="girarCamera()">🔄</button>
         </div>
 
         <div id="reader"></div>
@@ -170,10 +180,12 @@
     <div id="modalGen" class="modal">
         <button class="btn-voltar" onclick="fecharTudo()">⬅ VOLTAR</button>
         <div style="display:flex; flex-direction:column; align-items:center; gap:20px;">
-            <h2>Gerar ID</h2>
-            <input type="number" id="numID" style="width:80%; padding:15px; font-size:20px; border-radius:10px;" placeholder="Digite 1-800">
-            <button class="btn-main btn-green" onclick="criarBarras()" style="width:80%">GERAR</button>
-            <svg id="barcode"></svg>
+            <h2>Gerar Novo ID</h2>
+            <input type="number" id="numID" style="width:80%; padding:18px; font-size:20px; border-radius:12px; border:none;" placeholder="Digite 1-800">
+            <button class="btn-main btn-green" onclick="criarBarras()" style="width:80%">GERAR BARRAS</button>
+            <div style="background: white; padding: 20px; border-radius: 10px;">
+                <svg id="barcode"></svg>
+            </div>
         </div>
     </div>
 
@@ -182,8 +194,8 @@
         let cameras = [];
         let currentCamIndex = 0;
         let historico = [];
+        let aguardandoReset = false; // Controla o tempo entre leituras
 
-        // Iniciar Scanner
         async function abrirSist() {
             document.getElementById('modalSist').style.display = 'flex';
             document.getElementById('home').style.display = 'none';
@@ -197,13 +209,28 @@
         function startCamera(id) {
             if (scanner) scanner.stop();
             scanner = new Html5Qrcode("reader");
-            scanner.start(id, { fps: 10, qrbox: 250 }, (text) => {
-                if (!historico.includes(text)) {
-                    historico.unshift(text); // Adiciona no topo
-                    atualizarLista();
-                    if(navigator.vibrate) navigator.vibrate(100);
+            scanner.start(id, { fps: 15, qrbox: 250 }, (text) => {
+                
+                // Se não estiver no intervalo de espera, adiciona
+                if (!aguardandoReset) {
+                    adicionarNaLista(text);
+                    
+                    // Ativa espera de 2 segundos para evitar duplicatas infinitas acidentais
+                    aguardandoReset = true;
+                    document.getElementById('status-leitura').innerText = "Aguarde... ✅";
+                    
+                    setTimeout(() => {
+                        aguardandoReset = false;
+                        document.getElementById('status-leitura').innerText = "Pronto para próxima leitura";
+                    }, 2000); 
                 }
             });
+        }
+
+        function adicionarNaLista(id) {
+            historico.unshift(id); // Adiciona no topo da lista
+            atualizarLista();
+            if(navigator.vibrate) navigator.vibrate(100);
         }
 
         function girarCamera() {
@@ -215,14 +242,15 @@
 
         function atualizarLista() {
             const container = document.getElementById('lista');
-            container.innerHTML = '<h3>Histórico de IDs</h3>';
+            container.innerHTML = '<h3>Histórico de Leituras</h3>';
             historico.forEach((id, index) => {
-                container.innerHTML += `
-                    <div class="item-lista">
-                        <span class="id-text">${id}</span>
-                        <button class="btn-delete" onclick="removerItem(${index})">X</button>
-                    </div>
+                const item = document.createElement('div');
+                item.className = 'item-lista';
+                item.innerHTML = `
+                    <span class="id-text">${id}</span>
+                    <button class="btn-delete" onclick="removerItem(${index})">EXCLUIR X</button>
                 `;
+                container.appendChild(item);
             });
         }
 
@@ -245,7 +273,11 @@
         function criarBarras() {
             const v = document.getElementById('numID').value;
             if(v >= 1 && v <= 800) {
-                JsBarcode("#barcode", v, { background: "#fff", width: 2.5 });
+                JsBarcode("#barcode", v, { 
+                    format: "CODE128",
+                    displayValue: true,
+                    fontSize: 20
+                });
             }
         }
     </script>
