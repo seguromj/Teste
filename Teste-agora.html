@@ -240,6 +240,9 @@
 
         <div class="lista-resultados" id="lista">
             </div>
+        <div id="container-baixa-geral" style="padding: 20px; text-align: center; display: none;">
+            <button class="btn-main btn-orange" style="width: 100%;" onclick="baixaGeral()">DAR BAIXA EM TUDO</button>
+        </div>
     </div>
 
     <div id="modalCadastro" class="modal">
@@ -275,9 +278,15 @@
         let scanner;
         let cameras = [];
         let currentCamIndex = 0;
-        let historico = [];
+        // Agora o histórico também carrega do localStorage
+        let historico = JSON.parse(localStorage.getItem('meu_historico')) || [];
         let produtos = JSON.parse(localStorage.getItem('meus_produtos')) || [];
         let aguardandoReset = false;
+
+        // Renderiza a lista ao carregar a página se houver algo salvo
+        window.onload = () => {
+            if(historico.length > 0) atualizarLista();
+        };
 
         async function abrirSist() {
             document.getElementById('modalSist').style.display = 'flex';
@@ -307,7 +316,6 @@
         }
 
         function adicionarNaLista(id) {
-            // Busca o produto no catálogo pelo ID
             const produtoEncontrado = produtos.find(p => p.id === id);
             
             const itemObj = {
@@ -318,6 +326,7 @@
             };
 
             historico.unshift(itemObj);
+            localStorage.setItem('meu_historico', JSON.stringify(historico)); // Salva histórico
             atualizarLista();
             if(navigator.vibrate) navigator.vibrate(100);
         }
@@ -331,7 +340,16 @@
 
         function atualizarLista() {
             const container = document.getElementById('lista');
+            const btnGeral = document.getElementById('container-baixa-geral');
+            
             container.innerHTML = '<h3>Histórico e Baixa</h3>';
+            
+            if(historico.length > 0) {
+                btnGeral.style.display = 'block';
+            } else {
+                btnGeral.style.display = 'none';
+            }
+
             historico.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'item-lista';
@@ -357,10 +375,10 @@
 
         function removerItem(index) {
             historico.splice(index, 1);
+            localStorage.setItem('meu_historico', JSON.stringify(historico));
             atualizarLista();
         }
 
-        // FUNÇÕES DO CATÁLOGO
         function abrirCadastro() {
             document.getElementById('modalCadastro').style.display = 'flex';
             document.getElementById('home').style.display = 'none';
@@ -433,6 +451,24 @@
             }
         }
 
+        function baixaGeral() {
+            if(!confirm("Deseja dar baixa em todos os itens da lista conforme as quantidades digitadas?")) return;
+            
+            historico.forEach((item, index) => {
+                const qtdBaixa = parseInt(document.getElementById(`baixa-${index}`).value);
+                const pIndex = produtos.findIndex(p => p.id === item.id);
+                if(pIndex !== -1 && produtos[pIndex].qtd >= qtdBaixa) {
+                    produtos[pIndex].qtd -= qtdBaixa;
+                }
+            });
+            
+            localStorage.setItem('meus_produtos', JSON.stringify(produtos));
+            historico = [];
+            localStorage.setItem('meu_historico', JSON.stringify(historico));
+            atualizarLista();
+            alert("Baixa geral concluída e lista limpa!");
+        }
+
         function limparFormProd() {
             document.getElementById('p-id').value = "";
             document.getElementById('p-img').value = "";
@@ -446,9 +482,13 @@
         }
 
         function fecharTudo() {
-            if (scanner) scanner.stop();
+            // Garantir que a tela mude mesmo se o stop do scanner demorar
             document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
             document.getElementById('home').style.display = 'flex';
+            
+            if (scanner) {
+                scanner.stop().catch(err => console.log("Erro ao parar scanner:", err));
+            }
         }
 
         function criarBarras() {
