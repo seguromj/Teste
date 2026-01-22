@@ -4,125 +4,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scanner OCR Profissional</title>
+    <title>Scanner Super Precisão</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background-color: #121212; color: white; }
-        .container { width: 100%; max-width: 500px; position: relative; }
-        
-        /* Moldura de escaneamento */
-        .camera-container { position: relative; overflow: hidden; border-radius: 15px; border: 2px solid #333; }
-        video { width: 100%; display: block; }
-        .overlay {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%; height: 100px;
-            border: 2px solid #00ff00;
-            box-shadow: 0 0 0 500px rgba(0, 0, 0, 0.5);
-            pointer-events: none;
-            border-radius: 5px;
-        }
-
-        #resultado { 
-            width: 100%; margin-top: 20px; padding: 15px; 
-            font-size: 18px; border: none; border-radius: 8px; 
-            background: #333; color: #00ff00; text-align: center;
-            box-sizing: border-box;
-        }
-
-        button { 
-            margin-top: 20px; padding: 18px; font-weight: bold; 
-            cursor: pointer; background: #007bff; color: white; 
-            border: none; border-radius: 10px; width: 100%; font-size: 16px;
-        }
-
-        #status { margin-top: 10px; font-size: 14px; color: #aaa; }
-        canvas { display: none; }
+        body { font-family: sans-serif; text-align: center; background: #000; color: white; margin: 0; padding: 10px; }
+        video { width: 100%; max-width: 500px; border-radius: 10px; }
+        #resultado { width: 90%; margin-top: 15px; padding: 15px; font-size: 20px; font-weight: bold; border-radius: 5px; border: none; }
+        button { width: 90%; padding: 20px; margin-top: 10px; background: #28a745; color: white; border: none; border-radius: 5px; font-size: 18px; }
+        .box { border: 2px solid #0f0; position: absolute; top: 30%; left: 10%; width: 80%; height: 100px; pointer-events: none; }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <h2>Scanner de Texto</h2>
-        
-        <div class="camera-container">
-            <video id="video" autoplay playsinline></video>
-            <div class="overlay"></div>
-        </div>
-
-        <button id="btn-scan">LER AGORA</button>
-        <p id="status">Centralize o texto no retângulo verde</p>
-        
-        <input type="text" id="resultado" placeholder="O resultado aparecerá aqui...">
+    <h3>Aponte e Escaneie</h3>
+    <div style="position: relative; display: inline-block; width: 100%;">
+        <video id="video" autoplay playsinline></video>
+        <div class="box"></div>
     </div>
-
-    <canvas id="canvas"></canvas>
+    <button id="btn">ESCANEAR AGORA</button>
+    <input type="text" id="resultado" placeholder="Texto aparecerá aqui...">
+    <canvas id="canvas" style="display:none;"></canvas>
 
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        const btnScan = document.getElementById('btn-scan');
-        const resultado = document.getElementById('resultado');
-        const status = document.getElementById('status');
+        const res = document.getElementById('resultado');
 
-        // Configuração da câmera com alta resolução
-        navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: "environment",
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            } 
-        })
-        .then(stream => { video.srcObject = stream; })
-        .catch(err => { status.innerText = "Erro ao abrir câmera."; });
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(s => video.srcObject = s);
 
-        btnScan.addEventListener('click', async () => {
-            status.innerText = "Processando... Mantenha parado!";
-            resultado.value = "";
-
-            const context = canvas.getContext('2d');
-            
-            // Ajustar canvas para o tamanho real do vídeo
+        document.getElementById('btn').onclick = async () => {
+            res.value = "Lendo...";
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
 
-            // 1. Capturar imagem
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            // 2. Aplicar filtro de nitidez e alto contraste
-            let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-            let data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-                let brightness = (0.34 * data[i] + 0.5 * data[i + 1] + 0.16 * data[i + 2]);
-                let contrast = 1.5; // Aumenta o contraste
-                let factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
-                let color = factor * (brightness - 128) + 128;
-                data[i] = data[i + 1] = data[i + 2] = color > 130 ? 255 : 0;
+            // Filtro para forçar contraste máximo (Binário)
+            let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let d = imgData.data;
+            for (let i = 0; i < d.length; i += 4) {
+                let v = (d[i] + d[i+1] + d[i+2]) / 3;
+                let thresh = v < 120 ? 0 : 255; // Transforma em preto e branco puro
+                d[i] = d[i+1] = d[i+2] = thresh;
             }
-            context.putImageData(imageData, 0, 0);
+            ctx.putImageData(imgData, 0, 0);
 
-            const image = canvas.toDataURL('image/png');
-
-            try {
-                // Criar o worker para processar
-                const worker = await Tesseract.createWorker('por');
-                
-                // Configurar para aceitar apenas caracteres comuns (evita símbolos estranhos)
-                await worker.setParameters({
-                    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ',
-                });
-
-                const { data: { text } } = await worker.recognize(image);
-                
-                // Exibir resultado limpo
-                resultado.value = text.replace(/[\n\r]/g, ' ').trim();
-                status.innerText = "Concluído!";
-                
-                await worker.terminate();
-            } catch (error) {
-                status.innerText = "Erro na leitura.";
-            }
-        });
+            const { data: { text } } = await Tesseract.recognize(canvas.toDataURL(), 'por+eng');
+            res.value = text.replace(/[^a-zA-Z0-9 ]/g, "").trim(); // Remove lixo visual
+        };
     </script>
 </body>
 </html>
