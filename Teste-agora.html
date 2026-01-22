@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Neon Stock - Multi-Baixa</title>
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <title>Sistema Neon Stock - OCR Multi-Baixa</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
             --neon-blue: #00f2ff;
@@ -36,120 +37,55 @@
         }
 
         .top-actions {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            display: flex; gap: 10px; margin-bottom: 20px;
         }
 
         .btn-main {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            color: white;
-            transition: 0.3s;
+            flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer;
+            font-weight: bold; text-transform: uppercase; font-size: 0.75rem; color: white; transition: 0.3s;
         }
 
         .btn-new { background: linear-gradient(45deg, var(--neon-purple), var(--neon-pink)); }
         .btn-out { background: #333; border: 1px solid var(--neon-pink); }
 
         .modal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid var(--neon-purple);
-            z-index: 1000;
-            width: 95%;
-            max-width: 450px;
-            max-height: 90vh;
-            overflow-y: auto;
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--neon-purple);
+            z-index: 1000; width: 95%; max-width: 450px; max-height: 90vh; overflow-y: auto;
             box-shadow: 0 0 30px rgba(0,0,0,0.8);
         }
 
         .modal-baixa { border-color: var(--neon-pink); }
 
         .overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(3px);
-            z-index: 999;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(3px); z-index: 999;
         }
 
         .preview-baixa {
-            background: #000;
-            border-radius: 8px;
-            padding: 10px;
-            margin: 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border: 1px dashed var(--neon-pink);
-            display: none;
+            background: #000; border-radius: 8px; padding: 10px; margin: 10px 0;
+            display: flex; align-items: center; gap: 10px; border: 1px dashed var(--neon-pink); display: none;
         }
         .preview-baixa img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
         
-        #lista-baixa {
-            margin: 15px 0;
-            border-top: 1px solid #333;
-            padding-top: 10px;
-        }
+        #lista-baixa { margin: 15px 0; border-top: 1px solid #333; padding-top: 10px; }
         .item-baixa {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #222;
-            padding: 8px;
-            margin-bottom: 5px;
-            border-radius: 4px;
-            font-size: 0.8rem;
+            display: flex; justify-content: space-between; align-items: center; background: #222;
+            padding: 8px; margin-bottom: 5px; border-radius: 4px; font-size: 0.8rem;
         }
         .item-baixa span { color: var(--neon-pink); font-weight: bold; }
 
         .grid-inputs { display: grid; gap: 10px; }
 
-        input {
-            background: #1c1c21;
-            border: 1px solid #333;
-            padding: 8px;
-            border-radius: 4px;
-            color: white;
-            outline: none;
-        }
+        input { background: #1c1c21; border: 1px solid #333; padding: 8px; border-radius: 4px; color: white; outline: none; }
 
-        .search-input {
-            width: 100%;
-            margin-bottom: 20px;
-            border: 1px solid var(--neon-blue);
-            background: #111;
-            padding: 8px;
-            border-radius: 6px;
-        }
+        .search-input { width: 100%; margin-bottom: 20px; border: 1px solid var(--neon-blue); background: #111; padding: 8px; border-radius: 6px; }
 
-        .product-grid {
-            display: grid;
-            gap: 10px;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        }
+        .product-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
 
         .product-card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #222;
-            display: flex;
-            flex-direction: column;
-            font-size: 0.8rem;
+            background: var(--card-bg); border-radius: 8px; overflow: hidden; border: 1px solid #222;
+            display: flex; flex-direction: column; font-size: 0.8rem;
         }
 
         .product-img { width: 100%; height: 80px; object-fit: cover; }
@@ -157,37 +93,23 @@
         .price { color: var(--neon-pink); font-size: 0.9rem; font-weight: bold; }
         .actions { display: flex; gap: 5px; margin-top: 8px; }
 
-        .btn-action {
-            flex: 1;
-            padding: 4px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.7rem;
-            border: 1px solid transparent;
-        }
+        .btn-action { flex: 1; padding: 4px; border-radius: 3px; cursor: pointer; font-size: 0.7rem; border: 1px solid transparent; }
         .btn-edit { color: var(--neon-blue); border-color: var(--neon-blue); background: transparent; }
         .btn-delete { color: var(--neon-pink); border-color: var(--neon-pink); background: transparent; }
 
-        .input-group-camera {
-            display: flex;
-            gap: 5px;
+        /* Estilos da Câmera OCR */
+        #camera-container {
+            width: 100%; position: relative; display: none; margin-bottom: 10px; border-radius: 8px; overflow: hidden;
+            border: 2px solid var(--neon-blue);
         }
-        .btn-camera {
-            background: #222;
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
-            padding: 0 10px;
-            border-radius: 4px;
-            cursor: pointer;
+        #video { width: 100%; display: block; }
+        #canvas { display: none; }
+        .scan-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 200px; height: 100px; border: 2px solid var(--neon-pink); box-shadow: 0 0 0 1000px rgba(0,0,0,0.5);
+            pointer-events: none;
         }
-        #reader {
-            width: 100%;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 10px;
-            display: none;
-            background: #000;
-        }
+        #scan-status { font-size: 0.7rem; color: var(--neon-blue); text-align: center; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -201,14 +123,14 @@
 
     <div class="top-actions">
         <button class="btn-main btn-new" onclick="abrirModalCadastro()">➕ Novo Produto</button>
-        <button class="btn-main btn-out" onclick="abrirModalBaixa()">📉 Baixa Rápida/Massa</button>
+        <button class="btn-main btn-out" onclick="abrirModalBaixa()">📉 Baixa Rápida</button>
     </div>
 
     <div class="modal" id="modal-form">
         <h2 style="font-size: 1rem; margin-bottom: 15px; color: var(--neon-blue);">Gerenciar Produto</h2>
         <div class="grid-inputs">
             <input type="hidden" id="p-index">
-            <input type="text" id="p-id" placeholder="ID">
+            <input type="text" id="p-id" placeholder="ID (Só números)">
             <input type="text" id="p-nome" placeholder="Nome">
             <input type="number" id="p-valor" placeholder="R$">
             <input type="number" id="p-qtd" placeholder="Qtd">
@@ -219,14 +141,19 @@
     </div>
 
     <div class="modal modal-baixa" id="modal-baixa">
-        <h2 style="font-size: 1rem; color: var(--neon-pink);">📉 Baixa de Produtos</h2>
+        <h2 style="font-size: 1rem; color: var(--neon-pink);">📉 Baixa por Leitura de ID</h2>
         
         <div class="grid-inputs" style="margin-top: 15px;">
-            <div id="reader"></div>
+            <div id="camera-container">
+                <video id="video" autoplay playsinline></video>
+                <div class="scan-overlay"></div>
+                <canvas id="canvas"></canvas>
+            </div>
+            <div id="scan-status">Câmera desligada</div>
             
-            <div class="input-group-camera">
-                <input type="text" id="baixa-id" placeholder="Digite o ID..." onkeyup="buscarProdutoBaixa()" style="flex-grow: 1;">
-                <button class="btn-camera" onclick="alternarCamera()">📷 ESCANEAR</button>
+            <div class="input-group-camera" style="display: flex; gap:5px;">
+                <input type="text" id="baixa-id" placeholder="ID detectado..." onkeyup="buscarProdutoBaixa()" style="flex-grow: 1;">
+                <button class="btn-main" style="background:#222; border:1px solid var(--neon-blue); color:var(--neon-blue)" onclick="toggleOCR()">📷 LER ID</button>
             </div>
             
             <div id="preview-baixa" class="preview-baixa">
@@ -235,13 +162,9 @@
                     <h4 id="prev-nome" style="font-size: 0.75rem;"></h4>
                     <p style="font-size: 0.65rem; color:#888">Disponível: <span id="prev-qtd"></span></p>
                 </div>
-                <input type="number" id="baixa-qtd" placeholder="Qtd" style="width: 60px;">
-                <button onclick="adicionarNaLista()" style="background:var(--neon-blue); border:none; padding:5px; border-radius:4px; cursor:pointer">➕</button>
+                <button onclick="confirmarBaixaLote()" style="background:var(--neon-pink); border:none; padding:8px; border-radius:4px; color:white; font-weight:bold">BAIXAR -1</button>
             </div>
 
-            <div id="lista-baixa"></div>
-
-            <button class="btn-main" style="background: var(--neon-pink)" onclick="confirmarBaixaLote()">Efetivar Todas as Saídas</button>
             <button class="btn-action" style="color: #888" onclick="fecharTodosModais()">Voltar</button>
         </div>
     </div>
@@ -252,79 +175,86 @@
 
 <script>
     let produtos = JSON.parse(localStorage.getItem('neon_produtos')) || [];
-    let carrinhoBaixa = [];
-    let html5QrCode;
+    let isScanning = false;
+    let stream = null;
 
     function abrirModalCadastro() { document.getElementById('modal-form').style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
     function abrirModalBaixa() { document.getElementById('modal-baixa').style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
     
     function fecharTodosModais() {
-        pararCamera();
+        stopCamera();
         document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
         document.getElementById('overlay').style.display = 'none';
-        carrinhoBaixa = [];
-        atualizarTabelaBaixa();
         limparCampos();
     }
 
-    async function alternarCamera() {
-        const readerDiv = document.getElementById('reader');
-        if (html5QrCode && html5QrCode.isScanning) {
-            pararCamera();
+    // LÓGICA OCR (LER NÚMEROS)
+    async function toggleOCR() {
+        if (isScanning) {
+            stopCamera();
             return;
         }
-        readerDiv.style.display = 'block';
-        html5QrCode = new Html5Qrcode("reader");
-        const config = { fps: 10, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 };
-        try {
-            await html5QrCode.start(
-                { facingMode: "environment" }, 
-                config, 
-                (decodedText) => {
-                    // EXECUTAR BAIXA IMEDIATA
-                    processarBaixaInstantanea(decodedText.trim());
-                }
-            );
-        } catch (err) {
-            alert("ERRO DE ACESSO: Use HTTPS ou Localhost.");
-            readerDiv.style.display = 'none';
-        }
-    }
-
-    // NOVA FUNÇÃO: Faz a baixa na hora ao detectar o ID
-    function processarBaixaInstantanea(idLido) {
-        const index = produtos.findIndex(p => p.id == idLido);
         
-        if (index !== -1) {
-            if (produtos[index].qtd > 0) {
-                produtos[index].qtd -= 1; // Baixa de 1 unidade
-                persistir(); // Salva e atualiza a tela de fundo
-                
-                // Avisa o usuário sem interromper o fluxo
-                alert("BAIXA REALIZADA: " + produtos[index].nome + " (-1)");
-                
-                pararCamera(); // Fecha a câmera após o sucesso
-            } else {
-                alert("ERRO: Produto '" + produtos[index].nome + "' sem estoque!");
-                pararCamera();
-            }
-        } else {
-            console.log("ID lido (" + idLido + ") não encontrado.");
-            // Não fecha a câmera aqui para permitir que o usuário tente outro código
+        const video = document.getElementById('video');
+        const container = document.getElementById('camera-container');
+        container.style.display = 'block';
+        document.getElementById('scan-status').innerText = "Iniciando câmera...";
+
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
+            });
+            video.srcObject = stream;
+            isScanning = true;
+            document.getElementById('scan-status').innerText = "Aponte para o número do ID";
+            
+            // Ciclo de captura
+            scanFrame();
+        } catch (err) {
+            alert("Erro ao acessar câmera. Use HTTPS.");
+            container.style.display = 'none';
         }
     }
 
-    function pararCamera() {
-        const readerDiv = document.getElementById('reader');
-        if (html5QrCode) {
-            html5QrCode.stop().then(() => {
-                readerDiv.style.display = 'none';
-            }).catch(() => {
-                readerDiv.style.display = 'none';
-            });
-        } else {
-            readerDiv.style.display = 'none';
-        }
+    function stopCamera() {
+        isScanning = false;
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        document.getElementById('camera-container').style.display = 'none';
+        document.getElementById('scan-status').innerText = "Câmera desligada";
+    }
+
+    async function scanFrame() {
+        if (!isScanning) return;
+
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+
+        // Configura canvas para o tamanho do vídeo
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        document.getElementById('scan-status').innerText = "Lendo...";
+
+        // Usa Tesseract para ler apenas NÚMEROS
+        Tesseract.recognize(canvas, 'eng', {
+            workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
+            corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract-core.wasm.js',
+            tessedit_char_whitelist: '0123456789' // SÓ LÊ NÚMEROS
+        }).then(({ data: { text } }) => {
+            let foundID = text.trim().replace(/\D/g, ""); // Pega apenas os dígitos
+            if (foundID) {
+                document.getElementById('baixa-id').value = foundID;
+                if (buscarProdutoBaixa()) {
+                    // Se achou o produto, ele dá o feedback visual e para
+                    document.getElementById('scan-status').innerText = "ID " + foundID + " encontrado!";
+                    // Se quiser que baixe AUTOMÁTICO, descomente a linha abaixo:
+                    // processarBaixaInstantanea(foundID);
+                }
+            }
+            if (isScanning) setTimeout(scanFrame, 1500); // Tenta ler de novo em 1.5s
+        });
     }
 
     function buscarProdutoBaixa() {
@@ -336,53 +266,27 @@
             document.getElementById('prev-img').src = produto.img;
             document.getElementById('prev-nome').innerText = produto.nome;
             document.getElementById('prev-qtd').innerText = produto.qtd;
+            return true;
         } else {
             preview.style.display = 'none';
+            return false;
         }
     }
 
-    function adicionarNaLista() {
-        const idBusca = document.getElementById('baixa-id').value;
-        const qtdBaixa = parseInt(document.getElementById('baixa-qtd').value);
-        const produto = produtos.find(p => p.id == idBusca);
-        if (!produto || isNaN(qtdBaixa) || qtdBaixa <= 0) { alert("Verifique os dados!"); return; }
-        if (qtdBaixa > produto.qtd) { alert("Estoque insuficiente!"); return; }
-        carrinhoBaixa.push({ id: produto.id, nome: produto.nome, qtd: qtdBaixa });
-        document.getElementById('baixa-id').value = "";
-        document.getElementById('baixa-qtd').value = "";
-        document.getElementById('preview-baixa').style.display = 'none';
-        atualizarTabelaBaixa();
-    }
-
-    function atualizarTabelaBaixa() {
-        const lista = document.getElementById('lista-baixa');
-        lista.innerHTML = carrinhoBaixa.length > 0 ? '<p style="font-size:0.7rem; margin-bottom:5px">Itens na fila:</p>' : '';
-        carrinhoBaixa.forEach((item, index) => {
-            lista.innerHTML += `
-                <div class="item-baixa">
-                    ${item.nome} (ID: ${item.id}) <span>x${item.qtd}</span>
-                    <button onclick="removerDoCarrinho(${index})" style="background:none; border:none; color:red; cursor:pointer">✕</button>
-                </div>
-            `;
-        });
-    }
-
-    function removerDoCarrinho(index) {
-        carrinhoBaixa.splice(index, 1);
-        atualizarTabelaBaixa();
-    }
-
     function confirmarBaixaLote() {
-        if (carrinhoBaixa.length === 0) return alert("Adicione produtos à lista!");
-        carrinhoBaixa.forEach(item => {
-            const index = produtos.findIndex(p => p.id == item.id);
-            if (index !== -1) { produtos[index].qtd -= item.qtd; }
-        });
-        persistir();
-        alert("Baixa de múltiplos produtos realizada!");
-        fecharTodosModais();
+        const id = document.getElementById('baixa-id').value;
+        const index = produtos.findIndex(p => p.id == id);
+        if (index !== -1 && produtos[index].qtd > 0) {
+            produtos[index].qtd -= 1;
+            persistir();
+            alert("Baixa realizada!");
+            fecharTodosModais();
+        } else {
+            alert("Erro na baixa.");
+        }
     }
 
+    // FUNÇÕES ORIGINAIS MANTIDAS
     function salvarProduto() {
         const index = document.getElementById('p-index').value;
         const id = document.getElementById('p-id').value;
