@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -227,6 +226,19 @@
             width: 100%;
             cursor: pointer;
         }
+
+        /* NOVO ESTILO PARA O TOTAL */
+        .campo-total {
+            background: #333;
+            color: var(--warning);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 5px;
+            border: 1px solid var(--warning);
+        }
     </style>
 </head>
 <body>
@@ -252,6 +264,7 @@
 
         <div id="container-baixa-geral" style="padding: 10px 0; display: none; flex-shrink: 0;">
             <button class="btn-baixa-geral" onclick="baixaGeral()">DAR BAIXA EM TUDO</button>
+            <div id="valor-total" class="campo-total">Total: R$ 0,00</div>
         </div>
 
         <div class="lista-resultados" id="lista">
@@ -333,6 +346,7 @@
                 id: id,
                 nome: produtoEncontrado ? "Produto Localizado" : "ID Não Cadastrado",
                 img: produtoEncontrado ? produtoEncontrado.img : "https://via.placeholder.com/50",
+                valor: produtoEncontrado ? produtoEncontrado.valor : 0,
                 timestamp: new Date().toLocaleTimeString()
             };
 
@@ -352,9 +366,12 @@
         function atualizarLista() {
             const container = document.getElementById('lista');
             const btnGeral = document.getElementById('container-baixa-geral');
+            const campoTotal = document.getElementById('valor-total');
             
             container.innerHTML = '<h4 style="margin:5px 0">Histórico</h4>';
             
+            let somaTotal = 0;
+
             if(historico.length > 0) {
                 btnGeral.style.display = 'block';
             } else {
@@ -362,13 +379,17 @@
             }
 
             historico.forEach((item, index) => {
+                const valorItem = parseFloat(item.valor) || 0;
+                somaTotal += valorItem;
+
                 const div = document.createElement('div');
                 div.className = 'item-lista';
                 div.innerHTML = `
                     <div style="display:flex; align-items:center; gap:8px">
                         <img src="${item.img}" style="width:30px; height:30px; border-radius:4px; object-fit:cover">
                         <div>
-                            <span class="id-text">${item.id}</span>
+                            <span class="id-text">${item.id}</span><br>
+                            <small style="font-size:10px; color:#aaa">${item.nome} | R$ ${valorItem.toFixed(2)}</small>
                         </div>
                     </div>
                     <div style="display:flex; align-items:center; gap:5px">
@@ -381,6 +402,8 @@
                 `;
                 container.appendChild(div);
             });
+
+            campoTotal.innerText = `Total: R$ ${somaTotal.toFixed(2)}`;
         }
 
         function removerItem(index) {
