@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Neon Stock - OCR Multi-Baixa</title>
+    <title>Sistema Neon Stock - Leitor OCR</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
@@ -67,19 +67,10 @@
             display: flex; align-items: center; gap: 10px; border: 1px dashed var(--neon-pink); display: none;
         }
         .preview-baixa img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
-        
-        #lista-baixa { margin: 15px 0; border-top: 1px solid #333; padding-top: 10px; }
-        .item-baixa {
-            display: flex; justify-content: space-between; align-items: center; background: #222;
-            padding: 8px; margin-bottom: 5px; border-radius: 4px; font-size: 0.8rem;
-        }
-        .item-baixa span { color: var(--neon-pink); font-weight: bold; }
 
-        .grid-inputs { display: grid; gap: 10px; }
+        input { background: #1c1c21; border: 1px solid #333; padding: 8px; border-radius: 4px; color: white; outline: none; width: 100%; margin-bottom: 10px; }
 
-        input { background: #1c1c21; border: 1px solid #333; padding: 8px; border-radius: 4px; color: white; outline: none; }
-
-        .search-input { width: 100%; margin-bottom: 20px; border: 1px solid var(--neon-blue); background: #111; padding: 8px; border-radius: 6px; }
+        .search-input { margin-bottom: 20px; border: 1px solid var(--neon-blue); background: #111; padding: 8px; border-radius: 6px; }
 
         .product-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
 
@@ -91,25 +82,17 @@
         .product-img { width: 100%; height: 80px; object-fit: cover; }
         .product-info { padding: 8px; }
         .price { color: var(--neon-pink); font-size: 0.9rem; font-weight: bold; }
-        .actions { display: flex; gap: 5px; margin-top: 8px; }
 
-        .btn-action { flex: 1; padding: 4px; border-radius: 3px; cursor: pointer; font-size: 0.7rem; border: 1px solid transparent; }
-        .btn-edit { color: var(--neon-blue); border-color: var(--neon-blue); background: transparent; }
-        .btn-delete { color: var(--neon-pink); border-color: var(--neon-pink); background: transparent; }
-
-        /* Estilos da Câmera OCR */
-        #camera-container {
-            width: 100%; position: relative; display: none; margin-bottom: 10px; border-radius: 8px; overflow: hidden;
-            border: 2px solid var(--neon-blue);
+        /* Estilos do Seletor de Arquivo/Câmera */
+        .camera-box {
+            border: 2px dashed var(--neon-blue);
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 10px;
         }
-        #video { width: 100%; display: block; }
-        #canvas { display: none; }
-        .scan-overlay {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 200px; height: 100px; border: 2px solid var(--neon-pink); box-shadow: 0 0 0 1000px rgba(0,0,0,0.5);
-            pointer-events: none;
-        }
-        #scan-status { font-size: 0.7rem; color: var(--neon-blue); text-align: center; margin-top: 5px; }
+        #loading-ocr { display: none; color: var(--neon-blue); font-size: 0.8rem; text-align: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -118,55 +101,48 @@
 
 <div class="container">
     <header>
-        <h1>⚡ Neon Stock Compact</h1>
+        <h1>⚡ Neon Stock OCR</h1>
     </header>
 
     <div class="top-actions">
         <button class="btn-main btn-new" onclick="abrirModalCadastro()">➕ Novo Produto</button>
-        <button class="btn-main btn-out" onclick="abrirModalBaixa()">📉 Baixa Rápida</button>
+        <button class="btn-main btn-out" onclick="abrirModalBaixa()">📉 Baixa p/ Foto</button>
     </div>
 
     <div class="modal" id="modal-form">
         <h2 style="font-size: 1rem; margin-bottom: 15px; color: var(--neon-blue);">Gerenciar Produto</h2>
-        <div class="grid-inputs">
-            <input type="hidden" id="p-index">
-            <input type="text" id="p-id" placeholder="ID (Só números)">
-            <input type="text" id="p-nome" placeholder="Nome">
-            <input type="number" id="p-valor" placeholder="R$">
-            <input type="number" id="p-qtd" placeholder="Qtd">
-            <input type="text" id="p-img" placeholder="URL Imagem">
-            <button class="btn-main btn-new" onclick="salvarProduto()">Confirmar</button>
-            <button class="btn-action" style="color: #888" onclick="fecharTodosModais()">Cancelar</button>
-        </div>
+        <input type="hidden" id="p-index">
+        <input type="text" id="p-id" placeholder="ID (Use números como 11)">
+        <input type="text" id="p-nome" placeholder="Nome">
+        <input type="number" id="p-valor" placeholder="R$">
+        <input type="number" id="p-qtd" placeholder="Qtd">
+        <input type="text" id="p-img" placeholder="URL Imagem">
+        <button class="btn-main btn-new" onclick="salvarProduto()">Confirmar</button>
+        <button class="btn-main" style="background:none; color:#888" onclick="fecharTodosModais()">Cancelar</button>
     </div>
 
     <div class="modal modal-baixa" id="modal-baixa">
-        <h2 style="font-size: 1rem; color: var(--neon-pink);">📉 Baixa por Leitura de ID</h2>
+        <h2 style="font-size: 1rem; color: var(--neon-pink); margin-bottom: 15px;">📉 Baixa por Foto do ID</h2>
         
-        <div class="grid-inputs" style="margin-top: 15px;">
-            <div id="camera-container">
-                <video id="video" autoplay playsinline></video>
-                <div class="scan-overlay"></div>
-                <canvas id="canvas"></canvas>
-            </div>
-            <div id="scan-status">Câmera desligada</div>
-            
-            <div class="input-group-camera" style="display: flex; gap:5px;">
-                <input type="text" id="baixa-id" placeholder="ID detectado..." onkeyup="buscarProdutoBaixa()" style="flex-grow: 1;">
-                <button class="btn-main" style="background:#222; border:1px solid var(--neon-blue); color:var(--neon-blue)" onclick="toggleOCR()">📷 LER ID</button>
-            </div>
-            
-            <div id="preview-baixa" class="preview-baixa">
-                <img id="prev-img" src="" alt="">
-                <div style="flex-grow:1">
-                    <h4 id="prev-nome" style="font-size: 0.75rem;"></h4>
-                    <p style="font-size: 0.65rem; color:#888">Disponível: <span id="prev-qtd"></span></p>
-                </div>
-                <button onclick="confirmarBaixaLote()" style="background:var(--neon-pink); border:none; padding:8px; border-radius:4px; color:white; font-weight:bold">BAIXAR -1</button>
-            </div>
+        <label for="file-upload" class="camera-box" id="camera-label">
+            📷 CLIQUE PARA TIRAR FOTO DO ID
+        </label>
+        <input type="file" id="file-upload" accept="image/*" capture="environment" style="display: none;" onchange="processarFoto(event)">
+        
+        <div id="loading-ocr">Lendo números... aguarde...</div>
 
-            <button class="btn-action" style="color: #888" onclick="fecharTodosModais()">Voltar</button>
+        <input type="text" id="baixa-id" placeholder="ID detectado aparecerá aqui..." onkeyup="buscarProdutoBaixa()">
+        
+        <div id="preview-baixa" class="preview-baixa">
+            <img id="prev-img" src="" alt="">
+            <div style="flex-grow:1">
+                <h4 id="prev-nome" style="font-size: 0.75rem;"></h4>
+                <p style="font-size: 0.65rem; color:#888">Qtd: <span id="prev-qtd"></span></p>
+            </div>
+            <button onclick="confirmarBaixaLote()" style="background:var(--neon-pink); border:none; padding:8px; border-radius:4px; color:white; font-weight:bold; cursor:pointer">BAIXAR -1</button>
         </div>
+
+        <button class="btn-main" style="background:none; color:#888; margin-top:10px" onclick="fecharTodosModais()">Voltar</button>
     </div>
 
     <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar ID ou Nome..." onkeyup="listarProdutos()">
@@ -175,86 +151,49 @@
 
 <script>
     let produtos = JSON.parse(localStorage.getItem('neon_produtos')) || [];
-    let isScanning = false;
-    let stream = null;
 
     function abrirModalCadastro() { document.getElementById('modal-form').style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
     function abrirModalBaixa() { document.getElementById('modal-baixa').style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
     
     function fecharTodosModais() {
-        stopCamera();
         document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
         document.getElementById('overlay').style.display = 'none';
-        limparCampos();
+        document.getElementById('preview-baixa').style.display = 'none';
+        document.getElementById('baixa-id').value = '';
     }
 
-    // LÓGICA OCR (LER NÚMEROS)
-    async function toggleOCR() {
-        if (isScanning) {
-            stopCamera();
-            return;
-        }
-        
-        const video = document.getElementById('video');
-        const container = document.getElementById('camera-container');
-        container.style.display = 'block';
-        document.getElementById('scan-status').innerText = "Iniciando câmera...";
+    // LÓGICA DE FOTO E OCR (Resolve o erro de permissão)
+    async function processarFoto(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const loading = document.getElementById('loading-ocr');
+        loading.style.display = 'block';
+        document.getElementById('camera-label').innerText = "Processando imagem...";
 
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
+            // Tesseract lê a imagem enviada
+            const result = await Tesseract.recognize(file, 'eng', {
+                logger: m => console.log(m)
             });
-            video.srcObject = stream;
-            isScanning = true;
-            document.getElementById('scan-status').innerText = "Aponte para o número do ID";
-            
-            // Ciclo de captura
-            scanFrame();
-        } catch (err) {
-            alert("Erro ao acessar câmera. Use HTTPS.");
-            container.style.display = 'none';
-        }
-    }
 
-    function stopCamera() {
-        isScanning = false;
-        if (stream) stream.getTracks().forEach(t => t.stop());
-        document.getElementById('camera-container').style.display = 'none';
-        document.getElementById('scan-status').innerText = "Câmera desligada";
-    }
+            // Extrai apenas números do texto lido
+            const textoLido = result.data.text;
+            const apenasNumeros = textoLido.replace(/\D/g, "");
 
-    async function scanFrame() {
-        if (!isScanning) return;
-
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const context = canvas.getContext('2d');
-
-        // Configura canvas para o tamanho do vídeo
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        document.getElementById('scan-status').innerText = "Lendo...";
-
-        // Usa Tesseract para ler apenas NÚMEROS
-        Tesseract.recognize(canvas, 'eng', {
-            workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
-            corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract-core.wasm.js',
-            tessedit_char_whitelist: '0123456789' // SÓ LÊ NÚMEROS
-        }).then(({ data: { text } }) => {
-            let foundID = text.trim().replace(/\D/g, ""); // Pega apenas os dígitos
-            if (foundID) {
-                document.getElementById('baixa-id').value = foundID;
-                if (buscarProdutoBaixa()) {
-                    // Se achou o produto, ele dá o feedback visual e para
-                    document.getElementById('scan-status').innerText = "ID " + foundID + " encontrado!";
-                    // Se quiser que baixe AUTOMÁTICO, descomente a linha abaixo:
-                    // processarBaixaInstantanea(foundID);
-                }
+            if (apenasNumeros) {
+                document.getElementById('baixa-id').value = apenasNumeros;
+                buscarProdutoBaixa();
+                loading.innerText = "ID " + apenasNumeros + " detectado!";
+            } else {
+                alert("Não consegui ler um número claro. Tente tirar a foto mais de perto e com foco.");
             }
-            if (isScanning) setTimeout(scanFrame, 1500); // Tenta ler de novo em 1.5s
-        });
+        } catch (e) {
+            alert("Erro ao processar imagem.");
+        } finally {
+            loading.style.display = 'none';
+            document.getElementById('camera-label').innerText = "📷 TIRAR OUTRA FOTO";
+        }
     }
 
     function buscarProdutoBaixa() {
@@ -279,42 +218,30 @@
         if (index !== -1 && produtos[index].qtd > 0) {
             produtos[index].qtd -= 1;
             persistir();
-            alert("Baixa realizada!");
+            alert("Baixa do produto " + produtos[index].nome + " realizada!");
             fecharTodosModais();
         } else {
-            alert("Erro na baixa.");
+            alert("ID não encontrado ou sem estoque.");
         }
     }
 
-    // FUNÇÕES ORIGINAIS MANTIDAS
+    // FUNÇÕES DE PERSISTÊNCIA
     function salvarProduto() {
-        const index = document.getElementById('p-index').value;
         const id = document.getElementById('p-id').value;
         const nome = document.getElementById('p-nome').value;
         const valor = document.getElementById('p-valor').value;
         const qtd = document.getElementById('p-qtd').value;
-        const img = document.getElementById('p-img').value || 'https://via.placeholder.com/150x80/111/00f2ff?text=IMG';
-        if (!id || !nome || !valor || !qtd) return alert("Preencha tudo!");
-        const obj = { id, nome, valor, qtd: parseInt(qtd), img };
-        index === "" ? produtos.push(obj) : produtos[index] = obj;
+        const img = document.getElementById('p-img').value || 'https://via.placeholder.com/80/111/00f2ff?text=ITEM';
+        
+        if (!id || !nome) return alert("ID e Nome são obrigatórios!");
+
+        produtos.push({ id, nome, valor, qtd: parseInt(qtd), img });
         persistir();
         fecharTodosModais();
     }
 
-    function editarProduto(index) {
-        const p = produtos[index];
-        document.getElementById('p-index').value = index;
-        document.getElementById('p-id').value = p.id;
-        document.getElementById('p-nome').value = p.nome;
-        document.getElementById('p-valor').value = p.valor;
-        document.getElementById('p-qtd').value = p.qtd;
-        document.getElementById('p-img').value = p.img;
-        abrirModalCadastro();
-    }
-
     function deletarProduto(index) { if(confirm("Excluir?")) { produtos.splice(index, 1); persistir(); } }
     function persistir() { localStorage.setItem('neon_produtos', JSON.stringify(produtos)); listarProdutos(); }
-    function limparCampos() { document.querySelectorAll('input:not([type="hidden"])').forEach(i => i.value = ''); }
 
     function listarProdutos() {
         const display = document.getElementById('product-display');
@@ -328,12 +255,9 @@
                         <div class="product-info">
                             <span style="color:var(--neon-blue); font-size:0.6rem">#${p.id}</span>
                             <h3 style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${p.nome}</h3>
-                            <span class="price">R$ ${parseFloat(p.valor).toFixed(2)}</span>
+                            <span class="price">R$ ${p.valor}</span>
                             <p style="color:#888; font-size:0.7rem">Qtd: ${p.qtd}</p>
-                            <div class="actions">
-                                <button class="btn-action btn-edit" onclick="editarProduto(${index})">✎</button>
-                                <button class="btn-action btn-delete" onclick="deletarProduto(${index})">✕</button>
-                            </div>
+                            <button onclick="deletarProduto(${index})" style="background:none; border:none; color:var(--neon-pink); cursor:pointer; font-size:0.7rem; margin-top:5px">Excluir ✕</button>
                         </div>
                     </div>
                 `;
