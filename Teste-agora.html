@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de IDs - Foco em Botões</title>
+    <title>Scanner ID Pro - Controle por Ícone</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
             --primary: #007bff;
@@ -25,16 +26,14 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-bottom: 50px;
         }
 
         .header {
-            padding: 20px;
+            padding: 15px;
             text-align: center;
             width: 100%;
             background: var(--card);
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
         }
 
         .container {
@@ -43,24 +42,60 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            padding: 20px 0;
         }
 
-        /* Estilização do Scanner */
-        #reader {
+        /* Área da Câmera / Preview */
+        .scanner-wrapper {
             width: 100%;
-            border-radius: 15px;
+            aspect-ratio: 1 / 1;
+            background: #000;
+            border-radius: 20px;
             overflow: hidden;
             border: 2px solid #333;
-            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
         }
 
-        /* Card de Resultado */
+        #reader { width: 100%; height: 100%; }
+
+        /* Ícone de Câmera Desativada */
+        #placeholder-icon {
+            font-size: 80px;
+            color: #444;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Botão Flutuante/Principal de Câmera */
+        .cam-trigger {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+            margin: -35px auto 0;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .cam-trigger.active { background: var(--danger); transform: rotate(135deg); }
+
         .result-card {
             background: var(--card);
-            padding: 20px;
+            padding: 15px;
             border-radius: 15px;
             text-align: center;
-            border: 2px solid var(--primary);
+            margin-top: 10px;
         }
 
         #resultado {
@@ -68,40 +103,29 @@
             background: transparent;
             border: none;
             color: var(--primary);
-            font-size: 35px;
+            font-size: 38px;
             font-weight: bold;
             text-align: center;
             outline: none;
         }
 
-        /* Botões Estilizados */
-        .btn-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-        }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
 
         .btn {
-            padding: 20px;
+            padding: 15px;
             border: none;
             border-radius: 12px;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.2s;
-            text-transform: uppercase;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-secondary { background: #444; color: white; font-size: 14px; padding: 12px; }
-        
-        .btn:active { transform: scale(0.95); }
+        .btn-gen { background: #333; color: white; }
+        .btn-print { background: var(--success); color: white; }
 
         /* Modal */
         .modal {
@@ -112,43 +136,18 @@
             background: var(--bg);
             z-index: 1000;
             flex-direction: column;
-            align-items: center;
             padding: 20px;
             box-sizing: border-box;
         }
 
-        .modal-content {
-            width: 100%;
-            max-width: 400px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        #barcode-svg {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            width: 100%;
-        }
-
-        input.modal-input {
-            padding: 20px;
-            border-radius: 12px;
-            border: 2px solid #444;
+        #barcode-svg { background: white; padding: 20px; border-radius: 10px; width: 80%; max-width: 300px; }
+        
+        select {
+            padding: 10px;
             background: #222;
             color: white;
-            font-size: 22px;
-            text-align: center;
-        }
-
-        select {
-            padding: 12px;
+            border: 1px solid #444;
             border-radius: 8px;
-            background: #333;
-            color: white;
-            border: 1px solid var(--primary);
-            width: 100%;
             margin-bottom: 10px;
         }
     </style>
@@ -156,105 +155,120 @@
 <body>
 
     <div class="header">
-        <h2 style="margin:0;">GESTOR DE IDS</h2>
+        <h3 style="margin:0; letter-spacing: 2px;">ID SCANNER PRO</h3>
     </div>
 
     <div class="container">
-        <div id="camera-selection">
-            <label style="font-size: 12px; color: #888;">ESCOLHER CÂMARA:</label>
-            <select id="camera-select"></select>
+        
+        <select id="camera-select"></select>
+
+        <div class="scanner-wrapper">
+            <div id="reader"></div>
+            <div id="placeholder-icon">
+                <span class="material-icons" style="font-size: 100px;">photo_camera</span>
+                <p style="font-size: 14px;">CÂMERA DESLIGADA</p>
+            </div>
         </div>
 
-        <div id="reader"></div>
+        <button id="cam-btn" class="cam-trigger" onclick="toggleCamera()">
+            <span class="material-icons" id="icon-state">add</span>
+        </button>
 
         <div class="result-card">
-            <input type="text" id="resultado" readonly placeholder="AGUARDANDO...">
+            <input type="text" id="resultado" readonly placeholder="000">
+            <p style="font-size: 11px; color: #666; margin:0;">ID DETECTADO</p>
         </div>
 
         <div class="btn-group">
-            <button class="btn btn-primary" onclick="abrirModal()">➕ GERAR CÓDIGO DE BARRAS</button>
-            <button class="btn btn-secondary" onclick="reiniciarScanner()">🔄 REINICIAR CÂMARA</button>
+            <button class="btn btn-gen" onclick="abrirModal()">
+                <span class="material-icons">qr_code_2</span> GERAR ID
+            </button>
+            <button class="btn btn-gen" onclick="limpar()">
+                <span class="material-icons">delete_outline</span> LIMPAR
+            </button>
         </div>
     </div>
 
     <div id="modalGerador" class="modal">
-        <div class="modal-content">
-            <h2 style="text-align: center;">CRIAR ID (1-800)</h2>
-            
-            <input type="number" id="inputGerar" class="modal-input" placeholder="DIGITE O NÚMERO">
-            
-            <button class="btn btn-success" onclick="gerarCodigo()">✅ GERAR AGORA</button>
-            
-            <div style="text-align: center; margin-top: 20px;">
-                <svg id="barcode-svg"></svg>
-            </div>
-            
-            <button class="btn btn-primary" onclick="window.print()">🖨️ IMPRIMIR</button>
-            <button class="btn" style="background: var(--danger);" onclick="fecharModal()">❌ FECHAR</button>
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <h2>GERAR ID</h2>
+            <span class="material-icons" onclick="fecharModal()" style="color:var(--danger); font-size: 35px;">cancel</span>
         </div>
+        
+        <input type="number" id="inputGerar" style="width:100%; padding:20px; font-size:25px; border-radius:10px; border:none; background:#222; color:white; text-align:center;" placeholder="Digite (1-800)">
+        
+        <button class="btn btn-print" style="margin-top:20px; width:100%; padding:20px;" onclick="gerarCodigo()">CRIAR AGORA</button>
+        
+        <center style="margin-top:30px;">
+            <svg id="barcode-svg"></svg>
+        </center>
+        
+        <button class="btn btn-gen" style="margin-top:20px; width:100%;" onclick="window.print()">IMPRIMIR</button>
     </div>
 
     <script>
         let html5QrCode;
+        let isCameraOpen = false;
         const cameraSelect = document.getElementById('camera-select');
+        const iconState = document.getElementById('icon-state');
+        const camBtn = document.getElementById('cam-btn');
+        const placeholder = document.getElementById('placeholder-icon');
 
-        // 1. Listar Câmaras Disponíveis
+        // Listar câmeras
         Html5Qrcode.getCameras().then(cameras => {
-            if (cameras && cameras.length) {
-                cameras.forEach(camera => {
-                    const option = document.createElement('option');
-                    option.value = camera.id;
-                    option.text = camera.label;
-                    cameraSelect.appendChild(option);
-                });
-                iniciarScanner(cameras[0].id);
-            }
-        }).catch(err => alert("Erro ao listar câmaras."));
-
-        // 2. Iniciar o Scanner
-        function iniciarScanner(cameraId) {
-            if(html5QrCode) {
-                html5QrCode.stop().then(() => start(cameraId));
-            } else {
-                start(cameraId);
-            }
-
-            function start(id) {
-                html5QrCode = new Html5Qrcode("reader");
-                html5QrCode.start(
-                    id, 
-                    { fps: 10, qrbox: { width: 250, height: 150 } },
-                    (decodedText) => {
-                        document.getElementById('resultado').value = decodedText;
-                        if(navigator.vibrate) navigator.vibrate(100);
-                    }
-                );
-            }
-        }
-
-        // Trocar câmara ao mudar o select
-        cameraSelect.addEventListener('change', () => {
-            iniciarScanner(cameraSelect.value);
+            cameras.forEach(camera => {
+                let opt = document.createElement('option');
+                opt.value = camera.id;
+                opt.text = camera.label;
+                cameraSelect.appendChild(opt);
+            });
         });
 
-        function reiniciarScanner() {
-            iniciarScanner(cameraSelect.value);
+        function toggleCamera() {
+            if (!isCameraOpen) {
+                abrirCamera();
+            } else {
+                fecharCamera();
+            }
         }
 
-        // --- Lógica do Modal ---
+        function abrirCamera() {
+            html5QrCode = new Html5Qrcode("reader");
+            placeholder.style.display = "none";
+            
+            html5QrCode.start(
+                cameraSelect.value, 
+                { fps: 10, qrbox: { width: 250, height: 150 } },
+                (text) => {
+                    document.getElementById('resultado').value = text;
+                    fecharCamera(); // Fecha após ler
+                }
+            ).then(() => {
+                isCameraOpen = true;
+                iconState.innerText = "close";
+                camBtn.classList.add('active');
+            });
+        }
+
+        function fecharCamera() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    isCameraOpen = false;
+                    iconState.innerText = "add";
+                    camBtn.classList.remove('active');
+                    placeholder.style.display = "flex";
+                });
+            }
+        }
+
+        function limpar() { document.getElementById('resultado').value = ""; }
         function abrirModal() { document.getElementById('modalGerador').style.display = 'flex'; }
         function fecharModal() { document.getElementById('modalGerador').style.display = 'none'; }
 
         function gerarCodigo() {
-            const valor = document.getElementById('inputGerar').value;
-            if (valor >= 1 && valor <= 800) {
-                JsBarcode("#barcode-svg", valor, {
-                    format: "CODE128",
-                    displayValue: true,
-                    fontSize: 20
-                });
-            } else {
-                alert("ID inválido! Use de 1 a 800.");
+            const v = document.getElementById('inputGerar').value;
+            if(v >= 1 && v <= 800) {
+                JsBarcode("#barcode-svg", v, { format: "CODE128", displayValue: true });
             }
         }
     </script>
