@@ -4,15 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scanner ID Pro - Controle por Ícone</title>
+    <title>Sistema de IDs Profissional</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         :root {
             --primary: #007bff;
             --success: #28a745;
-            --danger: #dc3545;
             --bg: #121212;
             --card: #1e1e1e;
             --text: #ffffff;
@@ -26,109 +24,49 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        .header {
-            padding: 15px;
-            text-align: center;
-            width: 100%;
-            background: var(--card);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-
-        .container {
+        /* Tela Inicial */
+        #menu-principal {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
             width: 90%;
-            max-width: 500px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding: 20px 0;
+            max-width: 400px;
+            text-align: center;
         }
 
-        /* Área da Câmera / Preview */
-        .scanner-wrapper {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            background: #000;
+        .logo-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+
+        /* Botões Estilizados */
+        .btn-main {
+            padding: 25px;
+            border: none;
             border-radius: 20px;
-            overflow: hidden;
-            border: 2px solid #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-
-        #reader { width: 100%; height: 100%; }
-
-        /* Ícone de Câmera Desativada */
-        #placeholder-icon {
-            font-size: 80px;
-            color: #444;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* Botão Flutuante/Principal de Câmera */
-        .cam-trigger {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
-            margin: -35px auto 0;
-            z-index: 10;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             transition: 0.3s;
-        }
-
-        .cam-trigger.active { background: var(--danger); transform: rotate(135deg); }
-
-        .result-card {
-            background: var(--card);
-            padding: 15px;
-            border-radius: 15px;
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        #resultado {
-            width: 100%;
-            background: transparent;
-            border: none;
-            color: var(--primary);
-            font-size: 38px;
-            font-weight: bold;
-            text-align: center;
-            outline: none;
-        }
-
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-
-        .btn {
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
+            text-transform: uppercase;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        .btn-gen { background: #333; color: white; }
-        .btn-print { background: var(--success); color: white; }
+        .btn-scan { background: var(--primary); color: white; }
+        .btn-gen { background: var(--success); color: white; }
+        .btn-main:active { transform: scale(0.95); }
 
-        /* Modal */
-        .modal {
+        /* Modais Tela Cheia */
+        .fullscreen-modal {
             display: none;
             position: fixed;
             top: 0; left: 0;
@@ -140,135 +78,180 @@
             box-sizing: border-box;
         }
 
-        #barcode-svg { background: white; padding: 20px; border-radius: 10px; width: 80%; max-width: 300px; }
-        
-        select {
-            padding: 10px;
+        .header-modal {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .btn-close {
+            background: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Área do Scanner */
+        #reader {
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            background: var(--card);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        #resultado-scan {
+            font-size: 40px;
+            color: var(--primary);
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        /* Gerador */
+        .generator-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .input-grande {
+            width: 100%;
+            padding: 20px;
+            font-size: 24px;
+            text-align: center;
+            border-radius: 15px;
+            border: 2px solid #444;
             background: #222;
             color: white;
-            border: 1px solid #444;
-            border-radius: 8px;
+        }
+
+        #barcode-svg {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            color: white;
+            border-radius: 10px;
             margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h3 style="margin:0; letter-spacing: 2px;">ID SCANNER PRO</h3>
+    <div id="menu-principal">
+        <div class="logo-icon">📦</div>
+        <h1 style="margin-bottom: 30px;">Gestão de Estoque</h1>
+        
+        <button class="btn-main btn-scan" onclick="abrirScanner()">
+            📷 Entrar no Sistema
+        </button>
+        
+        <button class="btn-main btn-gen" onclick="abrirGerador()">
+            🏷️ Gerar Código/QR
+        </button>
     </div>
 
-    <div class="container">
+    <div id="modalScanner" class="fullscreen-modal">
+        <div class="header-modal">
+            <h2>Scanner de ID</h2>
+            <button class="btn-close" onclick="fecharScanner()">FECHAR</button>
+        </div>
         
         <select id="camera-select"></select>
+        <div id="reader"></div>
 
-        <div class="scanner-wrapper">
-            <div id="reader"></div>
-            <div id="placeholder-icon">
-                <span class="material-icons" style="font-size: 100px;">photo_camera</span>
-                <p style="font-size: 14px;">CÂMERA DESLIGADA</p>
-            </div>
-        </div>
-
-        <button id="cam-btn" class="cam-trigger" onclick="toggleCamera()">
-            <span class="material-icons" id="icon-state">add</span>
-        </button>
-
-        <div class="result-card">
-            <input type="text" id="resultado" readonly placeholder="000">
-            <p style="font-size: 11px; color: #666; margin:0;">ID DETECTADO</p>
-        </div>
-
-        <div class="btn-group">
-            <button class="btn btn-gen" onclick="abrirModal()">
-                <span class="material-icons">qr_code_2</span> GERAR ID
-            </button>
-            <button class="btn btn-gen" onclick="limpar()">
-                <span class="material-icons">delete_outline</span> LIMPAR
-            </button>
+        <div class="result-box">
+            <span>ID IDENTIFICADO</span>
+            <div id="resultado-scan">---</div>
         </div>
     </div>
 
-    <div id="modalGerador" class="modal">
-        <div style="display:flex; justify-content: space-between; align-items: center;">
-            <h2>GERAR ID</h2>
-            <span class="material-icons" onclick="fecharModal()" style="color:var(--danger); font-size: 35px;">cancel</span>
+    <div id="modalGerador" class="fullscreen-modal">
+        <div class="header-modal">
+            <h2>Gerar Código</h2>
+            <button class="btn-close" onclick="fecharGerador()">VOLTAR</button>
         </div>
         
-        <input type="number" id="inputGerar" style="width:100%; padding:20px; font-size:25px; border-radius:10px; border:none; background:#222; color:white; text-align:center;" placeholder="Digite (1-800)">
-        
-        <button class="btn btn-print" style="margin-top:20px; width:100%; padding:20px;" onclick="gerarCodigo()">CRIAR AGORA</button>
-        
-        <center style="margin-top:30px;">
+        <div class="generator-content">
+            <input type="number" id="inputID" class="input-grande" placeholder="Digite ID (1-800)">
+            <button class="btn-main btn-gen" style="width: 100%;" onclick="criarCodigo()">GERAR AGORA</button>
+            
             <svg id="barcode-svg"></svg>
-        </center>
-        
-        <button class="btn btn-gen" style="margin-top:20px; width:100%;" onclick="window.print()">IMPRIMIR</button>
+            
+            <button class="btn-main btn-scan" style="width: 100%; background: #555;" onclick="window.print()">
+                🖨️ Imprimir Código
+            </button>
+        </div>
     </div>
 
     <script>
         let html5QrCode;
-        let isCameraOpen = false;
-        const cameraSelect = document.getElementById('camera-select');
-        const iconState = document.getElementById('icon-state');
-        const camBtn = document.getElementById('cam-btn');
-        const placeholder = document.getElementById('placeholder-icon');
 
-        // Listar câmeras
-        Html5Qrcode.getCameras().then(cameras => {
-            cameras.forEach(camera => {
-                let opt = document.createElement('option');
-                opt.value = camera.id;
-                opt.text = camera.label;
-                cameraSelect.appendChild(opt);
-            });
-        });
-
-        function toggleCamera() {
-            if (!isCameraOpen) {
-                abrirCamera();
-            } else {
-                fecharCamera();
-            }
-        }
-
-        function abrirCamera() {
-            html5QrCode = new Html5Qrcode("reader");
-            placeholder.style.display = "none";
-            
-            html5QrCode.start(
-                cameraSelect.value, 
-                { fps: 10, qrbox: { width: 250, height: 150 } },
-                (text) => {
-                    document.getElementById('resultado').value = text;
-                    fecharCamera(); // Fecha após ler
-                }
-            ).then(() => {
-                isCameraOpen = true;
-                iconState.innerText = "close";
-                camBtn.classList.add('active');
-            });
-        }
-
-        function fecharCamera() {
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => {
-                    isCameraOpen = false;
-                    iconState.innerText = "add";
-                    camBtn.classList.remove('active');
-                    placeholder.style.display = "flex";
+        // FUNÇÕES DO SCANNER
+        async function abrirScanner() {
+            document.getElementById('modalScanner').style.display = 'flex';
+            const cameras = await Html5Qrcode.getCameras();
+            if (cameras && cameras.length) {
+                const select = document.getElementById('camera-select');
+                select.innerHTML = "";
+                cameras.forEach(c => {
+                    let opt = document.createElement('option');
+                    opt.value = c.id; opt.text = c.label;
+                    select.appendChild(opt);
                 });
+                startScanner(cameras[0].id);
             }
         }
 
-        function limpar() { document.getElementById('resultado').value = ""; }
-        function abrirModal() { document.getElementById('modalGerador').style.display = 'flex'; }
-        function fecharModal() { document.getElementById('modalGerador').style.display = 'none'; }
+        function startScanner(id) {
+            if(html5QrCode) html5QrCode.stop();
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(id, { fps: 10, qrbox: 250 }, (text) => {
+                document.getElementById('resultado-scan').innerText = text;
+                if(navigator.vibrate) navigator.vibrate(100);
+            });
+        }
 
-        function gerarCodigo() {
-            const v = document.getElementById('inputGerar').value;
-            if(v >= 1 && v <= 800) {
-                JsBarcode("#barcode-svg", v, { format: "CODE128", displayValue: true });
+        document.getElementById('camera-select').onchange = (e) => startScanner(e.target.value);
+
+        function fecharScanner() {
+            if(html5QrCode) html5QrCode.stop();
+            document.getElementById('modalScanner').style.display = 'none';
+        }
+
+        // FUNÇÕES DO GERADOR
+        function abrirGerador() {
+            document.getElementById('modalGerador').style.display = 'flex';
+        }
+
+        function fecharGerador() {
+            document.getElementById('modalGerador').style.display = 'none';
+        }
+
+        function criarCodigo() {
+            const val = document.getElementById('inputID').value;
+            if(val >= 1 && val <= 800) {
+                JsBarcode("#barcode-svg", val, { format: "CODE128", displayValue: true });
+            } else {
+                alert("Use IDs de 1 a 800");
             }
         }
     </script>
