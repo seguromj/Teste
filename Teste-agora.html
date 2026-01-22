@@ -4,11 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Código de Barras - OrcaScan Style</title>
+    <title>Gerador de Código de Barras - PDF Export</title>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
         :root {
@@ -45,13 +44,7 @@
             padding-bottom: 20px;
         }
 
-        .logo {
-            font-weight: bold;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-        }
-
+        .logo { font-weight: bold; font-size: 20px; display: flex; align-items: center; }
         .logo span { color: var(--primary-yellow); margin-right: 5px; }
 
         .card {
@@ -65,8 +58,13 @@
         h2 { font-size: 18px; margin-top: 0; color: var(--primary-yellow); }
 
         .form-group { margin-bottom: 15px; }
-
         label { display: block; font-size: 14px; margin-bottom: 5px; color: var(--text-dim); }
+
+        /* Ajuste para o campo de input com botão lateral */
+        .input-with-button {
+            display: flex;
+            gap: 5px;
+        }
 
         input, select {
             width: 100%;
@@ -78,11 +76,29 @@
             box-sizing: border-box;
         }
 
+        .btn-random {
+            width: 45px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-top: 0; /* Remove margem do botão padrão */
+        }
+
+        .btn-random:hover {
+            background-color: var(--border-color);
+        }
+
         .preview-area {
             background-color: #2a2d31;
             border: 2px dashed var(--border-color);
             border-radius: 8px;
-            min-height: 200px;
+            min-height: 180px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -122,38 +138,36 @@
         }
 
         .barcode-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            display: flex;
+            flex-direction: column;
             gap: 10px;
         }
 
         .saved-item {
             background: #fff;
-            padding: 8px;
+            padding: 10px;
             border-radius: 4px;
-            text-align: center;
             display: flex;
-            align-items: center;
             justify-content: center;
-            min-height: 80px;
+            align-items: center;
         }
 
-        .saved-item img { max-width: 100%; height: auto; display: block; }
+        .saved-item img { max-height: 80px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <div class="logo"><span>●</span> OrcaScan Clone</div>
+        <div class="logo"><span>●</span> OrcaScan PDF</div>
         <div style="font-size: 24px;">≡</div>
     </header>
 
     <div class="card">
-        <h2>2. Insira os dados do código de barras</h2>
+        <h2>2. Insira os dados do código</h2>
         
         <div class="form-group">
-            <label>Tipo de Código</label>
+            <label>Tipo</label>
             <select id="barcodeType" onchange="generateBarcode()">
                 <option value="CODE128">CODE128</option>
                 <option value="EAN13">EAN13</option>
@@ -162,28 +176,31 @@
         </div>
 
         <div class="form-group">
-            <label>Conteúdo do código de barras</label>
-            <input type="text" id="barcodeValue" placeholder="valor capturado" oninput="generateBarcode()">
+            <label>Conteúdo</label>
+            <div class="input-with-button">
+                <input type="text" id="barcodeValue" placeholder="valor aqui" oninput="generateBarcode()">
+                <button class="btn-random" onclick="generateRandomValue()" title="Gerar valor aleatório">⇄</button>
+            </div>
         </div>
 
         <div class="form-group">
-            <label>Legenda do código de barras</label>
+            <label>Legenda</label>
             <input type="text" id="barcodeLabel" placeholder="texto abaixo" oninput="generateBarcode()">
         </div>
 
         <div class="preview-area">
-            <p id="preview-placeholder" style="color: var(--text-dim)">Pré-visualização do código de barras</p>
+            <p id="preview-placeholder" style="color: var(--text-dim)">Pré-visualização</p>
             <svg id="barcode-svg"></svg>
             <div id="qrcode-canvas"></div>
         </div>
 
-        <button class="btn-primary" onclick="saveToFolder()">SALVAR NA PASTA</button>
+        <button class="btn-primary" onclick="saveToFolder()">SALVAR NA LISTA</button>
     </div>
 
     <div class="folder-container">
         <div class="folder-header">
-            <h3 style="margin:0">Pasta de Arquivos</h3>
-            <button class="btn-secondary" style="width: auto; margin:0; padding: 5px 15px;" onclick="downloadAll()">Baixar Todos (ZIP)</button>
+            <h3 style="margin:0">Lista para PDF</h3>
+            <button class="btn-secondary" style="width: auto; margin:0; padding: 5px 15px;" onclick="downloadPDF()">Gerar PDF</button>
         </div>
         <div class="barcode-list" id="barcodeList"></div>
     </div>
@@ -192,57 +209,52 @@
 <canvas id="hidden-canvas" style="display:none;"></canvas>
 
 <script>
+    const { jsPDF } = window.jspdf;
     let savedBarcodes = [];
+
+    // Função nova para gerar 11 dígitos aleatórios
+    function generateRandomValue() {
+        let randomNum = "";
+        for (let i = 0; i < 11; i++) {
+            randomNum += Math.floor(Math.random() * 10);
+        }
+        document.getElementById('barcodeValue').value = randomNum;
+        generateBarcode();
+    }
 
     function generateBarcode() {
         const value = document.getElementById('barcodeValue').value;
         const label = document.getElementById('barcodeLabel').value;
         const type = document.getElementById('barcodeType').value;
-        
         const svg = document.getElementById('barcode-svg');
         const qrDiv = document.getElementById('qrcode-canvas');
         const placeholder = document.getElementById('preview-placeholder');
 
         if (!value) {
-            svg.style.display = 'none';
-            qrDiv.style.display = 'none';
-            placeholder.style.display = 'block';
-            return;
+            svg.style.display = 'none'; qrDiv.style.display = 'none';
+            placeholder.style.display = 'block'; return;
         }
 
         placeholder.style.display = 'none';
 
         if (type === 'QR') {
-            svg.style.display = 'none';
-            qrDiv.style.display = 'block';
+            svg.style.display = 'none'; qrDiv.style.display = 'block';
             qrDiv.innerHTML = "";
-            new QRCode(qrDiv, {
-                text: value,
-                width: 128,
-                height: 128
-            });
+            new QRCode(qrDiv, { text: value, width: 128, height: 128 });
         } else {
-            qrDiv.style.display = 'none';
-            svg.style.display = 'block';
+            qrDiv.style.display = 'none'; svg.style.display = 'block';
             try {
                 JsBarcode("#barcode-svg", value, {
-                    format: type,
-                    text: label || value,
-                    displayValue: true,
-                    fontSize: 20,
-                    background: "#ffffff",
-                    width: 2,
-                    height: 60
+                    format: type, text: label || value, displayValue: true,
+                    fontSize: 20, background: "#ffffff", width: 2, height: 60
                 });
-            } catch (e) {
-                console.error("Erro ao gerar barcode:", e);
-            }
+            } catch (e) { console.error(e); }
         }
     }
 
     async function saveToFolder() {
         const value = document.getElementById('barcodeValue').value;
-        if (!value) return alert("Insira um valor primeiro!");
+        if (!value) return;
 
         const type = document.getElementById('barcodeType').value;
         let dataUrl = "";
@@ -250,7 +262,6 @@
         if (type === 'QR') {
             dataUrl = document.querySelector('#qrcode-canvas canvas').toDataURL("image/png");
         } else {
-            // Correção: Converte o SVG para DataURL de imagem para aparecer na lista
             const svg = document.getElementById('barcode-svg');
             const canvas = document.getElementById('hidden-canvas');
             const ctx = canvas.getContext('2d');
@@ -260,10 +271,8 @@
             
             await new Promise((resolve) => {
                 img.onload = () => {
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.fillStyle = "white";
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    canvas.width = img.width; canvas.height = img.height;
+                    ctx.fillStyle = "white"; ctx.fillRect(0, 0, canvas.width, canvas.height);
                     ctx.drawImage(img, 0, 0);
                     dataUrl = canvas.toDataURL("image/png");
                     resolve();
@@ -272,8 +281,7 @@
             });
         }
 
-        const id = Date.now();
-        savedBarcodes.push({ id, dataUrl });
+        savedBarcodes.push({ dataUrl });
         renderFolder();
     }
 
@@ -283,22 +291,28 @@
         savedBarcodes.forEach(item => {
             const div = document.createElement('div');
             div.className = 'saved-item';
-            div.innerHTML = `<img src="${item.dataUrl}" alt="barcode">`;
+            div.innerHTML = `<img src="${item.dataUrl}">`;
             list.appendChild(div);
         });
     }
 
-    async function downloadAll() {
-        if (savedBarcodes.length === 0) return alert("A pasta está vazia!");
+    function downloadPDF() {
+        if (savedBarcodes.length === 0) return alert("Adicione códigos primeiro!");
         
-        const zip = new JSZip();
+        const doc = new jsPDF();
+        let yPosition = 10;
+
         savedBarcodes.forEach((item, index) => {
-            const base64Data = item.dataUrl.split(',')[1];
-            zip.file(`codigo_${index + 1}.png`, base64Data, {base64: true});
+            if (yPosition > 250) {
+                doc.addPage();
+                yPosition = 10;
+            }
+            
+            doc.addImage(item.dataUrl, 'PNG', 10, yPosition, 60, 30);
+            yPosition += 40;
         });
 
-        const content = await zip.generateAsync({type:"blob"});
-        saveAs(content, "meus_codigos.zip");
+        doc.save("codigos_organizados.pdf");
     }
 </script>
 
