@@ -4,97 +4,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leitor de ID de Produto</title>
+    <title>Scanner de ID (1-800)</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
-        .camera-box { position: relative; width: 100%; max-width: 400px; border: 3px solid #333; border-radius: 15px; overflow: hidden; background: #000; }
+        body { font-family: sans-serif; background: #121212; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        .camera-area { position: relative; width: 100%; max-width: 400px; border-radius: 20px; overflow: hidden; border: 4px solid #444; }
         video { width: 100%; display: block; }
-        .scanner-line { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; height: 60px; border: 2px dashed #00ff00; border-radius: 8px; box-shadow: 0 0 15px rgba(0,255,0,0.5); }
-        .controls { width: 100%; max-width: 400px; margin-top: 20px; }
-        input { width: 100%; padding: 15px; font-size: 22px; text-align: center; border-radius: 8px; border: none; margin-bottom: 10px; background: #333; color: #00ff00; font-weight: bold; box-sizing: border-box; }
-        button { width: 100%; padding: 18px; background: #007bff; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:active { background: #0056b3; transform: scale(0.98); }
-        #status { margin-top: 10px; font-size: 14px; color: #888; }
+        /* Mira central para o ID */
+        .mira { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; height: 50px; border: 3px solid #00ff00; border-radius: 10px; box-shadow: 0 0 20px rgba(0,255,0,0.4); pointer-events: none; }
+        .mira::after { content: "POSICIONE O NÚMERO AQUI"; position: absolute; top: -25px; left: 0; font-size: 10px; color: #00ff00; width: 100%; text-align: center; }
+        
+        #resultado { width: 100%; max-width: 400px; margin-top: 25px; padding: 20px; font-size: 40px; text-align: center; background: #222; color: #00ff00; border: 2px solid #00ff00; border-radius: 10px; font-weight: bold; box-sizing: border-box; }
+        button { width: 100%; max-width: 400px; padding: 20px; margin-top: 15px; background: #007bff; color: white; border: none; border-radius: 10px; font-size: 20px; font-weight: bold; cursor: pointer; }
+        #status { margin-top: 10px; color: #aaa; font-size: 14px; }
         canvas { display: none; }
     </style>
 </head>
 <body>
 
-    <h2>Cadastrar ID de Produto</h2>
+    <h2>Leitor de ID de Produto</h2>
 
-    <div class="camera-box">
+    <div class="camera-area">
         <video id="video" autoplay playsinline></video>
-        <div class="scanner-line"></div>
+        <div class="mira"></div>
     </div>
 
-    <div class="controls">
-        <label>ID Identificado:</label>
-        <input type="text" id="id_produto" placeholder="Aguardando leitura...">
-        <button id="btn-scan">CAPTURAR E LER ID</button>
-        <p id="status">Enquadre o código no retângulo tracejado</p>
-    </div>
+    <input type="text" id="resultado" readonly placeholder="---">
+    
+    <button id="btn-ler">ESCANEAR NÚMERO</button>
+    <p id="status">Aponte para o número do ID</p>
 
     <canvas id="canvas"></canvas>
 
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        const id_produto = document.getElementById('id_produto');
-        const btnScan = document.getElementById('btn-scan');
+        const resultado = document.getElementById('resultado');
+        const btn = document.getElementById('btn-ler');
         const status = document.getElementById('status');
 
-        // Configura a câmera focando em alta qualidade
+        // Inicia câmera
         navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } 
-        })
-        .then(stream => { video.srcObject = stream; })
-        .catch(err => { status.innerText = "Erro: Sem acesso à câmera."; });
+            video: { facingMode: "environment", width: { ideal: 1280 } } 
+        }).then(stream => video.srcObject = stream);
 
-        btnScan.addEventListener('click', async () => {
-            status.innerText = "Lendo código... Mantenha a mão firme!";
-            id_produto.value = "PROCESSANDO...";
+        btn.onclick = async () => {
+            status.innerText = "Lendo ID...";
+            resultado.value = "...";
             
             const ctx = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
 
-            // Tira a foto
+            // Foca a captura apenas na área da "mira" para maior precisão
+            const scanW = canvas.width * 0.6;
+            const scanH = 100; 
+            const scanX = (canvas.width - scanW) / 2;
+            const scanY = (canvas.height - scanH) / 2;
+
             ctx.drawImage(video, 0, 0);
-
-            // MELHORIA: Corta apenas a área central (o retângulo verde) para o OCR não se perder
-            const cropW = canvas.width * 0.8;
-            const cropH = canvas.height * 0.2;
-            const cropX = (canvas.width - cropW) / 2;
-            const cropY = (canvas.height - cropH) / 2;
-
-            const croppedCanvas = document.createElement('canvas');
-            croppedCanvas.width = cropW;
-            croppedCanvas.height = cropH;
-            croppedCanvas.getContext('2d').drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+            
+            // Processamento de imagem (Grayscale + Contraste)
+            let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let d = imgData.data;
+            for (let i = 0; i < d.length; i += 4) {
+                let v = (d[i] + d[i+1] + d[i+2]) / 3;
+                d[i] = d[i+1] = d[i+2] = v < 128 ? 0 : 255;
+            }
+            ctx.putImageData(imgData, 0, 0);
 
             try {
-                // Inicia o motor de leitura
-                const worker = await Tesseract.createWorker('eng'); // 'eng' é melhor para códigos e IDs
-                
-                // Configura para ler apenas letras e números (evita erros com símbolos)
-                await worker.setParameters({
-                    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',
+                // Configurado apenas para dígitos (0-9)
+                const { data: { text } } = await Tesseract.recognize(canvas.toDataURL(), 'eng', {
+                    tessedit_char_whitelist: '0123456789'
                 });
 
-                const { data: { text } } = await worker.recognize(croppedCanvas.toDataURL());
-                
-                // Limpa o texto e joga no campo
-                const finalID = text.trim().toUpperCase();
-                id_produto.value = finalID;
-                status.innerText = finalID ? "ID capturado com sucesso!" : "Não foi possível ler. Tente novamente.";
-                
-                await worker.terminate();
-            } catch (error) {
-                status.innerText = "Erro no processamento.";
-                id_produto.value = "";
+                // Limpa o texto para pegar apenas os números
+                let numeroEncontrado = text.replace(/\D/g, "");
+                let idNumerico = parseInt(numeroEncontrado);
+
+                // Validação do intervalo 1-800
+                if (idNumerico >= 1 && idNumerico <= 800) {
+                    resultado.value = idNumerico;
+                    status.innerText = "ID Identificado!";
+                } else {
+                    resultado.value = numeroEncontrado || "Erro";
+                    status.innerText = "Número fora do intervalo (1-800) ou ilegível.";
+                }
+
+            } catch (e) {
+                status.innerText = "Erro ao processar.";
             }
-        });
+        };
     </script>
 </body>
 </html>
