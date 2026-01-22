@@ -4,25 +4,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scanner OCR Otimizado</title>
+    <title>Scanner OCR Profissional</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background-color: #f4f4f9; }
-        .container { width: 100%; max-width: 400px; text-align: center; }
-        video { width: 100%; border-radius: 15px; background: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        #resultado { width: 100%; margin-top: 20px; padding: 12px; font-size: 16px; border: 2px solid #007bff; border-radius: 8px; box-sizing: border-box; }
-        button { margin-top: 15px; padding: 15px 30px; font-weight: bold; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 30px; width: 100%; }
-        #status { margin-top: 10px; font-weight: bold; color: #007bff; }
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background-color: #121212; color: white; }
+        .container { width: 100%; max-width: 500px; position: relative; }
+        
+        /* Moldura de escaneamento */
+        .camera-container { position: relative; overflow: hidden; border-radius: 15px; border: 2px solid #333; }
+        video { width: 100%; display: block; }
+        .overlay {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%; height: 100px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 0 500px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            border-radius: 5px;
+        }
+
+        #resultado { 
+            width: 100%; margin-top: 20px; padding: 15px; 
+            font-size: 18px; border: none; border-radius: 8px; 
+            background: #333; color: #00ff00; text-align: center;
+            box-sizing: border-box;
+        }
+
+        button { 
+            margin-top: 20px; padding: 18px; font-weight: bold; 
+            cursor: pointer; background: #007bff; color: white; 
+            border: none; border-radius: 10px; width: 100%; font-size: 16px;
+        }
+
+        #status { margin-top: 10px; font-size: 14px; color: #aaa; }
         canvas { display: none; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Scanner de Precisão</h2>
-        <video id="video" autoplay playsinline></video>
-        <button id="btn-scan">ESCANEAR AGORA</button>
-        <p id="status">Aproxime bem o texto da câmera</p>
+        <h2>Scanner de Texto</h2>
+        
+        <div class="camera-container">
+            <video id="video" autoplay playsinline></video>
+            <div class="overlay"></div>
+        </div>
+
+        <button id="btn-scan">LER AGORA</button>
+        <p id="status">Centralize o texto no retângulo verde</p>
+        
         <input type="text" id="resultado" placeholder="O resultado aparecerá aqui...">
     </div>
 
@@ -35,51 +65,62 @@
         const resultado = document.getElementById('resultado');
         const status = document.getElementById('status');
 
+        // Configuração da câmera com alta resolução
         navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "environment", focusMode: "continuous" } 
+            video: { 
+                facingMode: "environment",
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            } 
         })
         .then(stream => { video.srcObject = stream; })
-        .catch(err => { status.innerText = "Erro na câmera."; });
+        .catch(err => { status.innerText = "Erro ao abrir câmera."; });
 
         btnScan.addEventListener('click', async () => {
-            status.innerText = "Processando... aguarde.";
+            status.innerText = "Processando... Mantenha parado!";
             resultado.value = "";
 
             const context = canvas.getContext('2d');
+            
+            // Ajustar canvas para o tamanho real do vídeo
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
 
-            // 1. Captura a imagem
+            // 1. Capturar imagem
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // 2. Aplica Filtros de Imagem para melhorar o OCR
+            // 2. Aplicar filtro de nitidez e alto contraste
             let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
             let data = imageData.data;
-            
             for (let i = 0; i < data.length; i += 4) {
-                // Converte para tons de cinza
-                let avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                // Aumenta o contraste (limiar simples)
-                let val = avg > 128 ? 255 : 0; 
-                data[i] = data[i + 1] = data[i + 2] = val;
+                let brightness = (0.34 * data[i] + 0.5 * data[i + 1] + 0.16 * data[i + 2]);
+                let contrast = 1.5; // Aumenta o contraste
+                let factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+                let color = factor * (brightness - 128) + 128;
+                data[i] = data[i + 1] = data[i + 2] = color > 130 ? 255 : 0;
             }
             context.putImageData(imageData, 0, 0);
 
             const image = canvas.toDataURL('image/png');
 
             try {
-                // Usando 'eng' e 'por' juntos para detectar números e letras melhor
-                const worker = await Tesseract.createWorker(['eng', 'por']);
+                // Criar o worker para processar
+                const worker = await Tesseract.createWorker('por');
+                
+                // Configurar para aceitar apenas caracteres comuns (evita símbolos estranhos)
+                await worker.setParameters({
+                    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ',
+                });
+
                 const { data: { text } } = await worker.recognize(image);
                 
-                // Limpeza de caracteres especiais comuns em erros
-                const cleanText = text.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+                // Exibir resultado limpo
+                resultado.value = text.replace(/[\n\r]/g, ' ').trim();
+                status.innerText = "Concluído!";
                 
-                resultado.value = cleanText;
-                status.innerText = "Leitura concluída!";
                 await worker.terminate();
             } catch (error) {
-                status.innerText = "Erro ao ler. Tente novamente.";
+                status.innerText = "Erro na leitura.";
             }
         });
     </script>
