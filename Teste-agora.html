@@ -4,176 +4,344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Stock - Scanner Automático</title>
+    <title>Sistema Neon Stock - OCR Multi-Baixa</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
             --neon-blue: #00f2ff;
             --neon-pink: #ff00e5;
+            --neon-purple: #9d00ff;
             --bg-dark: #0a0a0c;
             --card-bg: #16161a;
             --text: #e0e0e0;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text); padding: 15px; }
+
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text); 
+            padding: 15px; 
+            min-height: 100vh;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; }
 
         header h1 { 
-            text-align: center; color: var(--neon-blue); 
-            text-shadow: 0 0 10px var(--neon-blue); margin-bottom: 20px; font-size: 1.2rem;
+            text-align: center; 
+            color: var(--neon-blue); 
+            text-shadow: 0 0 10px var(--neon-blue);
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            text-transform: uppercase;
         }
 
-        /* Área do Scanner */
-        #scanner-container {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto 20px;
-            border: 2px solid var(--neon-blue);
-            border-radius: 12px;
-            overflow: hidden;
-            display: none;
-        }
-
-        video { width: 100%; display: block; }
-
-        .scan-region {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 150px; height: 80px;
-            border: 2px solid var(--neon-pink);
-            box-shadow: 0 0 0 1000px rgba(0,0,0,0.5);
-            z-index: 10;
-        }
-
-        #status {
-            text-align: center;
-            color: var(--neon-pink);
-            font-weight: bold;
-            margin-bottom: 10px;
-            height: 20px;
+        .top-actions {
+            display: flex; gap: 10px; margin-bottom: 20px;
         }
 
         .btn-main {
-            width: 100%; padding: 15px; border: none; border-radius: 8px;
-            background: linear-gradient(45deg, #9d00ff, #ff00e5);
-            color: white; font-weight: bold; cursor: pointer; text-transform: uppercase;
+            flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer;
+            font-weight: bold; text-transform: uppercase; font-size: 0.75rem; color: white; transition: 0.3s;
         }
 
-        #product-info {
-            background: var(--card-bg);
-            padding: 15px; border-radius: 8px; border: 1px solid var(--neon-blue);
-            margin-top: 20px; display: none;
+        .btn-new { background: linear-gradient(45deg, var(--neon-purple), var(--neon-pink)); }
+        .btn-out { background: #333; border: 1px solid var(--neon-pink); }
+
+        .modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--neon-purple);
+            z-index: 1000; width: 95%; max-width: 450px; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
         }
 
-        canvas { display: none; }
+        .modal-baixa { border-color: var(--neon-pink); }
+
+        .overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(3px); z-index: 999;
+        }
+
+        .preview-baixa {
+            background: #000; border-radius: 8px; padding: 10px; margin: 10px 0;
+            display: flex; align-items: center; gap: 10px; border: 1px dashed var(--neon-pink); display: none;
+        }
+        .preview-baixa img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+        
+        #lista-baixa { margin: 15px 0; border-top: 1px solid #333; padding-top: 10px; }
+        .item-baixa {
+            display: flex; justify-content: space-between; align-items: center; background: #222;
+            padding: 8px; margin-bottom: 5px; border-radius: 4px; font-size: 0.8rem;
+        }
+        .item-baixa span { color: var(--neon-pink); font-weight: bold; }
+
+        .grid-inputs { display: grid; gap: 10px; }
+
+        input { background: #1c1c21; border: 1px solid #333; padding: 8px; border-radius: 4px; color: white; outline: none; }
+
+        .search-input { width: 100%; margin-bottom: 20px; border: 1px solid var(--neon-blue); background: #111; padding: 8px; border-radius: 6px; }
+
+        .product-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+
+        .product-card {
+            background: var(--card-bg); border-radius: 8px; overflow: hidden; border: 1px solid #222;
+            display: flex; flex-direction: column; font-size: 0.8rem;
+        }
+
+        .product-img { width: 100%; height: 80px; object-fit: cover; }
+        .product-info { padding: 8px; }
+        .price { color: var(--neon-pink); font-size: 0.9rem; font-weight: bold; }
+        .actions { display: flex; gap: 5px; margin-top: 8px; }
+
+        .btn-action { flex: 1; padding: 4px; border-radius: 3px; cursor: pointer; font-size: 0.7rem; border: 1px solid transparent; }
+        .btn-edit { color: var(--neon-blue); border-color: var(--neon-blue); background: transparent; }
+        .btn-delete { color: var(--neon-pink); border-color: var(--neon-pink); background: transparent; }
+
+        /* Estilos da Câmera OCR */
+        #camera-container {
+            width: 100%; position: relative; display: none; margin-bottom: 10px; border-radius: 8px; overflow: hidden;
+            border: 2px solid var(--neon-blue);
+        }
+        #video { width: 100%; display: block; }
+        #canvas { display: none; }
+        .scan-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 200px; height: 100px; border: 2px solid var(--neon-pink); box-shadow: 0 0 0 1000px rgba(0,0,0,0.5);
+            pointer-events: none;
+        }
+        #scan-status { font-size: 0.7rem; color: var(--neon-blue); text-align: center; margin-top: 5px; }
     </style>
 </head>
 <body>
 
+<div class="overlay" id="overlay" onclick="fecharTodosModais()"></div>
+
 <div class="container">
-    <header><h1>⚡ Scanner Automático ID</h1></header>
+    <header>
+        <h1>⚡ Neon Stock Compact</h1>
+    </header>
 
-    <div id="status">Aguardando...</div>
-
-    <div id="scanner-container">
-        <video id="video" autoplay playsinline></video>
-        <div class="scan-region"></div>
+    <div class="top-actions">
+        <button class="btn-main btn-new" onclick="abrirModalCadastro()">➕ Novo Produto</button>
+        <button class="btn-main btn-out" onclick="abrirModalBaixa()">📉 Baixa Rápida</button>
     </div>
 
-    <button id="btn-start" class="btn-main" onclick="iniciarScanner()">Ligar Câmera</button>
-
-    <div id="product-info">
-        <h3 id="p-nome" style="color: var(--neon-blue);"></h3>
-        <p id="p-detalhes" style="font-size: 0.9rem; margin: 5px 0;"></p>
-        <div id="baixa-msg" style="color: #00ff00; font-weight: bold; margin-top: 10px;"></div>
+    <div class="modal" id="modal-form">
+        <h2 style="font-size: 1rem; margin-bottom: 15px; color: var(--neon-blue);">Gerenciar Produto</h2>
+        <div class="grid-inputs">
+            <input type="hidden" id="p-index">
+            <input type="text" id="p-id" placeholder="ID (Só números)">
+            <input type="text" id="p-nome" placeholder="Nome">
+            <input type="number" id="p-valor" placeholder="R$">
+            <input type="number" id="p-qtd" placeholder="Qtd">
+            <input type="text" id="p-img" placeholder="URL Imagem">
+            <button class="btn-main btn-new" onclick="salvarProduto()">Confirmar</button>
+            <button class="btn-action" style="color: #888" onclick="fecharTodosModais()">Cancelar</button>
+        </div>
     </div>
 
-    <canvas id="canvas-process"></canvas>
+    <div class="modal modal-baixa" id="modal-baixa">
+        <h2 style="font-size: 1rem; color: var(--neon-pink);">📉 Baixa por Leitura de ID</h2>
+        
+        <div class="grid-inputs" style="margin-top: 15px;">
+            <div id="camera-container">
+                <video id="video" autoplay playsinline></video>
+                <div class="scan-overlay"></div>
+                <canvas id="canvas"></canvas>
+            </div>
+            <div id="scan-status">Câmera desligada</div>
+            
+            <div class="input-group-camera" style="display: flex; gap:5px;">
+                <input type="text" id="baixa-id" placeholder="ID detectado..." onkeyup="buscarProdutoBaixa()" style="flex-grow: 1;">
+                <button class="btn-main" style="background:#222; border:1px solid var(--neon-blue); color:var(--neon-blue)" onclick="toggleOCR()">📷 LER ID</button>
+            </div>
+            
+            <div id="preview-baixa" class="preview-baixa">
+                <img id="prev-img" src="" alt="">
+                <div style="flex-grow:1">
+                    <h4 id="prev-nome" style="font-size: 0.75rem;"></h4>
+                    <p style="font-size: 0.65rem; color:#888">Disponível: <span id="prev-qtd"></span></p>
+                </div>
+                <button onclick="confirmarBaixaLote()" style="background:var(--neon-pink); border:none; padding:8px; border-radius:4px; color:white; font-weight:bold">BAIXAR -1</button>
+            </div>
+
+            <button class="btn-action" style="color: #888" onclick="fecharTodosModais()">Voltar</button>
+        </div>
+    </div>
+
+    <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar ID ou Nome..." onkeyup="listarProdutos()">
+    <div id="product-display" class="product-grid"></div>
 </div>
 
 <script>
     let produtos = JSON.parse(localStorage.getItem('neon_produtos')) || [];
     let isScanning = false;
-    let video = document.getElementById('video');
+    let stream = null;
 
-    async function iniciarScanner() {
+    function abrirModalCadastro() { document.getElementById('modal-form').style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
+    function abrirModalBaixa() { document.getElementById('modal-baixa').style.display = 'block'; document.getElementById('overlay').style.display = 'block'; }
+    
+    function fecharTodosModais() {
+        stopCamera();
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        document.getElementById('overlay').style.display = 'none';
+        limparCampos();
+    }
+
+    // LÓGICA OCR (LER NÚMEROS)
+    async function toggleOCR() {
+        if (isScanning) {
+            stopCamera();
+            return;
+        }
+        
+        const video = document.getElementById('video');
+        const container = document.getElementById('camera-container');
+        container.style.display = 'block';
+        document.getElementById('scan-status').innerText = "Iniciando câmera...";
+
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment", width: 640, height: 480 } 
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
             });
             video.srcObject = stream;
-            document.getElementById('scanner-container').style.display = 'block';
-            document.getElementById('btn-start').style.display = 'none';
             isScanning = true;
-            loopLeitura();
+            document.getElementById('scan-status').innerText = "Aponte para o número do ID";
+            
+            // Ciclo de captura
+            scanFrame();
         } catch (err) {
-            alert("Erro: Para usar a câmera, você precisa abrir este arquivo via HTTPS ou Servidor Local.");
+            alert("Erro ao acessar câmera. Use HTTPS.");
+            container.style.display = 'none';
         }
     }
 
-    async function loopLeitura() {
+    function stopCamera() {
+        isScanning = false;
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        document.getElementById('camera-container').style.display = 'none';
+        document.getElementById('scan-status').innerText = "Câmera desligada";
+    }
+
+    async function scanFrame() {
         if (!isScanning) return;
 
-        const canvas = document.getElementById('canvas-process');
-        const ctx = canvas.getContext('2d');
-        
-        // Foca apenas na região central (caixa rosa) para aumentar a precisão
-        canvas.width = 150;
-        canvas.height = 80;
-        
-        // Desenha a parte central do vídeo no canvas
-        ctx.drawImage(video, (video.videoWidth/2 - 75), (video.videoHeight/2 - 40), 150, 80, 0, 0, 150, 80);
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
 
-        document.getElementById('status').innerText = "Lendo...";
+        // Configura canvas para o tamanho do vídeo
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Processa a imagem com Tesseract
+        document.getElementById('scan-status').innerText = "Lendo...";
+
+        // Usa Tesseract para ler apenas NÚMEROS
         Tesseract.recognize(canvas, 'eng', {
-            tessedit_char_whitelist: '0123456789'
+            workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/worker.min.js',
+            corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract-core.wasm.js',
+            tessedit_char_whitelist: '0123456789' // SÓ LÊ NÚMEROS
         }).then(({ data: { text } }) => {
-            const idEncontrado = text.trim().replace(/\D/g, "");
-            
-            if (idEncontrado.length >= 1) {
-                processarBaixaAutomatica(idEncontrado);
+            let foundID = text.trim().replace(/\D/g, ""); // Pega apenas os dígitos
+            if (foundID) {
+                document.getElementById('baixa-id').value = foundID;
+                if (buscarProdutoBaixa()) {
+                    // Se achou o produto, ele dá o feedback visual e para
+                    document.getElementById('scan-status').innerText = "ID " + foundID + " encontrado!";
+                    // Se quiser que baixe AUTOMÁTICO, descomente a linha abaixo:
+                    // processarBaixaInstantanea(foundID);
+                }
             }
-
-            if (isScanning) setTimeout(loopLeitura, 500); // Tenta ler a cada meio segundo
+            if (isScanning) setTimeout(scanFrame, 1500); // Tenta ler de novo em 1.5s
         });
     }
 
-    function processarBaixaAutomatica(id) {
-        const index = produtos.findIndex(p => p.id == id);
-        
-        if (index !== -1) {
-            if (produtos[index].qtd > 0) {
-                isScanning = false; // Para o scanner para não dar baixa múltipla
-                produtos[index].qtd -= 1;
-                
-                // Salva e Atualiza
-                localStorage.setItem('neon_produtos', JSON.stringify(produtos));
-                
-                // Mostra na tela
-                exibirSucesso(produtos[index]);
-                
-                // Reinicia o scanner após 3 segundos
-                setTimeout(() => {
-                    document.getElementById('product-info').style.display = 'none';
-                    isScanning = true;
-                    loopLeitura();
-                }, 3000);
-            }
+    function buscarProdutoBaixa() {
+        const idBusca = document.getElementById('baixa-id').value;
+        const preview = document.getElementById('preview-baixa');
+        const produto = produtos.find(p => p.id == idBusca);
+        if (produto) {
+            preview.style.display = 'flex';
+            document.getElementById('prev-img').src = produto.img;
+            document.getElementById('prev-nome').innerText = produto.nome;
+            document.getElementById('prev-qtd').innerText = produto.qtd;
+            return true;
+        } else {
+            preview.style.display = 'none';
+            return false;
         }
     }
 
-    function exibirSucesso(produto) {
-        const info = document.getElementById('product-info');
-        info.style.display = 'block';
-        document.getElementById('p-nome').innerText = "PRODUTO: " + produto.nome;
-        document.getElementById('p-detalhes').innerText = "ID: " + produto.id + " | NOVO ESTOQUE: " + produto.qtd;
-        document.getElementById('baixa-msg').innerText = "✅ BAIXA REALIZADA AUTOMATICAMENTE!";
-        document.getElementById('status').innerText = "Aguardando próximo...";
+    function confirmarBaixaLote() {
+        const id = document.getElementById('baixa-id').value;
+        const index = produtos.findIndex(p => p.id == id);
+        if (index !== -1 && produtos[index].qtd > 0) {
+            produtos[index].qtd -= 1;
+            persistir();
+            alert("Baixa realizada!");
+            fecharTodosModais();
+        } else {
+            alert("Erro na baixa.");
+        }
     }
+
+    // FUNÇÕES ORIGINAIS MANTIDAS
+    function salvarProduto() {
+        const index = document.getElementById('p-index').value;
+        const id = document.getElementById('p-id').value;
+        const nome = document.getElementById('p-nome').value;
+        const valor = document.getElementById('p-valor').value;
+        const qtd = document.getElementById('p-qtd').value;
+        const img = document.getElementById('p-img').value || 'https://via.placeholder.com/150x80/111/00f2ff?text=IMG';
+        if (!id || !nome || !valor || !qtd) return alert("Preencha tudo!");
+        const obj = { id, nome, valor, qtd: parseInt(qtd), img };
+        index === "" ? produtos.push(obj) : produtos[index] = obj;
+        persistir();
+        fecharTodosModais();
+    }
+
+    function editarProduto(index) {
+        const p = produtos[index];
+        document.getElementById('p-index').value = index;
+        document.getElementById('p-id').value = p.id;
+        document.getElementById('p-nome').value = p.nome;
+        document.getElementById('p-valor').value = p.valor;
+        document.getElementById('p-qtd').value = p.qtd;
+        document.getElementById('p-img').value = p.img;
+        abrirModalCadastro();
+    }
+
+    function deletarProduto(index) { if(confirm("Excluir?")) { produtos.splice(index, 1); persistir(); } }
+    function persistir() { localStorage.setItem('neon_produtos', JSON.stringify(produtos)); listarProdutos(); }
+    function limparCampos() { document.querySelectorAll('input:not([type="hidden"])').forEach(i => i.value = ''); }
+
+    function listarProdutos() {
+        const display = document.getElementById('product-display');
+        const busca = document.getElementById('search-input').value.toLowerCase();
+        display.innerHTML = '';
+        produtos.forEach((p, index) => {
+            if (p.nome.toLowerCase().includes(busca) || p.id.toString().includes(busca)) {
+                display.innerHTML += `
+                    <div class="product-card">
+                        <img src="${p.img}" class="product-img">
+                        <div class="product-info">
+                            <span style="color:var(--neon-blue); font-size:0.6rem">#${p.id}</span>
+                            <h3 style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap">${p.nome}</h3>
+                            <span class="price">R$ ${parseFloat(p.valor).toFixed(2)}</span>
+                            <p style="color:#888; font-size:0.7rem">Qtd: ${p.qtd}</p>
+                            <div class="actions">
+                                <button class="btn-action btn-edit" onclick="editarProduto(${index})">✎</button>
+                                <button class="btn-action btn-delete" onclick="deletarProduto(${index})">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    }
+
+    listarProdutos();
 </script>
 
 </body>
